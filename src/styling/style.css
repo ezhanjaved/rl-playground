@@ -1,0 +1,107 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    background-color: #f0f2f5;
+    color: #333;
+    height: 100vh;
+}
+.container {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    grid-template-rows: 60px 1fr ;
+    grid-template-areas: 
+        "sidebar header header"
+        "sidebar main control";
+    height: 100vh;
+}
+.header {
+    grid-area: header;
+    background-color: white;
+    color: black;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    font-size: 1.5em;
+    border-bottom: 1px solid #ccc;
+}
+.Window-Controls{
+    display: flex;
+    gap: 8px;
+}
+.circle{
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-block;
+    background-color: black;
+}
+.sidebar {
+    grid-area: sidebar;
+    background-color: #dcdde1;
+    border-right: 1px solid #ccc;
+    display: flex;     
+    gap: 14px;                 
+    align-items: flex-start;  
+     
+}
+.sidebar .circle{
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    background-color: black;
+}
+.sidebar aside{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
+    padding: 10px;
+    background-color: #ffffff;
+}
+.sidebar h2{
+    margin: 20px;
+}
+.sidebarContent{
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0px;
+}
+.library{
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+.library h3{
+    margin-bottom: 10px;
+}
+ .library .item{
+    height: 180px;
+    background-color: #f1f2f6;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    width: 220px;
+ }
+ .training-env{
+    grid-area: main;
+    background-color: #ffffff;
+    border:2px dashed #718093;
+    margin: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2f3640;
+ }
+ .control{
+    grid-area: control;
+    background-color: #f1f2f6;
+    border-left: 1px solid #ccc;
+    padding: 15px;
+ }
