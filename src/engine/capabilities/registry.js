@@ -1,0 +1,1 @@
+// Capability schemas (actions, obs fields, state keys)

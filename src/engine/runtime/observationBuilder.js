@@ -1,0 +1,1 @@
+// Build obs vectors from entity + registry
