@@ -9,6 +9,11 @@ body {
     color: #333;
     height: 100vh;
 }
+.editor {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
 .container {
     display: grid;
     grid-template-columns: 300px 1fr 300px;

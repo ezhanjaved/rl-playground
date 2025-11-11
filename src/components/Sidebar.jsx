@@ -1,6 +1,4 @@
-import React from 'react'
 import "../styling/style.css"
-import Library from './library'
 
 const Sidebar = () => {
   return (
@@ -14,7 +12,6 @@ const Sidebar = () => {
       </aside>
       <div className='sidebarContent'>
         <h2>Sidebar</h2>
-        <Library/>
       </div>
     </aside>
   )
