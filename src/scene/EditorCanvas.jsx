@@ -1,22 +1,17 @@
 // R3F <Canvas>; mounts world + debug
-import "../styling/style.css"
+import "../styling/App.css"
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Grid } from "@react-three/drei"
 
 export default function EditorCanvas() {
-
+ 
     return (
         <>
-            <div className="editor">
+            <div className="environment">
                 <Canvas camera={{ position: [6, 6, 6], fov: 50 }}>
 
                     <ambientLight intensity={0.8} />
                     <directionalLight position={[10, 10, 5]} />
-
-                    <mesh position={[0,0,0]}>
-                        <boxGeometry args={[1, 1, 1]} />
-                        <meshStandardMaterial color="orange" />
-                    </mesh>
 
                     <OrbitControls
                         enablePan={true}

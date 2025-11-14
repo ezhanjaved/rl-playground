@@ -1,0 +1,14 @@
+.environment {
+    flex: 1;
+}
+
+.library {
+    width: 20%;
+    background: black;
+    color: white;
+}
+
+.lib-components {
+    flex-direction: column;
+    gap: 20px;
+}
