@@ -8,8 +8,8 @@ export const useSceneStore = create((set, get) => ({
     physics: {gravity: [0, -9.81, 0], timeStep: 1/60, bounds: {xz:50}, seed: 1234},
     
     addEntity: (partial) => set (state => {
-        const id = partial.id || `ent_${Date.now()}`;
-        const entity = buildEntitiyFromPartial(partial);
+        const id = `entity_${Date.now()}`; 
+        const entity = buildEntitiyFromPartial(partial, id);
         return { entities: {...state.entities, [id]: entity} };
     }),
 
@@ -21,14 +21,15 @@ export const useSceneStore = create((set, get) => ({
 
 }));
 
-const buildEntitiyFromPartial = (partial) => {
+const buildEntitiyFromPartial = (partial, id) => {
     const type = partial.capabilities || [];
     const {actionSpace, observationsSpace, stateSpace} = addCapabilitySchemas(type);
     let entity = {
-        id: partial.id || `ent_${Date.now()}`,
+        id: id,
         tag: partial.tag || 'generic',
         capabilities: type,
-        assetsRef: partial.assetsRef,
+        position: partial.position || [0,0,0],
+        assetRef: partial.assetRef,
         collider: partial.collider || { shape: 'capsule', r: 0.3, h: 1.2},
         actuator_type : partial.actuator_type || 'walker',
     }
