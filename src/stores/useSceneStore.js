@@ -6,6 +6,11 @@ export const useSceneStore = create((set, get) => ({
     entities: {},
     assignments: {},
     physics: {gravity: [0, -9.81, 0], timeStep: 1/60, bounds: {xz:50}, seed: 1234},
+    activeEntity : null,
+    isDragging: false,
+
+    setActiveEntity: (entityId) => set({activeEntity: entityId}),
+    setDragging: (dragging) => set({isDragging: dragging}),
     
     addEntity: (partial) => set (state => {
         const id = `entity_${Date.now()}`; 

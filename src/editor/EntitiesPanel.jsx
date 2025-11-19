@@ -26,6 +26,11 @@ export default function EntitiesPanel() {
                                 label="Human"
                                 payload={{ tag: "agent", assetRef: "girl.glb" }}
                             />
+                             <DraggableItem
+                                id="lib_agent_2"
+                                label="Animal"
+                                payload={{ tag: "agent", assetRef: "lizard.glb" }}
+                            />
                         </div>
                     </div>
                 </div>

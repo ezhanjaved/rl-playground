@@ -5,9 +5,23 @@ import * as THREE from "three"
 import { OrbitControls, Grid } from "@react-three/drei"
 import React from "react";
 import World from '../scene/World.jsx';
-export let lastPointerWorldPos = [0,0,0];
+import { useSceneStore } from "../stores/useSceneStore";
+import { Background } from "@xyflow/react";
+export let lastPointerWorldPos = [0, 0, 0];
+export let orbitControlsRef = null;
 
 export default function EditorCanvas() {
+
+    const controlRef = React.useRef();
+    orbitControlsRef = controlRef;
+
+    function setLastPointerWorldPos(intersection) {
+        lastPointerWorldPos = [intersection.x, intersection.y, intersection.z];
+        const { activeEntity, isDragging, updateEntity } = useSceneStore.getState();
+        if (activeEntity && isDragging) {
+            updateEntity(activeEntity, { position: lastPointerWorldPos });
+        }
+    }
 
     function PointerTracker() {
         const { camera, gl } = useThree();
@@ -23,12 +37,27 @@ export default function EditorCanvas() {
             raycaster.setFromCamera(mouse, camera);
             const intersection = new THREE.Vector3();
             raycaster.ray.intersectPlane(plane, intersection);
-            lastPointerWorldPos= [intersection.x, intersection.y, intersection.z];
+            setLastPointerWorldPos(intersection);
+        }
+
+        function PointerUp() {
+            console.log("Pointer up event detected");
+            const { isDragging, setDragging } = useSceneStore.getState();
+            if (isDragging) {
+                setDragging(false);
+                if (orbitControlsRef && orbitControlsRef.current) {
+                    orbitControlsRef.current.enabled = true;
+                }
+            }
         }
 
         React.useEffect(() => {
             gl.domElement.addEventListener('pointermove', onPointerMove);
-            return () => gl.domElement.removeEventListener('pointermove', onPointerMove);
+            gl.domElement.addEventListener('pointerup', PointerUp);
+            return () => {
+                gl.domElement.removeEventListener('pointermove', onPointerMove);
+                gl.domElement.removeEventListener('pointerup', PointerUp);
+            }
         }, [gl, camera]);
 
         return null;
@@ -37,7 +66,10 @@ export default function EditorCanvas() {
     return (
         <>
             <div className="environment">
-                <Canvas camera={{ position: [0, 0, 0], fov: 50 }}>
+                <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+                    <color attach="background" args={["#ffc983"]} />
+
+                    <World />
 
                     <PointerTracker />
 
@@ -45,6 +77,7 @@ export default function EditorCanvas() {
                     <directionalLight position={[10, 10, 5]} />
 
                     <OrbitControls
+                        ref={controlRef}
                         enablePan={true}
                         enableZoom={true}
                         enableRotate={true}
@@ -52,16 +85,12 @@ export default function EditorCanvas() {
                         maxDistance={20}
                     />
 
-                    <World />
-
                     <Grid
-                        args={[100, 150]}
+                        args={[50, 50]}
                         sectionColor={"#000000"}
-                        infiniteGrid
                     />
 
-                    {/* <axesHelper args={[5]} /> */}
-                    <boxGeometry />
+                    <axesHelper args={[10]} />
 
                 </Canvas>
             </div>
