@@ -8,12 +8,13 @@ export const useSceneStore = create((set, get) => ({
     physics: {gravity: [0, -9.81, 0], timeStep: 1/60, bounds: {xz:50}, seed: 1234},
     activeEntity : null,
     isDragging: false,
+    initialized: false,
 
     setActiveEntity: (entityId) => set({activeEntity: entityId}),
     setDragging: (dragging) => set({isDragging: dragging}),
     
     addEntity: (partial) => set (state => {
-        const id = `entity_${Date.now()}`; 
+        const id = `entity_${crypto.randomUUID() || Date.now()}`; 
         const entity = buildEntitiyFromPartial(partial, id);
         return { entities: {...state.entities, [id]: entity} };
     }),
@@ -22,7 +23,39 @@ export const useSceneStore = create((set, get) => ({
         const existing = state.entities[id] || {}; //We used id to get entity details and saved it in existing
         const entity = {...existing, ...updated}; //We are merging existing entity with updated details
         return {entities: {...state.entities, [id]: entity}}; //Here we are updating the entities object with new entity details 
-    })
+    }),
+
+    deleteEntity: (id) => set (state => {
+        const newEntities = {...state.entities}; //Create a copy of existing entities
+        delete newEntities[id]; //Delete the entity with given id from the copied object
+        return {entities: newEntities}; //Update the state with the new entities object
+    }),
+
+    initializeScene: () => {
+        const {initialized, addEntity} = get();
+        if (initialized) return;
+
+        addEntity(
+            {
+                tag: "non-state",
+                assetRef: "nature/Tree_2_A_Color1.gltf",
+                isDecor: "true",
+                position: [2,0,2],
+            }   
+        ),
+
+        addEntity(
+            {
+                tag: "non-state",
+                assetRef: "nature/Tree_2_A_Color1.gltf",
+                isDecor: "true",
+                position: [6,0,2],
+            }   
+        )
+
+        set({initialized: true});
+
+    }
 
 }));
 

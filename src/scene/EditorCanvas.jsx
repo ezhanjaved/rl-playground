@@ -67,7 +67,7 @@ export default function EditorCanvas() {
         <>
             <div className="environment">
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
-                    <color attach="background" args={["#ffc983"]} />
+                    <color attach="background" args={["#b2fba5"]} />
 
                     <World />
 
@@ -86,8 +86,8 @@ export default function EditorCanvas() {
                     />
 
                     <Grid
-                        args={[50, 50]}
-                        sectionColor={"#000000"}
+                        args={[100, 100]}
+                        sectionColor={"#91bc9e55"}
                     />
 
                     <axesHelper args={[10]} />

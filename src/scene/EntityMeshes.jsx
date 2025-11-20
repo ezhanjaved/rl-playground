@@ -8,9 +8,9 @@ import { SkeletonUtils } from "three-stdlib";
 
 function EntityRenderer({ entity }) {
 
-    console.log("Rendering entity:", entity);
-
     const gltf = useGLTF(`/models/${entity.assetRef}`);
+
+    console.log("Entities in EntityRenderer:", Object.keys(useSceneStore.getState().entities).length);
 
     const {clonedScene, size} = useMemo(() => {
 
@@ -25,10 +25,11 @@ function EntityRenderer({ entity }) {
 
         return {clonedScene: clone, size};
 
-    }, [gltf]);
+    }, [gltf, entity]);
 
     const setActiveEntity = useSceneStore(s => s.setActiveEntity);
     const setDragging = useSceneStore(s => s.setDragging);
+    const deleteEntity = useSceneStore(s => s.deleteEntity);
 
     const onPointerDown = (e) => {
         e.stopPropagation();
@@ -40,8 +41,16 @@ function EntityRenderer({ entity }) {
         }
     };
 
+    const removeEntity = (e) => {
+        console.log("Removing entity:", entity.id);
+        e.stopPropagation();
+        if (!e.shiftKey) return;
+        deleteEntity(entity.id);
+        console.log("Entities:", entity);
+    }
+
     return (
-        <group position={entity.position}>
+        <group onDoubleClick={(e) => removeEntity(e)} position={entity.position}>
             <primitive object={clonedScene} onPointerDown={onPointerDown} />
             <mesh visible={false} position={[0, 1.3, 0]} onPointerDown={onPointerDown}>
                 <boxGeometry args={[size.x, size.y, size.z]} />

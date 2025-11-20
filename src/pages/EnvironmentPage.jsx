@@ -2,11 +2,17 @@ import EntitiesPanel from "../editor/EntitiesPanel";
 import EditorCanvas from "../scene/EditorCanvas";
 import { DndContext } from "@dnd-kit/core";
 import "../styling/index.css";
+import { useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 import { lastPointerWorldPos } from "../scene/EditorCanvas";
 
 export default function EnvironmentPage() {
     const addEntity = useSceneStore(s => s.addEntity);
+    const initializeScene = useSceneStore(s => s.initializeScene);
+
+    useEffect(() => {
+        initializeScene();
+    }, [initializeScene])
 
     const onDragEnd = (event) => {
         console.log("Drag End", event);
