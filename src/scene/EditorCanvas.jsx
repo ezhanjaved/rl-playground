@@ -6,9 +6,9 @@ import { OrbitControls, Grid } from "@react-three/drei"
 import React from "react";
 import World from '../scene/World.jsx';
 import { useSceneStore } from "../stores/useSceneStore";
-import { Background } from "@xyflow/react";
 export let lastPointerWorldPos = [0, 0, 0];
 export let orbitControlsRef = null;
+import TestCharacter from "../components/TestCharacter.jsx";
 
 export default function EditorCanvas() {
 
@@ -68,13 +68,15 @@ export default function EditorCanvas() {
             <div className="environment">
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                     <color attach="background" args={["#b2fba5"]} />
-
+                    
                     <World />
 
                     <PointerTracker />
 
                     <ambientLight intensity={0.8} />
                     <directionalLight position={[10, 10, 5]} />
+
+                    {/* <TestCharacter /> */}
 
                     <OrbitControls
                         ref={controlRef}

@@ -62,6 +62,7 @@ export const useSceneStore = create((set, get) => ({
 const buildEntitiyFromPartial = (partial, id) => {
     const type = partial.capabilities || [];
     const {actionSpace, observationsSpace, stateSpace} = addCapabilitySchemas(type);
+    
     let entity = {
         id: id,
         tag: partial.tag || 'generic',
@@ -84,6 +85,6 @@ const buildEntitiyFromPartial = (partial, id) => {
         entity['state_space'] = stateSpace;
     }
 
+    console.log("Entity created:", entity);
     return entity;
-
 }
