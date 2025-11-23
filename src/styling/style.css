@@ -1,107 +1,534 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
 }
 body {
-    background-color: #f0f2f5;
-    color: #333;
-    height: 100vh;
+  background-color: #f0f2f5;
+  color: #333;
+  height: 100vh;
 }
 .container {
-    display: grid;
-    grid-template-columns: 300px 1fr 300px;
-    grid-template-rows: 60px 1fr ;
-    grid-template-areas: 
-        "sidebar header header"
-        "sidebar main control";
-    height: 100vh;
+  display: grid;
+  grid-template-columns: 340px 1fr 300px;
+  grid-template-rows: 80px 1fr;
+  grid-template-areas:
+    "sidebar header header"
+    "sidebar main control";
+  height: 100vh;
 }
 .header {
-    grid-area: header;
-    background-color: white;
-    color: black;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    font-size: 1.5em;
-    border-bottom: 1px solid #ccc;
+  grid-area: header;
+  background-color: white;
+  color: black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 1.5em;
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2);
 }
-.Window-Controls{
-    display: flex;
-    gap: 8px;
+.Window-Controls {
+  display: flex;
+  gap: 35px;
+  margin-right: 28px;
 }
-.circle{
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: inline-block;
-    background-color: black;
-}
+
 .sidebar {
-    grid-area: sidebar;
-    background-color: #dcdde1;
-    border-right: 1px solid #ccc;
-    display: flex;     
-    gap: 14px;                 
-    align-items: flex-start;  
-     
+  grid-area: sidebar;
+  backdrop-filter: blur(24px);
+  background-color: white;
+  border-right: 1px solid #ccc;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow: 4px 0px 16px rgba(0, 0, 0, 0.2);
+  height: auto;
 }
-.sidebar .circle{
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    display: inline-block;
-    background-color: black;
+.sidebar .icon {
+  opacity: 0.8;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  color: white;
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
 }
-.sidebar aside{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    height: 100%;
-    padding: 10px;
-    background-color: #ffffff;
+.sidebar aside {
+  width: 22%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100%;
+  background-color: #ffffff;
+  box-shadow: 4px 0px 6px rgba(0, 0, 0, 0.1);
 }
-.sidebar h2{
-    margin: 20px;
+.homeIcon {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  padding: 0px 12px;
 }
-.sidebarContent{
-    display: flex;
-    flex-direction: column;
-    margin: 20px 0px;
+.homeIcon .icon {
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
 }
-.library{
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
+.sidebar h2 {
+  margin: 20px;
 }
-.library h3{
-    margin-bottom: 10px;
+.sidebarContent {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0px;
 }
- .library .item{
-    height: 180px;
-    background-color: #f1f2f6;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    width: 220px;
- }
- .training-env{
-    grid-area: main;
-    background-color: #ffffff;
-    border:2px dashed #718093;
-    margin: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #2f3640;
- }
- .control{
-    grid-area: control;
-    background-color: #f1f2f6;
-    border-left: 1px solid #ccc;
-    padding: 15px;
- }
+.library {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0 8px;
+  margin-top: 20px;
+}
+.library h3 {
+  margin-bottom: 14px;
+  margin-left: 6px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionHeader {
+  width: 100%;
+  background: #e6e6e6;
+  border: none;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  width: 230px;
+  
+  cursor: pointer;
+  color: black;
+  border-radius: 8px;
+}
+.control .sectionHeader {
+  width: 100%;
+
+}
+.sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1; 
+  
+}
+
+.gridWrapper {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gridItem {
+  height: 90px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  /* background: url("data:image/svg+xml;utf8,<svg width='100' height='100' xmlns='http://www.w3.org/2000/svg'><circle cx='50' cy='50' r='20' fill='black'/></svg>") center no-repeat; */
+}
+.trainingEnvContainer {
+  grid: main;
+  padding: 20px;
+  background-color: white;
+}
+
+.envTitle {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.envSubtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.canvasBox {
+  width: 100%;
+  height: 600px;
+  border: 1.5px dashed #ccc;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+}
+
+.canvasPlaceholder {
+  color: #999;
+  font-size: 16px;
+}
+
+.control {
+  grid-area: control;
+  background: #fbfbfb;
+  border-left: 1px solid #ccc;
+  padding: 20px;
+  width: 100%;
+}
+
+.controlHeader {
+  display: flex;  
+  
+}
+.controlTitle {
+  display: flex;
+  align-items: start;
+  justify-content: start;
+  flex-direction: column;
+}
+.controlHeader .homeIcon {
+  background-color: black;
+  display: flex;
+  color: white;
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  padding-top:10px;
+}
+/* Header */
+.controlHeader h2 {
+  font-size: 20px;
+  margin-top: 4px;
+}
+
+.controlHeader p {
+  color: #555;
+  font-size: 11px;
+}
+
+/* Dropdown + Section Headers */
+
+
+.controlTitle {
+  flex: 1;
+  margin-left: 8px;
+}
+
+.dropdownContent {
+  margin-top: 10px;
+}
+
+.inputSelect {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* Simulations Section */
+.simHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 25px;
+  font-size: 16px;
+}
+
+.simRow {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.toggle {
+  transform: scale(1.2);
+}
+
+/* Parameters */
+.paramContent {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inputBox {
+  width: 100%;
+  padding: 10px;
+  background: #e5e5e5;
+  border-radius: 8px;
+  border: none;
+  color: black;
+}
+
+/* Train Button */
+.trainButton {
+  width: 100%;
+  margin-top: 25px;
+  padding: 12px;
+  background: black;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.selectAlgoWrapper {
+  display: flex;
+  align-items: center;
+  background: #e6e6e6;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.selectAlgoIcon {
+  font-size: 18px;
+}
+
+.selectAlgoInput {
+  flex: 1;
+  margin-left: 10px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  outline: none;
+  cursor: pointer;
+  color: black;
+  background-color:#e6e6e6 ;
+
+}
+
+/* onbording css */
+.onboarding-container {
+  width: 100%;
+  height: 100vh;
+  background: black;
+  color: white;
+  padding: 32px;
+  position: relative;
+  font-family: sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+.onboarding-border {
+  position: absolute;
+  inset: 0;
+  margin: 16px;
+  border: 60px solid white;
+  pointer-events: none;
+}
+.onboarding-content {
+  z-index: 10;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+.onboarding-left {
+  width: 30%;
+  display: flex;
+  align-items: center;
+}
+.title-line {
+  font-size: 84px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  line-height: 1.05;
+}
+.onboarding-right {
+  width: 30%;
+  display: flex;
+  justify-content: end;
+}
+.onboarding-form {
+  width: 320px;
+}
+.progress-wrapper {
+  position: absolute;
+  top: 140px;
+  width: 70%;
+}
+.progress-bar-bg {
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  width: 100%;
+}
+.progress-bar-fill {
+  position: absolute;
+  left: 34px;
+  top: 0;
+  height: 20px;
+  background: white;
+  border-radius: 999px;
+  width: 700px;
+}
+.back-arrow {
+  position: absolute;
+  top: -6px;
+  left: 6px;
+  font-size: 20px;
+}
+.label {
+  font-size: 16px;
+  margin-bottom: 6px;
+  display: block;
+}
+.input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border-radius: 6px;
+  padding: 0 12px;
+  margin-bottom: 12px;
+  outline: none;
+  color: white;
+}
+.checkbox-group {
+  margin-bottom: 16px;
+  border: none;
+}
+.checkbox-line {
+  display: flex;
+  gap: 8px;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.btn-next {
+  width: 100%;
+  height: 36px;
+  background: white;
+  color: black;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Signup */
+.signup-wrapper {
+  width: 100%;
+  height: 100vh;
+  background: #e6e6e6;
+  padding: 60px;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+.signup-inner {
+  background: black;
+  display: flex;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.signup-left {
+  width: 50%;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.signup-robot {
+  max-height: 460px;
+  object-fit: contain;
+}
+.signup-right {
+  width: 70%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+    clip-path: path("M 0 0 L 180 334 L 0 822 L 822 668 L 822 0 Z");
+}
+.signup-box {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column; 
+  background: white;
+  padding: 120px 100px;
+  padding-left: 250px;
+  
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+
+}
+
+.signup-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+.signup-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 24px;
+  font-size: 20px;
+}
+.google-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: black;
+  color: white;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+.or-line {
+  text-align: center;
+  margin: 24px 0;
+  font-size: 20px;
+}
+.signup-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: 20px;
+}
+.input-line {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 6px;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+}
+.btn-create {
+  margin-top: 24px;
+  width: 100%;
+  height: 40px;
+  background: black;
+  color: white;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+}
+.login-text {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 16px;
+}
+.login-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
