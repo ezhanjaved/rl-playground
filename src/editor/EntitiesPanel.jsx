@@ -49,7 +49,7 @@ export default function EntitiesPanel() {
                             />
                              <DraggableItem
                                 id="lib_agent_2"
-                                label="Mage"
+                                label="Lizard"
                                 payload={{ tag: "agent", assetRef: "lizard.glb", capabilities: ["Moveable"] }}
                             />
                         </div>
