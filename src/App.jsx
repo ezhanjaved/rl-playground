@@ -5,18 +5,20 @@ import { Onboarding } from "./components/Onboarding"
 import Sidebar from "./components/sidebar"
 import { Signup } from "./components/SignUp"
 import TrainingENV from "./components/trainingENV"
-import "./styling/style.css"
+import './styling/index.css';
+import EnvironmentPage from "./pages/EnvironmentPage";
 
 function App() {
 return (
-    <div className="container">
-        <Header/>
-        <Sidebar/>
-        <TrainingENV/>
-        <Control/>
-    </div>
+    // <div className="container">
+    //     <Header/>
+    //     <Sidebar/>
+    //     <TrainingENV/>
+    //     <Control/>
+    // </div>
     // <Onboarding/>
     // <Signup/>
+    <EnvironmentPage />
 )
 }
 
