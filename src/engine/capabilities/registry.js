@@ -1,7 +1,7 @@
 // Capability schemas (actions, obs fields, state keys)
 export const CAPABILITY_SCHEMAS = { 
     Moveable: {
-        actions: ['move_up', 'move_down', 'move_left', 'move_right'],
+        actions: ['move_up', 'move_down', 'move_left', 'move_right', 'idle'],
         observations : ['self_position_x', 'self_position_y', 'self_position_z'],
     },
 

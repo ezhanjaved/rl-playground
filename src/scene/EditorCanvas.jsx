@@ -1,11 +1,13 @@
 // R3F <Canvas>; mounts world + debug
 import "../styling/App.css"
-import { Canvas, useThree } from "@react-three/fiber"
+import { Canvas, useThree, useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 import { OrbitControls, Grid } from "@react-three/drei"
-import React from "react";
+import React, { use } from "react";
 import World from '../scene/World.jsx';
 import { useSceneStore } from "../stores/useSceneStore";
+import { useRunTimeStore } from "../stores/useRunTimeStore.js";
+import runTimeloop from "../engine/runtime/runtimeLoop.js";
 export let lastPointerWorldPos = [0, 0, 0];
 export let orbitControlsRef = null;
 
@@ -13,6 +15,22 @@ export default function EditorCanvas() {
 
     const controlRef = React.useRef();
     orbitControlsRef = controlRef;
+
+    function PlaySimulation() {
+        const { playing } = useRunTimeStore.getState();
+        if (!playing) {
+            console.log("Simulation has not been said to play yet.");
+            return null;
+        }
+        useFrame(() => {
+            if (playing) {
+                console.log("Simulation is playing...");
+                const { entities } = useSceneStore.getState();
+                runTimeloop(entities);
+            }
+        });
+        return null;
+    }
 
     function setLastPointerWorldPos(intersection) {
         lastPointerWorldPos = [intersection.x, intersection.y, intersection.z];
@@ -67,7 +85,7 @@ export default function EditorCanvas() {
             <div className="environment">
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                     <color attach="background" args={["#b2fba5"]} />
-                    
+
                     <World />
 
                     <PointerTracker />
@@ -76,6 +94,8 @@ export default function EditorCanvas() {
                     <directionalLight position={[10, 10, 5]} />
 
                     {/* <TestCharacter /> */}
+
+                    <PlaySimulation /> //My understanding is that this will run on each frame
 
                     <OrbitControls
                         ref={controlRef}

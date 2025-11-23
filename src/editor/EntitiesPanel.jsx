@@ -17,44 +17,61 @@ function DraggableItem({ id, label, payload }) {
 export default function EntitiesPanel() {
     return (
         <>
-                <div className="library">
-                    <div className="lib-components">
-                        <h2>Agents</h2>
-                        <div className="lib-list">
-                            <DraggableItem
-                                id="lib_non_state_obj_1"
-                                label="Tree"
-                                payload={{ isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf" }}
-                            />
-                            <DraggableItem
-                                id="lib_non_state_obj_2"
-                                label="Bare Tree"
-                                payload={{ isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf" }}
-                            />
-                            <DraggableItem
-                                id="lib_non_state_obj_3"
-                                label="Grass"
-                                payload={{ isDecor: "true", assetRef: "nature/Grass_1_A_Color1.gltf" }}
-                            />
-                            <DraggableItem
-                                id="lib_non_state_obj_4"
-                                label="Bush"
-                                payload={{ isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf" }}
-                            />
-
-                            <DraggableItem
-                                id="lib_non_state_obj_5"
-                                label="Rock"
-                                payload={{ isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf" }}
-                            />
-                             <DraggableItem
-                                id="lib_agent_2"
-                                label="Lizard"
-                                payload={{ tag: "agent", assetRef: "lizard.glb", capabilities: ["Moveable"] }}
-                            />
-                        </div>
+            <div className="library">
+                <div className="lib-components">
+                    <h2>Agents</h2>
+                    <div className="lib-list">
+                        <DraggableItem
+                            id="lib_agent_1"
+                            label="Mage"
+                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                        />
+                        <DraggableItem
+                            id="lib_agent_2"
+                            label="Minion"
+                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                        />
+                        <DraggableItem
+                            id="lib_agent_3"
+                            label="Warrior"
+                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                        />
+                        <DraggableItem
+                            id="lib_agent_4"
+                            label="Rogue"
+                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Rogue.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                        />
+                    </div>
+                    <h2>Non State Objects</h2>
+                    <div className="lib-list">
+                        <DraggableItem
+                            id="lib_non_state_obj_1"
+                            label="Tree"
+                            payload={{ isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf" }}
+                        />
+                        <DraggableItem
+                            id="lib_non_state_obj_2"
+                            label="Bare Tree"
+                            payload={{ isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf" }}
+                        />
+                        <DraggableItem
+                            id="lib_non_state_obj_3"
+                            label="Grass"
+                            payload={{ isDecor: "true", assetRef: "nature/Grass_1_A_Color1.gltf" }}
+                        />
+                        <DraggableItem
+                            id="lib_non_state_obj_4"
+                            label="Bush"
+                            payload={{ isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf" }}
+                        />
+                        <DraggableItem
+                            id="lib_non_state_obj_5"
+                            label="Rock"
+                            payload={{ isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf" }}
+                        />
                     </div>
                 </div>
+            </div>
         </>
     )
 }

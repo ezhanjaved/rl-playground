@@ -66,11 +66,18 @@ const buildEntitiyFromPartial = (partial, id) => {
     let entity = {
         id: id,
         tag: partial.tag || 'generic',
+        name: partial.name || `Entity_${id}`,
         capabilities: type,
         position: partial.position || [0,0,0],
         assetRef: partial.assetRef,
+        animationRef: partial.animationRef || null,
         collider: partial.collider || { shape: 'capsule', r: 0.3, h: 1.2},
         actuator_type : partial.actuator_type || 'walker',
+        isDecor: partial.isDecor || false,
+    }
+
+    if (partial.tag === 'agent') {
+        entity['last_action'] = null;
     }
 
     if (actionSpace.length > 0) {
