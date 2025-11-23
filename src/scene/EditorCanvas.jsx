@@ -8,7 +8,6 @@ import World from '../scene/World.jsx';
 import { useSceneStore } from "../stores/useSceneStore";
 export let lastPointerWorldPos = [0, 0, 0];
 export let orbitControlsRef = null;
-import TestCharacter from "../components/TestCharacter.jsx";
 
 export default function EditorCanvas() {
 
