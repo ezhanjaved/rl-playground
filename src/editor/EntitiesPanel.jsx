@@ -24,22 +24,22 @@ export default function EntitiesPanel() {
                         <DraggableItem
                             id="lib_agent_1"
                             label="Mage"
-                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false" }}
                         />
                         <DraggableItem
                             id="lib_agent_2"
                             label="Minion"
-                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"} , capabilities: ["Moveable"], isDeor: "false" }}
                         />
                         <DraggableItem
                             id="lib_agent_3"
                             label="Warrior"
-                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false" }}
                         />
                         <DraggableItem
                             id="lib_agent_4"
                             label="Rogue"
-                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Rogue.glb", animationRef: "agents/skelton/Rig_Medium_MovementBasic.glb", capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Rogue", assetRef: "agents/skelton/Skeleton_Rogue.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false" }}
                         />
                     </div>
                     <h2>Non State Objects</h2>

@@ -77,7 +77,7 @@ const buildEntitiyFromPartial = (partial, id) => {
     }
 
     if (partial.tag === 'agent') {
-        entity['last_action'] = null;
+        entity['last_action'] = actionSpace.includes('idle') ? 'idle' : null;
     }
 
     if (actionSpace.length > 0) {

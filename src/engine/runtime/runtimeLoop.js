@@ -9,7 +9,7 @@ export default function runTimeloop(entities) {
     Object.values(entities).forEach(entity => {
         console.log("Running timeloop for entity:", entity.id); 
         if (entity.capabilities.includes("Moveable")) {
-            const observation_space = entity.observation_space;
+            // const observation_space = entity.observation_space;
             const action_space = entity.action_space;
             const action = randomController(action_space);
             const updatedPosition = moveAdapter(action, entity.position);

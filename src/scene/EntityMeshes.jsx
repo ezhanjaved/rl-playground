@@ -7,15 +7,28 @@ import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { orbitControlsRef } from "./EditorCanvas";
 import { SkeletonUtils } from "three-stdlib";
+import animationsMapper from "../engine/capabilities/animationFinder";
 
 function EntityRenderer({ entity }) {
 
     const { playing } = useRunTimeStore.getState();
 
     const modelLoaded = useGLTF(`/models/${entity.assetRef}`);
-    const modelAnimations = entity.animationRef ? useGLTF(`/models/${entity.animationRef}`) : null;
 
-    console.log("Entities in EntityRenderer:", Object.keys(useSceneStore.getState().entities).length);
+    const weaponLoaded = useGLTF(`/models/agents/skelton/Skeleton_Blade.gltf`)
+
+    const animationRefs = useMemo(() => {
+        if (!entity.animationRef) return [];
+        return typeof entity.animationRef === "object"
+            ? Object.values(entity.animationRef)
+            : [entity.animationRef];
+    }, [entity.animationRef]);
+
+    const animationGLTFs = animationRefs.map(ref => useGLTF(`/models/${ref}`));
+
+    const allAnimations = useMemo(
+        () => animationGLTFs.flatMap(g => g.animations || []),
+        [animationRefs]);
 
     const { clonedScene, size } = useMemo(() => {
 
@@ -28,12 +41,31 @@ function EntityRenderer({ entity }) {
         clone.position.sub(center);
         clone.position.y -= (size.y / 2) * -1;
 
-        return {clonedScene: clone, size };
+        let rightHandBone = null;
+        clone.traverse(obj => {
+            if (obj.isBone && obj.name === 'handr') {
+                rightHandBone = obj;
+            }
+        });
 
-    }, [modelLoaded, entity.assetRef]);
+        if (rightHandBone) {
+            const weapon = SkeletonUtils.clone(weaponLoaded.scene);
+            rightHandBone.add(weapon);
 
-    const actions = modelAnimations ? useAnimations(modelAnimations.animations, clonedScene) : null;
-    console.log("Loaded animations for entity: ", actions);
+            weapon.position.set(0.02, 0, 0);
+            weapon.rotation.set(0, Math.PI / 2, 0);
+            weapon.scale.set(1, 1, 1);
+        } else {
+            console.warn("Right-hand bone not found!");
+        }
+
+        return { clonedScene: clone, size };
+
+    }, [modelLoaded]);
+
+    console.log("Clone: ", clonedScene);
+
+    const actions = useAnimations(allAnimations, clonedScene);
 
     const setActiveEntity = useSceneStore(s => s.setActiveEntity);
     const setDragging = useSceneStore(s => s.setDragging);
@@ -50,36 +82,30 @@ function EntityRenderer({ entity }) {
     };
 
     const removeEntity = (e) => {
-        console.log("Removing entity:", entity.id);
         e.stopPropagation();
         if (!e.shiftKey) return;
         deleteEntity(entity.id);
-        console.log("Entities:", entity);
     }
 
     useFrame(() => {
         if (playing === false) {
-            console.log("Animation paused");
             return;
         }
 
-        if (entity.isDecor || !actions){
-            console.log("No animation to play");
+        if (entity.isDecor || !actions) {
             return;
-        } 
+        }
 
         const actionPerformed = entity.last_action; //MoveForward, TurnLeft, etc.
         const name = entity.name; //Mage, Lizard, etc.
-
-        console.log(`Animating entity ${name} with action ${actionPerformed}`);
         //We will play the animation based on last_action
         animationLoop(name, actionPerformed, actions);
     })
 
     function animationLoop(name, last_action, actions) {
-        console.log(`Animating ${name} with action ${last_action}`);
-        if (actions && actions["actions"]["Walking_B"]) {
-            actions["actions"]["Walking_B"].play();
+        const animationName = animationsMapper(name, last_action) || null;
+        if (actions && animationName) {
+            actions["actions"][animationName].play()
         }
     }
 
