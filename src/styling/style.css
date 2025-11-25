@@ -88,15 +88,37 @@ body {
   flex-direction: column;
   margin: 20px 0px;
 }
-.library {
+.library_main {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 280px;
   padding: 0 8px;
+  margin-top: 20px;
+  background-color: white;
+  color: black;
 }
-.library h3 {
+.library_main h2 {
   margin-bottom: 14px;
   margin-left: 6px;
+}
+.lib-single-element {
+  width: 100px;          
+  height: 100px;        
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  /* margin: 5px; */
+  cursor: grab;
+  background: #f9f9f9;
+}
+
+.lib-item-image {
+  width: 100%;            
+  height: 100%;           
+  object-fit: contain;   
+  margin-left: 12px;
 }
 
 .section {
@@ -135,6 +157,7 @@ body {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, 1fr);
+  z-index: 100;
 }
 
 .gridItem {

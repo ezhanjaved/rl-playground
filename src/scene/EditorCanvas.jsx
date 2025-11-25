@@ -83,7 +83,7 @@ export default function EditorCanvas() {
     return (
         <>
             <div className="environment">
-                <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+                <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", height: "600px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
                     <color attach="background" args={["#b2fba5"]} />
 
                     <World />
@@ -94,8 +94,7 @@ export default function EditorCanvas() {
                     <directionalLight position={[10, 10, 5]} />
 
                     {/* <TestCharacter /> */}
-
-                    <PlaySimulation /> //My understanding is that this will run on each frame
+                    <PlaySimulation /> {/* //My understanding is that this will run on each frame */}
 
                     <OrbitControls
                         ref={controlRef}

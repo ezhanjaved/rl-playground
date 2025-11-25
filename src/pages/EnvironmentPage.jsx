@@ -5,6 +5,9 @@ import "../styling/index.css";
 import { useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 import { lastPointerWorldPos } from "../scene/EditorCanvas";
+import Library from "../components/library";
+import TrainingENV from "../components/trainingENV";
+import Sidebar from "../components/sidebar";
 
 export default function EnvironmentPage() {
     const addEntity = useSceneStore(s => s.addEntity);
@@ -26,12 +29,15 @@ export default function EnvironmentPage() {
 
     return (
         <>
-            <div className="page-env">
+        
                 <DndContext onDragEnd={onDragEnd}>
-                    <EntitiesPanel />
+                    {/* <EntitiesPanel /> */}                  
+                    <Library/>
                     <EditorCanvas />
+                    {/* <Sidebar/>
+                    <TrainingENV/> */}
                 </DndContext>
-            </div>
+
         </>
     )
 }
