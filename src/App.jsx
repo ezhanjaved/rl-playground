@@ -10,16 +10,16 @@ import EnvironmentPage from "./pages/EnvironmentPage";
 
 function App() {
 return (
-    <div className="container">
-        <Header/>
-        {/* <EnvironmentPage /> */}
-        <Sidebar/>
-        <TrainingENV/>
-        <Control/>
-    </div>
+    // <div className="container">
+    //     <Header/>
+    //     {/* <EnvironmentPage /> */}
+    //     <Sidebar/>
+    //     <TrainingENV/>
+    //     <Control/>
+    // </div>
     // <Onboarding/>
     // <Signup/>
-    // <EnvironmentPage />
+    <EnvironmentPage />
 )
 }
 

@@ -7,7 +7,7 @@ function DraggableItem({ id, label, payload }) {
     const { listeners, setNodeRef, attributes, transform } = useDraggable({ id, data: payload });
     const style = { transform: CSS.Translate.toString(transform), cursor: 'grab' }
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="lib-single-element">
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
             <span>{label}</span>
             <div className="pill">Drag Me</div>
         </div>
@@ -17,10 +17,10 @@ function DraggableItem({ id, label, payload }) {
 export default function EntitiesPanel() {
     return (
         <>
-            <div className="library">
-                <div className="lib-components">
+            <div className="library-x">
+                <div className="lib-components-x">
                     <h2>Agents</h2>
-                    <div className="lib-list">
+                    <div className="lib-list-x">
                         <DraggableItem
                             id="lib_agent_1"
                             label="Mage"
@@ -43,7 +43,7 @@ export default function EntitiesPanel() {
                         />
                     </div>
                     <h2>Non State Objects</h2>
-                    <div className="lib-list">
+                    <div className="lib-list-x">
                         <DraggableItem
                             id="lib_non_state_obj_1"
                             label="Tree"

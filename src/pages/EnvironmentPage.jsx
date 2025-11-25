@@ -20,24 +20,24 @@ export default function EnvironmentPage() {
     const onDragEnd = (event) => {
         console.log("Drag End", event);
         const data = event.active?.data?.current;
-        const pos = lastPointerWorldPos ?? [0,0,0];
+        const pos = lastPointerWorldPos ?? [0, 0, 0];
 
         if (data) {
-            addEntity({...data, position: pos});
+            addEntity({ ...data, position: pos });
         }
     }
 
     return (
         <>
-        
+            <div className="page-env">
                 <DndContext onDragEnd={onDragEnd}>
-                    {/* <EntitiesPanel /> */}                  
-                    <Library/>
+                    <EntitiesPanel />
+                    {/* <Library/> */}
                     <EditorCanvas />
                     {/* <Sidebar/>
                     <TrainingENV/> */}
                 </DndContext>
-
+            </div>
         </>
     )
 }

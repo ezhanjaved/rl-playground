@@ -2,13 +2,13 @@
     flex: 1;
 }
 
-.library {
+.library-x {
     width: 20%;
     background: black;
     color: white;
 }
 
-.lib-components {
+.lib-components-x{
     flex-direction: column;
     gap: 20px;
 }
