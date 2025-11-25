@@ -1,16 +1,39 @@
 // move/rotate/interact/attack adapters
-export default function moveAdapter(action, position) {
-    const stepSize = 0.010;
-    switch(action) {
+export default function moveAdapter(action, position, rotation) {
+    let stepSize = 0.010;
+    let turnSpeed = 0.05;
+
+    let [x, y, z] = position;
+    let [rx, ry, rz] = rotation;
+
+    const dirX = Math.sin(ry); //sin(0) is 0 //sin(90) is 1
+    const dirZ = Math.cos(ry); //cos(0) is 1 //cos(90) is 0
+
+    switch (action) {
         case 'move_up':
-            return [position[0], position[1], position[2] - stepSize]
+            x += dirX * stepSize;
+            z += dirZ * stepSize;
+            break;
         case 'move_down':
-            return [position[0], position[1], position[2] + stepSize]
+            x -= dirX * stepSize;
+            z -= dirZ * stepSize;
+            break;
         case 'move_left':
-            return [position[0] - stepSize, position[1], position[2]]
+            ry += turnSpeed;
+            x += dirX * stepSize;
+            z += dirZ * stepSize;
+            break;
         case 'move_right':
-            return [position[0] + stepSize, position[1], position[2]]
+            ry -= turnSpeed;
+            x += dirX * stepSize;
+            z += dirZ * stepSize;
+            break;
         case 'idle':
-            return position;
+            break;
+        default:
+            break;
     }
+
+    return { updatedPosition: [x, y, z], updatedRotation: [rx, ry, rz] };
+
 }

@@ -63,8 +63,6 @@ function EntityRenderer({ entity }) {
 
     }, [modelLoaded]);
 
-    console.log("Clone: ", clonedScene);
-
     const actions = useAnimations(allAnimations, clonedScene);
 
     const setActiveEntity = useSceneStore(s => s.setActiveEntity);
@@ -105,12 +103,12 @@ function EntityRenderer({ entity }) {
     function animationLoop(name, last_action, actions) {
         const animationName = animationsMapper(name, last_action) || null;
         if (actions && animationName) {
-            actions["actions"][animationName].play()
+            actions["actions"][animationName].play();
         }
     }
 
     return (
-        <group onDoubleClick={(e) => removeEntity(e)} position={entity.position}>
+        <group onDoubleClick={(e) => removeEntity(e)} rotation={entity.rotation} position={entity.position}>
             <primitive object={clonedScene} onPointerDown={onPointerDown} />
             <mesh visible={false} position={[0, 1.3, 0]} onPointerDown={onPointerDown}>
                 <boxGeometry args={[size.x, size.y, size.z]} />
@@ -120,12 +118,10 @@ function EntityRenderer({ entity }) {
     );
 }
 
-export default function EntityMeshes({ entities }) {
+export default function EntityMeshes({ entity }) {
     return (
         <>
-            {Object.values(entities).map(entity => (
-                <EntityRenderer key={entity.id} entity={entity} />
-            ))}
+            <EntityRenderer key={entity.id} entity={entity} />
         </>
     );
 }

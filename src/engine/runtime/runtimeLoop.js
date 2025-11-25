@@ -12,9 +12,9 @@ export default function runTimeloop(entities) {
             // const observation_space = entity.observation_space;
             const action_space = entity.action_space;
             const action = randomController(action_space);
-            const updatedPosition = moveAdapter(action, entity.position);
+            const {updatedPosition, updatedRotation} = moveAdapter(action, entity.position, entity.rotation);
             //Update entity's last_action
-            updateEntity(entity.id, { last_action: action, position: updatedPosition });
+            updateEntity(entity.id, { last_action: action, position: updatedPosition, rotation: updatedRotation });
             console.log(`Agent ${entity.name} will perform action:`, action, "which is choosen randomly!");
         }
     })

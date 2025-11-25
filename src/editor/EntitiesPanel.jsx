@@ -24,22 +24,22 @@ export default function EntitiesPanel() {
                         <DraggableItem
                             id="lib_agent_1"
                             label="Mage"
-                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false", collider: {shape: "capsule", h: 2, r: 0.30} }}
                         />
                         <DraggableItem
                             id="lib_agent_2"
                             label="Minion"
-                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"} , capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"} , capabilities: ["Moveable"], isDeor: "false", collider: {shape: "capsule", h: 2, r: 0.30} }}
                         />
                         <DraggableItem
                             id="lib_agent_3"
                             label="Warrior"
-                            payload={{ tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false", collider: {shape: "capsule", h: 2, r: 0.30} }}
                         />
                         <DraggableItem
                             id="lib_agent_4"
                             label="Rogue"
-                            payload={{ tag: "agent", name: "Rogue", assetRef: "agents/skelton/Skeleton_Rogue.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false" }}
+                            payload={{ tag: "agent", name: "Rogue", assetRef: "agents/skelton/Skeleton_Rogue.glb", animationRef: {0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb"}, capabilities: ["Moveable"], isDeor: "false", collider: {shape: "capsule", h: 2, r: 0.30} }}
                         />
                     </div>
                     <h2>Non State Objects</h2>
@@ -47,27 +47,27 @@ export default function EntitiesPanel() {
                         <DraggableItem
                             id="lib_non_state_obj_1"
                             label="Tree"
-                            payload={{ isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf" }}
+                            payload={{ isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: {shape: "capsule", h: 3, r: 0.6} }}
                         />
                         <DraggableItem
                             id="lib_non_state_obj_2"
                             label="Bare Tree"
-                            payload={{ isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf" }}
+                            payload={{ isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf", collider: {shape: "capsule", h: 3, r: 0.8} }}
                         />
                         <DraggableItem
                             id="lib_non_state_obj_3"
                             label="Grass"
-                            payload={{ isDecor: "true", assetRef: "nature/Grass_1_A_Color1.gltf" }}
+                            payload={{ isDecor: "true", assetRef: "nature/Grass_1_A_Color1.gltf", collider: {shape: "capsule", h: 1, r: 0.1}  }}
                         />
                         <DraggableItem
                             id="lib_non_state_obj_4"
                             label="Bush"
-                            payload={{ isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf" }}
+                            payload={{ isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf", collider: {shape: "capsule", h: 1, r: 0.1}}}
                         />
                         <DraggableItem
                             id="lib_non_state_obj_5"
                             label="Rock"
-                            payload={{ isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf" }}
+                            payload={{ isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf", collider: {shape: "capsule", h: 2, r: 0.4} }}
                         />
                     </div>
                 </div>

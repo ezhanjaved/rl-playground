@@ -93,8 +93,6 @@ export default function EditorCanvas() {
                     <ambientLight intensity={0.8} />
                     <directionalLight position={[10, 10, 5]} />
 
-                    {/* <TestCharacter /> */}
-
                     <PlaySimulation /> //My understanding is that this will run on each frame
 
                     <OrbitControls

@@ -38,18 +38,20 @@ export const useSceneStore = create((set, get) => ({
         addEntity(
             {
                 tag: "non-state",
-                assetRef: "nature/Tree_2_A_Color1.gltf",
+                assetRef: "nature/Tree_4_A_Color1.gltf",
                 isDecor: "true",
                 position: [2,0,2],
+                collider: {shape: "capsule", h: 3, r: 0.8}
             }   
         ),
 
         addEntity(
             {
                 tag: "non-state",
-                assetRef: "nature/Tree_2_A_Color1.gltf",
+                assetRef: "nature/Tree_4_A_Color1.gltf",
                 isDecor: "true",
                 position: [6,0,2],
+                collider: {shape: "capsule", h: 3, r: 0.8}
             }   
         )
 
@@ -69,9 +71,10 @@ const buildEntitiyFromPartial = (partial, id) => {
         name: partial.name || `Entity_${id}`,
         capabilities: type,
         position: partial.position || [0,0,0],
+        rotation: partial.rotation || [0,0,0],
         assetRef: partial.assetRef,
         animationRef: partial.animationRef || null,
-        collider: partial.collider || { shape: 'capsule', r: 0.3, h: 1.2},
+        collider: partial.collider || null,
         actuator_type : partial.actuator_type || 'walker',
         isDecor: partial.isDecor || false,
     }
