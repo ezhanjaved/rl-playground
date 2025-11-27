@@ -8,6 +8,7 @@ import { lastPointerWorldPos } from "../scene/EditorCanvas";
 import Library from "../components/library";
 import TrainingENV from "../components/trainingENV";
 import Sidebar from "../components/sidebar";
+import Header from "../components/header";
 
 export default function EnvironmentPage() {
     const addEntity = useSceneStore(s => s.addEntity);
@@ -29,13 +30,15 @@ export default function EnvironmentPage() {
 
     return (
         <>
-            <div className="page-env">
+            <div className="container">
+                <Header/>
                 <DndContext onDragEnd={onDragEnd}>
-                    <EntitiesPanel />
+                    {/* <Sidebar /> */}
+                    {/* <EntitiesPanel/> */}
                     {/* <Library/> */}
-                    <EditorCanvas />
-                    {/* <Sidebar/>
-                    <TrainingENV/> */}
+                    {/* <EditorCanvas /> */}
+                    <Sidebar/>
+                    <TrainingENV/>
                 </DndContext>
             </div>
         </>

@@ -4,13 +4,21 @@ import { useDraggable } from "@dnd-kit/core";
 import { useState } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
+import lib2 from '../assets/lib2.png';
+import lib3 from '../assets/lib3.png';
+import lib4 from '../assets/lib4.png';
+import lib5 from '../assets/lib5.png';
+import agent1 from '../assets/agent1.png';
+import agent2 from '../assets/agent2.png';
+import agent3 from '../assets/agent3.png';
+import agent4 from '../assets/agent4.png';
 
-function DraggableItem({ id, payload }) {
+function DraggableItem({ id, payload, imageSrc }) {
     const { listeners, setNodeRef, attributes, transform } = useDraggable({ id, data: payload });
     const style = { transform: CSS.Translate.toString(transform), cursor: 'grab' }
     return (
         <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="lib-single-element">
-            <img alt={id} className="lib-item-image"></img>
+            <img src={imageSrc} alt={id} className="lib-item-image"></img>
         </div>
     )
 }
@@ -35,7 +43,7 @@ const Section = ({ title, items }) => {
             {open && (
                 <div className="gridWrapper">
                     {items.map((item) => (
-                        <DraggableItem key={item.id} id={item.id} payload={item.payload} />
+                        <DraggableItem key={item.id} id={item.id}  imageSrc={item.image} payload={item.payload}  />
                     ))}
                 </div>
             )}
@@ -49,31 +57,35 @@ export default function EntitiesPanel() {
         {
             id: "lib_agent_1",
             label: "Mage",
+            image: agent1,
             payload: {tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 }},
         },
         {
             id: "lib_agent_2",
             label: "Minion",
-            payload: { tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb" },
+            image: agent2,
+            payload: { tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb",animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
         {
             id: "lib_agent_3",
             label: "Warrior",
-            payload: { tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb" },
+            image: agent3,
+            payload: { tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb",animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
         {
             id: "lib_agent_4",
             label:"Rogue",
-            payload: { tag: "agent", name: "Rogue", assetRef: "agents/skelton/Skeleton_Rogue.glb" },
+            image: agent4,
+            payload: { tag: "agent", name: "Rogue", assetRef: "agents/skelton/Skeleton_Rogue.glb",animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
     ];
 
     const nonStateObjects = [
-        { id: "lib_non_state_obj_1", payload: { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
-        { id: "lib_non_state_obj_2", payload: { isDecor: "true" } },
-        { id: "lib_non_state_obj_3", payload: { isDecor: "true" } },
-        { id: "lib_non_state_obj_4", payload: { isDecor: "true" } },
-        { id: "lib_non_state_obj_5", payload: { isDecor: "true" } },
+        { id: "lib_non_state_obj_1",image: lib2, payload: { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_2",image: lib2 , payload: { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_3",image: lib3 , payload: { isDecor: "true", assetRef: "nature/Tree_3_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_4",image: lib4 , payload: { isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_5",image: lib5 , payload: { isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
     ];
 
     return (

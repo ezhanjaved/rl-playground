@@ -1,3 +1,4 @@
+import EntitiesPanel from "../editor/EntitiesPanel";
 import "../styling/style.css"
 import Library from './library'
 import { IoHomeOutline } from "react-icons/io5";
@@ -16,7 +17,7 @@ const Sidebar = () => {
         <div className="homeIcon">
         <span className='icon'><IoHomeOutline /></span>
         </div>
-        <Library/>
+        <EntitiesPanel />
       </div>
     </aside>
   )

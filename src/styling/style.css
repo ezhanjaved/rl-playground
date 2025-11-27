@@ -15,7 +15,7 @@ body {
   grid-template-rows: 80px 1fr;
   grid-template-areas:
     "sidebar header header"
-    "sidebar main control";
+    "sidebar main main";
   height: 100vh;
 }
 .header {
@@ -115,10 +115,10 @@ body {
 }
 
 .lib-item-image {
-  width: 100%;            
-  height: 100%;           
+  width: 90%;            
+  height: 90%;           
   object-fit: contain;   
-  margin-left: 12px;
+  /* margin-left: 12px; */
 }
 
 .section {
@@ -167,7 +167,7 @@ body {
   /* background: url("data:image/svg+xml;utf8,<svg width='100' height='100' xmlns='http://www.w3.org/2000/svg'><circle cx='50' cy='50' r='20' fill='black'/></svg>") center no-repeat; */
 }
 .trainingEnvContainer {
-  grid: main;
+  grid-area: main;
   padding: 20px;
   background-color: white;
 }

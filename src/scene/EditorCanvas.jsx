@@ -83,7 +83,7 @@ export default function EditorCanvas() {
     return (
         <>
             <div className="environment">
-                <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
+                <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", height:"600px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
                     <color attach="background" args={["#b2fba5"]} />
 
                     <World />
