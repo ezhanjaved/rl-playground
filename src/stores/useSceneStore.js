@@ -22,6 +22,7 @@ export const useSceneStore = create((set, get) => ({
     updateEntity: (id, updated) => set (state => {
         const existing = state.entities[id] || {}; //We used id to get entity details and saved it in existing
         const entity = {...existing, ...updated}; //We are merging existing entity with updated details
+        console.log("Update: " + updated);
         return {entities: {...state.entities, [id]: entity}}; //Here we are updating the entities object with new entity details 
     }),
 
@@ -29,6 +30,11 @@ export const useSceneStore = create((set, get) => ({
         const newEntities = {...state.entities}; //Create a copy of existing entities
         delete newEntities[id]; //Delete the entity with given id from the copied object
         return {entities: newEntities}; //Update the state with the new entities object
+    }),
+
+    fetchEntityData: (id) => get (state => {
+        console.log("Data: " + state.entities[id].assetRef);
+        return state.entities[id].assetRef;
     }),
 
     initializeScene: () => {
@@ -77,6 +83,7 @@ const buildEntitiyFromPartial = (partial, id) => {
         collider: partial.collider || null,
         actuator_type : partial.actuator_type || 'walker',
         isDecor: partial.isDecor || false,
+        isPickable: partial.isPickable || false,
     }
 
     if (partial.tag === 'agent') {

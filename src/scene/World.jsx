@@ -15,15 +15,10 @@ export default function World() {
                     <CuboidCollider args={[20, 0.1, 20]} position={[0, -0.1, 0]} />
                 </RigidBody>
 
-                {/* <mesh position={[0, -0.1, 0]}>
-                    <boxGeometry args={[20, 0.2, 20]} />
-                    <meshBasicMaterial color={"#121"}  />
-                </mesh> */}
-
                 {Object.values(entities).map(entity => (
                     <ColliderBuilder key={entity.id} entity={entity}>
                         <EntityMeshes entity={entity} />
-                        <ColliderDebug entity={entity} />
+                        {/* <ColliderDebug entity={entity} /> */}
                     </ColliderBuilder>
                 ))}
 

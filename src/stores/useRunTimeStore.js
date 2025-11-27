@@ -2,5 +2,5 @@
 import {create} from 'zustand';
 
 export const useRunTimeStore = create((set, get) => ({
-     playing: false,
+     playing: true,
 }));

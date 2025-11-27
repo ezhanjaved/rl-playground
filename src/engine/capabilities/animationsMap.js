@@ -3,7 +3,9 @@ const baseAnimations = {
     move_down: 'Walking_A',
     move_left: 'Walking_B',
     move_right: 'Walking_B',
-    idle: 'Idle_A'
+    idle: 'Idle_A',
+    pick: "PickUp",
+    drop: "Throw"
 };
 
 const animationMap = {

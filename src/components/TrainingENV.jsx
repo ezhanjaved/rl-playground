@@ -1,4 +1,3 @@
-import React from "react";
 import "../styling/style.css";
 import EditorCanvas from "../scene/EditorCanvas";
 

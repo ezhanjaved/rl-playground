@@ -10,8 +10,18 @@ export const CAPABILITY_SCHEMAS = {
         observations : ['last_action', 'dist_to_object'],
     },
 
+    Holder : {
+        actions: ['pick', 'drop'],
+        observations: ['last_action', 'dist_to_object'],
+        state: {holding: 'false', heldItemId: 'null', lastPickSuccess: 'null'},
+    },
+
+    Pickable: {
+        state : {equipped: 'false', attachedTo: 'null'}
+    },
+
     Toggleble : {
-        state: {on: 'bool'}
+        state: {on: 'false'}
     }
 };
 

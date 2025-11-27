@@ -24,7 +24,6 @@ export default function EditorCanvas() {
         }
         useFrame(() => {
             if (playing) {
-                console.log("Simulation is playing...");
                 const { entities } = useSceneStore.getState();
                 runTimeloop(entities);
             }
