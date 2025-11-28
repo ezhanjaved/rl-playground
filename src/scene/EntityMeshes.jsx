@@ -13,14 +13,6 @@ function EntityRenderer({ entity }) {
 
     const { playing } = useRunTimeStore.getState();
 
-    const fetchEntityData = useSceneStore(s => s.fetchEntityData);
-
-    const heldItemId = entity.state_space?.heldItemId || null;
-    console.log("Held Item ID: " + heldItemId);
-    const heldItemAsset = heldItemId ? fetchEntityData(heldItemId) : null;
-    console.log("Held Item Asset: " + heldItemAsset);
-    const heldItemGLTF = heldItemAsset ? useGLTF(`/models/agents/skelton/Skeleton_Blade.gltf`) : null;
-
     const modelLoaded = useGLTF(`/models/${entity.assetRef}`);
 
     const handRef = useRef(null);
@@ -38,7 +30,7 @@ function EntityRenderer({ entity }) {
         () => animationGLTFs.flatMap(g => g.animations || []),
         [animationRefs]);
 
-    const { clonedScene, size } = useMemo(() => {
+    const { clonedScene, size, handBone } = useMemo(() => {
 
         const clone = SkeletonUtils.clone(modelLoaded.scene);
 
@@ -49,16 +41,30 @@ function EntityRenderer({ entity }) {
         clone.position.sub(center);
         clone.position.y -= (size.y / 2) * -1;
 
+        let foundHand = null;
+
         clone.traverse(obj => {
             if (obj.isBone && obj.name === 'handr') {
                 console.log("Hand Bone Found!");
-                handRef.current = obj;
+                foundHand = obj;
             }
         });
 
-        return { clonedScene: clone, size };
+        return { clonedScene: clone, size, handBone: foundHand };
 
     }, [modelLoaded]);
+
+    useEffect(() => {
+        handRef.current = handBone;
+    }, [handBone])
+
+    const heldItemAssetRef = entity.state_space?.heldItemAssetRef;
+    console.log("What The Fuck: " + heldItemAssetRef);
+
+    const heldItemGLTF = useMemo(() => {
+        if (!heldItemAssetRef || heldItemAssetRef === "null") return null;
+        return useGLTF(`/models/${heldItemAssetRef}`);
+    }, [heldItemAssetRef]);
 
     useEffect(() => {
 
@@ -67,22 +73,41 @@ function EntityRenderer({ entity }) {
             return; //Entity does not have a hand
         }
 
-        if (!entity.state_space?.holding || !entity.state_space?.heldItemId) {
+        if (!entity.state_space?.holding || !entity.state_space?.heldItemAssetRef) {
             console.log(`${entity?.name} is not holding anything!`);
             return; //Agent isn't holding anything
         }
 
-        const pickedObjectLoad = SkeletonUtils.clone(heldItemGLTF.scene);
+        if (heldItemGLTF) {
+            const pickedObjectLoad = SkeletonUtils.clone(heldItemGLTF.scene);
 
-        handRef.current.add(pickedObjectLoad);
+            handRef.current.children.forEach(child => {
+                handRef.current.remove(child);
+            });
 
-        pickedObjectLoad.position.set(0.02, 0, 0);
-        pickedObjectLoad.rotation.set(0, Math.PI / 2, 0);   
-        pickedObjectLoad.scale.set(1, 1, 1);
+            handRef.current.add(pickedObjectLoad);
 
-        console.log("Obj is Picked!");
+            pickedObjectLoad.position.set(0.02, 0, 0);
+            pickedObjectLoad.rotation.set(0, Math.PI / 2, 0);
+            pickedObjectLoad.scale.set(1, 1, 1);
+        }
 
-    }, [entity.state_space?.holding, entity.state_space?.heldItemId, clonedScene])
+    }, [entity.state_space?.holding, entity.state_space?.heldItemAssetRef, entity.state_space?.lastPickSuccess])
+
+    useEffect(() => {
+        if (!handRef.current) return;
+
+        const isHolding = entity.state_space?.holding;
+
+        if (!isHolding) {
+            handRef.current.children.forEach(child => {
+                handRef.current.remove(child);
+            });
+        }
+    }, [
+        entity.state_space?.holding,
+        entity.state_space?.heldItemAssetRef
+    ]);
 
     const actions = useAnimations(allAnimations, clonedScene);
 

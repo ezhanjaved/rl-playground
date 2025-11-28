@@ -58,19 +58,19 @@ export default function EntitiesPanel() {
             id: "lib_agent_1",
             label: "Mage",
             image: agent1,
-            payload: {tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 }},
+            payload: {tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 }},
         },
         {
             id: "lib_agent_2",
             label: "Minion",
             image: agent2,
-            payload: { tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
+            payload: { tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
         {
             id: "lib_agent_3",
             label: "Warrior",
             image: agent3,
-            payload: { tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
+            payload: { tag: "agent", name: "Warrior", assetRef: "agents/skelton/Skeleton_Warrior.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
         {
             id: "lib_agent_4",

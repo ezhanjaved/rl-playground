@@ -13,7 +13,7 @@ export const CAPABILITY_SCHEMAS = {
     Holder : {
         actions: ['pick', 'drop'],
         observations: ['last_action', 'dist_to_object'],
-        state: {holding: 'false', heldItemId: 'null', lastPickSuccess: 'null'},
+        state: {holding: 'false', heldItemAssetRef: 'null', lastPickSuccess: 'null'},
     },
 
     Pickable: {

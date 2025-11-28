@@ -1,7 +1,7 @@
 // OBS -> controller -> actuator -> physics -> BG
 import { useSceneStore } from "../../stores/useSceneStore";
-import moveAdapter from "./MoveableActuators.js";
-import { holderAdapter } from "./HolderActuators.js";
+import moveAdapter from "./actuators/MoveableActuators.js";
+import { holderAdapter } from "./actuators/HolderActuators.js";
 import randomController from "./controllers/randomController.js";
 import { CapabilityMatcher } from "../capabilities/capabilitiesMatcher.js";
 
@@ -26,7 +26,7 @@ export default function runTimeloop(entities) {
                 moveableWorker(action, entity, updateEntity)
                 break;
             case "Holder":
-                holderWorker(action, entity, updateEntity, entities)
+                holderWorker(action, entity)
                 break;
             case "Interactable":
                 break;
@@ -43,6 +43,6 @@ function moveableWorker(action, entity, updateEntity) {
     console.log(`Agent ${entity.name} will perform action:`, action, "which is choosen randomly!");
 }
 
-function holderWorker(action, entity, entities) {
-    holderAdapter(action, entity, entities) //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered   
+function holderWorker(action, entity) {
+    holderAdapter(action, entity) //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered   
 }

@@ -1,10 +1,12 @@
 // We will maintain state of Entities, Assignments, Physics Config here
 import { create } from "zustand";
 import { addCapabilitySchemas } from "../engine/capabilities/registry";
+import { devtools } from "zustand/middleware";
 
 export const useSceneStore = create((set, get) => ({
     entities: {},
     assignments: {},
+    models: {},
     physics: {gravity: [0, -9.81, 0], timeStep: 1/60, bounds: {xz:50}, seed: 1234},
     activeEntity : null,
     isDragging: false,
@@ -22,7 +24,6 @@ export const useSceneStore = create((set, get) => ({
     updateEntity: (id, updated) => set (state => {
         const existing = state.entities[id] || {}; //We used id to get entity details and saved it in existing
         const entity = {...existing, ...updated}; //We are merging existing entity with updated details
-        console.log("Update: " + updated);
         return {entities: {...state.entities, [id]: entity}}; //Here we are updating the entities object with new entity details 
     }),
 
@@ -32,9 +33,8 @@ export const useSceneStore = create((set, get) => ({
         return {entities: newEntities}; //Update the state with the new entities object
     }),
 
-    fetchEntityData: (id) => get (state => {
-        console.log("Data: " + state.entities[id].assetRef);
-        return state.entities[id].assetRef;
+    addModels: (id, modelGLTF) => set (state => {
+       return {models : {...state.models, [id]: modelGLTF }}
     }),
 
     initializeScene: () => {
