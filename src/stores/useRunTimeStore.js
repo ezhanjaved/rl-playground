@@ -3,4 +3,5 @@ import {create} from 'zustand';
 
 export const useRunTimeStore = create((set, get) => ({
      playing: false,
+     togglePlaying: () => set({playing: !get().playing}),
 }));

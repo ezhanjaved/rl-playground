@@ -3,8 +3,8 @@ import "../styling/App.css"
 import { Canvas, useThree, useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 import { OrbitControls, Grid } from "@react-three/drei"
-import React, { use } from "react";
 import World from '../scene/World.jsx';
+import React from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore.js";
 import runTimeloop from "../engine/runtime/runtimeLoop.js";
@@ -17,17 +17,14 @@ export default function EditorCanvas() {
     orbitControlsRef = controlRef;
 
     function PlaySimulation() {
-        const { playing } = useRunTimeStore.getState();
-        if (!playing) {
-            console.log("Simulation has not been said to play yet.");
-            return null;
-        }
+    
         useFrame(() => {
-            if (playing) {
-                const { entities } = useSceneStore.getState();
-                runTimeloop(entities);
-            }
+            const playing = useRunTimeStore.getState().playing; // dynamic read every frame
+            if (!playing) return;
+            const { entities } = useSceneStore.getState();
+            runTimeloop(entities);
         });
+
         return null;
     }
 
@@ -82,15 +79,15 @@ export default function EditorCanvas() {
     return (
         <>
             <div className="environment">
-                <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", height:"600px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
+                <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", height: "600px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
                     <color attach="background" args={["#b2fba5"]} />
 
                     <World />
 
                     <PointerTracker />
 
-                    <ambientLight intensity={0.8} />
-                    <directionalLight position={[10, 10, 5]} />
+                    <ambientLight intensity={1.0} />
+                    <directionalLight position={[15, 10, 5]} />
 
                     {/* <TestCharacter /> */}
                     <PlaySimulation /> {/* //My understanding is that this will run on each frame */}

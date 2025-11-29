@@ -11,9 +11,10 @@ import animationsMapper from "../engine/capabilities/animationFinder";
 
 function EntityRenderer({ entity }) {
 
-    const { playing } = useRunTimeStore.getState();
-
     const modelLoaded = useGLTF(`/models/${entity.assetRef}`);
+
+    const playing = useRunTimeStore((state) => state.playing);
+
 
     const handRef = useRef(null);
 
@@ -58,13 +59,11 @@ function EntityRenderer({ entity }) {
         handRef.current = handBone;
     }, [handBone])
 
-    const heldItemAssetRef = entity.state_space?.heldItemAssetRef;
-    console.log("What The Fuck: " + heldItemAssetRef);
-
-    const heldItemGLTF = useMemo(() => {
-        if (!heldItemAssetRef || heldItemAssetRef === "null") return null;
-        return useGLTF(`/models/${heldItemAssetRef}`);
-    }, [heldItemAssetRef]);
+    const heldItemAssetRef = entity.state_space?.heldItemAssetRef || null;
+    let heldItemGLTF = null;
+    if (heldItemAssetRef) {
+        heldItemGLTF = useGLTF(`/models/${heldItemAssetRef}`);
+    }
 
     useEffect(() => {
 
@@ -73,17 +72,17 @@ function EntityRenderer({ entity }) {
             return; //Entity does not have a hand
         }
 
-        if (!entity.state_space?.holding || !entity.state_space?.heldItemAssetRef) {
+        handRef.current.children.forEach(child => {
+            handRef.current.remove(child);
+        });
+
+        if (!entity.state_space?.holding || !heldItemGLTF.scene) {
             console.log(`${entity?.name} is not holding anything!`);
             return; //Agent isn't holding anything
         }
 
-        if (heldItemGLTF) {
+        if (heldItemGLTF && entity.state_space?.holding) {
             const pickedObjectLoad = SkeletonUtils.clone(heldItemGLTF.scene);
-
-            handRef.current.children.forEach(child => {
-                handRef.current.remove(child);
-            });
 
             handRef.current.add(pickedObjectLoad);
 
@@ -92,7 +91,7 @@ function EntityRenderer({ entity }) {
             pickedObjectLoad.scale.set(1, 1, 1);
         }
 
-    }, [entity.state_space?.holding, entity.state_space?.heldItemAssetRef, entity.state_space?.lastPickSuccess])
+    }, [entity.state_space?.holding, heldItemAssetRef, heldItemGLTF, handBone])
 
     useEffect(() => {
         if (!handRef.current) return;
@@ -100,10 +99,12 @@ function EntityRenderer({ entity }) {
         const isHolding = entity.state_space?.holding;
 
         if (!isHolding) {
+            console.log("We are removing OBJ from hand!");
             handRef.current.children.forEach(child => {
                 handRef.current.remove(child);
             });
         }
+
     }, [
         entity.state_space?.holding,
         entity.state_space?.heldItemAssetRef
@@ -132,7 +133,7 @@ function EntityRenderer({ entity }) {
     }
 
     useFrame(() => {
-        if (playing === false) {
+        if (!playing) {
             return;
         }
 
@@ -143,13 +144,23 @@ function EntityRenderer({ entity }) {
         const actionPerformed = entity.last_action; //MoveForward, TurnLeft, etc.
         const name = entity.name; //Mage, Lizard, etc.
         //We will play the animation based on last_action
-        animationLoop(name, actionPerformed, actions);
+        animationLoop(name, actionPerformed, actions, playing);
     })
 
-    function animationLoop(name, last_action, actions) {
+    useEffect(() => {
+        if (!actions) return;
+
+        if (!playing) {
+            Object.values(actions.actions).forEach(action => action.stop());
+        }
+    }, [playing, actions]);
+
+    function animationLoop(name, last_action, actions, playing) {
         const animationName = animationsMapper(name, last_action) || null;
-        if (actions && animationName) {
+        if (actions && animationName && playing) {
             actions["actions"][animationName].play();
+        } else {
+            actions["actions"][animationName].pause();
         }
     }
 

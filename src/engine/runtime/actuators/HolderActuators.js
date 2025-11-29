@@ -7,41 +7,37 @@ export function holderAdapter(action, entity) {
         const pickRadius = 2.0;
         const targetObj = nearbyObject(entities, entity.position, pickRadius);
 
-        if (!targetObj && !entity.state_space.heldItemAssetRef) {
-            updateEntity(entity.id, {
-                last_action: action,
-                state_space: {
-                    ...entity.state_space,
-                    holding: false,
-                    heldItemAssetRef: null,
-                    lastPickSuccess: false,
-                },
-            });
-            return;
-        } else if (!targetObj && entity.state_space.heldItemAssetRef) {
+        if (!targetObj) {
             updateEntity(entity.id, {
                 last_action: action
             });
             return;
-        } else if (targetObj && entity.state_space.heldItemAssetRef === "null") {
-            // Remove object from physics + rendering layer
-            deleteEntity(targetObj.id);
+        }
 
-            updateEntity(entity.id, {
-                last_action: action,
-                state_space: {
-                    ...entity.state_space,
-                    holding: true,
-                    heldItemAssetRef: targetObj.assetRef,
-                    lastPickSuccess: true,
-                },
-            });
-            return;
-        } else if (targetObj && entity.state_space.heldItemAssetRef) {
-            updateEntity(entity.id, {
-                last_action: action
-            });
-            return;
+        if (targetObj) {
+            if (entity.state_space.holding) {
+                updateEntity(entity.id, {
+                    last_action: action
+                });
+                return;
+            } else if (!entity.state_space.holding) {
+                deleteEntity(targetObj.id);
+
+                updateEntity(entity.id, {
+                    last_action: action,
+                    state_space: {
+                        ...entity.state_space,
+                        holding: true,
+                        heldItemAssetRef: targetObj.assetRef,
+                        lastPickSuccess: true,
+                    },
+                });
+                return;
+            } else {
+                updateEntity(entity.id, {
+                    last_action: action
+                });
+            }
         }
     }
 
@@ -77,13 +73,7 @@ export function holderAdapter(action, entity) {
 
     } else if (action === "drop" && !entity.state_space.holding) {
         updateEntity(entity.id, {
-            last_action: action,
-            state_space: {
-                ...entity.state_space,
-                holding: false,
-                heldItemAssetRef: null,
-                lastPickSuccess: false,
-            },
+            last_action: action
         });
         return;
     }

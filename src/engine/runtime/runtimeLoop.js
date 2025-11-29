@@ -4,9 +4,12 @@ import moveAdapter from "./actuators/MoveableActuators.js";
 import { holderAdapter } from "./actuators/HolderActuators.js";
 import randomController from "./controllers/randomController.js";
 import { CapabilityMatcher } from "../capabilities/capabilitiesMatcher.js";
+import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
 
 export default function runTimeloop(entities) {
     const { updateEntity } = useSceneStore.getState();
+    const playing = useRunTimeStore.getState().playing; // dynamic read every frame
+    if (!playing) return;
     //We will go through each entity
     Object.values(entities).forEach(entity => {
         
