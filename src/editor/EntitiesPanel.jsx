@@ -7,7 +7,11 @@ import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
 import lib2 from '../assets/lib2.png';
 import lib3 from '../assets/lib3.png';
 import lib4 from '../assets/lib4.png';
+import lib7 from '../assets/lib7.png';
+import lib8 from '../assets/lib8.png';
 import lib5 from '../assets/lib5.png';
+import lib1 from '../assets/lib1.png';
+import lib6 from '../assets/lib6.png';
 import agent1 from '../assets/agent1.png';
 import agent2 from '../assets/agent2.png';
 import agent3 from '../assets/agent3.png';
@@ -81,12 +85,15 @@ export default function EntitiesPanel() {
     ];
 
     const nonStateObjects = [
-        { id: "lib_non_state_obj_1",image: lib2, payload:  { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_1",image: lib1, payload:  { isDecor: "true", assetRef: "nature/Tree_1_C_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
         { id: "lib_non_state_obj_2",image: lib2 , payload: { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
-        { id: "lib_non_state_obj_3",image: lib3 , payload: { isDecor: "true", assetRef: "nature/Grass_1_A_Color1.gltf", collider: { shape: "capsule", h: 0.1, r: 0.001 } } },
-        { id: "lib_non_state_obj_4",image: lib4 , payload: { isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf", collider: { shape: "capsule", h: 1, r: 0.1 } } },
-        { id: "lib_non_state_obj_5",image: lib5 , payload: { isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf", collider: { shape: "capsule", h: 2, r: 0.4 } } },
-        { id: "lib_non_state_obj_6",image: lib5 , payload: { isDecor: "false", capabilities: ["Pickable"], isPickable: "true", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_non_state_obj_3",image: lib3 , payload: { isDecor: "true", assetRef: "nature/Tree_3_A_Color1.gltf", collider: { shape: "capsule", h: 0.1, r: 0.001 } } },
+        { id: "lib_non_state_obj_4",image: lib4 , payload: { isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf", collider: { shape: "capsule", h: 0.1, r: 0.001 } } },
+        { id: "lib_non_state_obj_5",image: lib5 , payload: { isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf", collider: { shape: "capsule", h: 1, r: 0.1 } } },
+        { id: "lib_non_state_obj_6",image: lib6 , payload: { isDecor: "true", assetRef: "nature/Grass_1_A_Color1.gltf", collider: { shape: "capsule", h: 0.1, r: 0.001 } } },
+        // { id: "lib_non_state_obj_7",image: lib7 , payload: { isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf", collider: { shape: "capsule", h: 2, r: 0.4 } } },
+        // { id: "lib_non_state_obj_8",image: lib8 , payload: { isDecor: "false", capabilities: ["Pickable"], isPickable: "true", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        
     ];
 
     return (
