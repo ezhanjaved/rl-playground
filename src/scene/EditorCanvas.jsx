@@ -11,6 +11,7 @@ import runTimeloop from "../engine/runtime/runtimeLoop.js";
 export let lastPointerWorldPos = [0, 0, 0];
 export let orbitControlsRef = null;
 import { useCanvasSetting } from "../stores/useCanvasSetting.js";
+import { Perf } from 'r3f-perf';
 
 export default function EditorCanvas() {
 
@@ -86,7 +87,6 @@ export default function EditorCanvas() {
             <div className="environment">
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", height: "570px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
                     <color attach="background" args={[colorCanvas]} />
-
                     <World />
 
                     <PointerTracker />
@@ -111,8 +111,8 @@ export default function EditorCanvas() {
                         sectionColor={colorGrid}
                     />
 
-                    {/* <axesHelper args={[10]} /> */}
-
+                    <axesHelper args={[10]} />
+                    <Perf position="bottom-right" />
                 </Canvas>
             </div>
         </>

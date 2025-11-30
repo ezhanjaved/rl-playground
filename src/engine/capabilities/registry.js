@@ -16,10 +16,6 @@ export const CAPABILITY_SCHEMAS = {
         state: {holding: false, heldItemAssetRef: null, lastPickSuccess: null},
     },
 
-    Pickable: {
-        state : {equipped: false, attachedTo: null}
-    },
-
     Toggleble : {
         state: {on: false}
     }

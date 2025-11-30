@@ -47,7 +47,7 @@ const Section = ({ title, items }) => {
             {open && (
                 <div className="gridWrapper">
                     {items.map((item) => (
-                        <DraggableItem key={item.id} id={item.id}  imageSrc={item.image} payload={item.payload}  />
+                        <DraggableItem key={item.id} id={item.id} imageSrc={item.image} payload={item.payload} />
                     ))}
                 </div>
             )}
@@ -62,7 +62,7 @@ export default function EntitiesPanel() {
             id: "lib_agent_1",
             label: "Mage",
             image: agent1,
-            payload: {tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 }},
+            payload: { tag: "agent", name: "Mage", assetRef: "agents/skelton/Skeleton_Mage.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
         {
             id: "lib_agent_2",
@@ -78,24 +78,26 @@ export default function EntitiesPanel() {
         },
         {
             id: "lib_agent_4",
-            label:"Rogue",
+            label: "Rogue",
             image: agent4,
             payload: { tag: "agent", name: "Rogue", assetRef: "agents/skelton/Skeleton_Rogue.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
     ];
 
     const nonStateObjects = [
-        { id: "lib_non_state_obj_1",image: lib1, payload:  { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
-        { id: "lib_non_state_obj_2",image: lib2 , payload: { isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
-        { id: "lib_non_state_obj_3",image: lib3 , payload: { isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf", collider: { shape: "capsule", h: 1, r: 0.1 } } },
-        { id: "lib_non_state_obj_4",image: lib4 , payload: { isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf", collider: { shape: "capsule", h: 2, r: 0.4 } } },
+        { id: "lib_non_state_obj_1", image: lib1, payload: { isDecor: "true", assetRef: "nature/Tree_2_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_2", image: lib2, payload: { isDecor: "true", assetRef: "nature/Tree_4_A_Color1.gltf", collider: { shape: "capsule", h: 3, r: 0.6 } } },
+        { id: "lib_non_state_obj_3", image: lib3, payload: { isDecor: "true", assetRef: "nature/Bush_4_B_Color1.gltf", collider: { shape: "capsule", h: 1, r: 0.1 } } },
+        { id: "lib_non_state_obj_4", image: lib4, payload: { isDecor: "true", assetRef: "nature/Rock_1_D_Color1.gltf", collider: { shape: "capsule", h: 2, r: 0.4 } } },
     ];
 
     const pickableItems = [
-        {id: "lib_pickable_obj_1", image: pick1, payload: {isDecor: "false", capabilities: ["Pickable"], isPickable: "true", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } }},
-        {id: "lib_pickable_obj_2", image: pick2, payload: {isDecor: "false", capabilities: ["Pickable"], isPickable: "true", assetRef: "agents/skelton/Skeleton_Axe.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } }},
-        {id: "lib_pickable_obj_3", image: pick3, payload: {isDecor: "false", capabilities: ["Pickable"], isPickable: "true", assetRef: "agents/skelton/Skeleton_Shield_Large_A.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } }},
-        {id: "lib_pickable_obj_4", image: pick4, payload: {isDecor: "false", capabilities: ["Pickable"], isPickable: "true", assetRef: "agents/skelton/Skeleton_Staff.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } }}
+        { id: "lib_pickable_obj_1", image: pick1, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_2", image: pick2, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Axe.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_3", image: pick3, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Shield_Large_A.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_4", image: pick4, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Staff.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_5", image: null, payload: { isDecor: "false", isPickable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } },
+        { id: "lib_pickable_obj_6", image: null, payload: { isDecor: "false", isPickable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } }
     ]
 
     return (
