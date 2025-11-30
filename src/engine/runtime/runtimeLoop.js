@@ -40,7 +40,7 @@ export default function runTimeloop(entities) {
 }
 
 function moveableWorker(action, entity, updateEntity) {
-    const { updatedPosition, updatedRotation } = moveAdapter(action, entity.position, entity.rotation);
+    const { updatedPosition, updatedRotation } = moveAdapter(action, entity.position, entity.rotation, entity.id);
     //Update entity's last_action
     updateEntity(entity.id, { last_action: action, position: updatedPosition, rotation: updatedRotation });
     console.log(`Agent ${entity.name} will perform action:`, action, "which is choosen randomly!");

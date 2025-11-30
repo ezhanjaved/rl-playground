@@ -1,7 +1,6 @@
 // We will maintain state of Entities, Assignments, Physics Config here
 import { create } from "zustand";
 import { addCapabilitySchemas } from "../engine/capabilities/registry";
-import { devtools } from "zustand/middleware";
 
 export const useSceneStore = create((set, get) => ({
     entities: {},
@@ -11,10 +10,21 @@ export const useSceneStore = create((set, get) => ({
     activeEntity : null,
     isDragging: false,
     initialized: false,
+    bodies: {},
 
     setActiveEntity: (entityId) => set({activeEntity: entityId}),
     setDragging: (dragging) => set({isDragging: dragging}),
-    
+
+    registerBody: (id, body) => set((state) => ({
+        bodies : {...state.bodies, [id]: body },
+    })),
+
+    unregisterBody: (id) => set (state => {
+        const existing = {...state.bodies};
+        delete existing[id];
+        return {bodies: existing}; 
+    }),
+
     addEntity: (partial) => set (state => {
         const id = `entity_${crypto.randomUUID() || Date.now()}`; 
         const entity = buildEntitiyFromPartial(partial, id);

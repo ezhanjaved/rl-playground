@@ -10,21 +10,26 @@ import { useRunTimeStore } from "../stores/useRunTimeStore.js";
 import runTimeloop from "../engine/runtime/runtimeLoop.js";
 export let lastPointerWorldPos = [0, 0, 0];
 export let orbitControlsRef = null;
+import { useCanvasSetting } from "../stores/useCanvasSetting.js";
 
 export default function EditorCanvas() {
 
     const controlRef = React.useRef();
     orbitControlsRef = controlRef;
 
+    const colorLibrary = useCanvasSetting((state) => state.colorLibrary);
+    const pickedColor = useCanvasSetting((state) => state.pickedColor);
+    const [colorCanvas, colorGrid] = colorLibrary[pickedColor];
+    
     function PlaySimulation() {
     
         useFrame(() => {
-            const playing = useRunTimeStore.getState().playing; // dynamic read every frame
+            const playing = useRunTimeStore.getState().playing;
             if (!playing) return;
             const { entities } = useSceneStore.getState();
             runTimeloop(entities);
         });
-
+        
         return null;
     }
 
@@ -80,14 +85,14 @@ export default function EditorCanvas() {
         <>
             <div className="environment">
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }} style={{ width: "100%", height: "570px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
-                    <color attach="background" args={["#b2fba5"]} />
+                    <color attach="background" args={[colorCanvas]} />
 
                     <World />
 
                     <PointerTracker />
 
-                    <ambientLight intensity={1.0} />
-                    <directionalLight position={[15, 10, 5]} />
+                    <ambientLight intensity={1.2} />
+                    <directionalLight position={[15, 15, 15]} />
 
                     {/* <TestCharacter /> */}
                     <PlaySimulation /> {/* //My understanding is that this will run on each frame */}
@@ -103,10 +108,10 @@ export default function EditorCanvas() {
 
                     <Grid
                         args={[100, 100]}
-                        sectionColor={"#91bc9e55"}
+                        sectionColor={colorGrid}
                     />
 
-                    <axesHelper args={[10]} />
+                    {/* <axesHelper args={[10]} /> */}
 
                 </Canvas>
             </div>

@@ -15,7 +15,6 @@ function EntityRenderer({ entity }) {
 
     const playing = useRunTimeStore((state) => state.playing);
 
-
     const handRef = useRef(null);
 
     const animationRefs = useMemo(() => {

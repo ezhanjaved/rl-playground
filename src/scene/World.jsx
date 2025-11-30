@@ -12,13 +12,13 @@ export default function World() {
             <Physics gravity={[0, -9.81, 0]}>
 
                 <RigidBody type="fixed" colliders={false}>
-                    <CuboidCollider args={[20, 0.1, 20]} position={[0, -0.1, 0]} />
+                    <CuboidCollider args={[500, 0.1, 500]} position={[0, -0.1, 0]} />
                 </RigidBody>
 
                 {Object.values(entities).map(entity => (
                     <ColliderBuilder key={entity.id} entity={entity}>
                         <EntityMeshes entity={entity} />
-                        {/* <ColliderDebug entity={entity} /> */}
+                        <ColliderDebug entity={entity} />
                     </ColliderBuilder>
                 ))}
 
