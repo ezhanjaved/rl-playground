@@ -46,7 +46,6 @@ body {
   gap: 14px;
   align-items: flex-start;
   box-shadow: 4px 0px 16px rgba(0, 0, 0, 0.2);
-  height: auto;
 }
 .sidebar .icon {
   opacity: 0.8;
@@ -96,6 +95,9 @@ body {
   margin-top: 20px;
   background-color: white;
   color: black;
+  height: 82vh; 
+  overflow-y: auto; 
+  overflow-x: hidden;
 }
 .library_main h2 {
   margin-bottom: 14px;
@@ -186,7 +188,7 @@ body {
 
 .canvasBox {
   width: 100%;
-  height: 600px;
+  height: 570px;
   border: 1.5px dashed #ccc;
   border-radius: 12px;
   display: flex;
