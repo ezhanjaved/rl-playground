@@ -94,6 +94,7 @@ const buildEntitiyFromPartial = (partial, id) => {
         actuator_type : partial.actuator_type || 'walker',
         isDecor: partial.isDecor || false,
         isPickable: partial.isPickable || false,
+        isCollectable: partial.isCollectable || false, //This flag can help us to make sure that agent with Collector capability is picking only isCollectable item
     }
 
     if (partial.tag === 'agent') {

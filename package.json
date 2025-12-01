@@ -15,7 +15,7 @@
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
     "@react-three/rapier": "^2.2.0",
-    "@xyflow/react": "^12.9.2",
+    "@xyflow/react": "^12.9.3",
     "cannon-es": "^0.20.0",
     "r3f-perf": "^7.2.3",
     "react": "^19.1.1",

@@ -1,14 +1,11 @@
-import EntitiesPanel from "../editor/EntitiesPanel";
-import EditorCanvas from "../scene/EditorCanvas";
 import { DndContext } from "@dnd-kit/core";
 import "../styling/index.css";
 import { useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 import { lastPointerWorldPos } from "../scene/EditorCanvas";
-import Library from "../components/library";
 import TrainingENV from "../components/trainingENV";
-import Sidebar from "../components/sidebar";
 import Header from "../components/header";
+import Sidebar from "../components/Sidebar";
 
 export default function EnvironmentPage() {
     const addEntity = useSceneStore(s => s.addEntity);
@@ -33,10 +30,6 @@ export default function EnvironmentPage() {
             <div className="container">
                 <Header/>
                 <DndContext onDragEnd={onDragEnd}>
-                    {/* <Sidebar /> */}
-                    {/* <EntitiesPanel/> */}
-                    {/* <Library/> */}
-                    {/* <EditorCanvas /> */}
                     <Sidebar/>
                     <TrainingENV/>
                 </DndContext>

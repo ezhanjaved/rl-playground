@@ -5,7 +5,7 @@ export function holderAdapter(action, entity) {
 
     if (action === "pick") {
         const pickRadius = 2.0;
-        const targetObj = nearbyObject(entities, entity.position, pickRadius);
+        const targetObj = nearbyObject(entities, entity.position, pickRadius, entity.capabilities);
 
         if (!targetObj) {
             updateEntity(entity.id, {

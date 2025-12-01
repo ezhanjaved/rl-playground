@@ -2,6 +2,7 @@
 import { useSceneStore } from "../../stores/useSceneStore";
 import moveAdapter from "./actuators/MoveableActuators.js";
 import { holderAdapter } from "./actuators/HolderActuators.js";
+import { collectorAdapter } from "./actuators/CollectorActuators.js";
 import randomController from "./controllers/randomController.js";
 import { CapabilityMatcher } from "../capabilities/capabilitiesMatcher.js";
 import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
@@ -13,7 +14,7 @@ export default function runTimeloop(entities) {
     //We will go through each entity
     Object.values(entities).forEach(entity => {
         
-        if (entity.isDecor || !entity.action_space) {
+        if (entity.isDecor || !entity.action_space || entity.isPickable) {
             return;
         } 
 
@@ -31,7 +32,8 @@ export default function runTimeloop(entities) {
             case "Holder":
                 holderWorker(action, entity)
                 break;
-            case "Interactable":
+            case "Collector":
+                collectorWorker(action, entity)
                 break;
             default:
                 break;
@@ -48,4 +50,8 @@ function moveableWorker(action, entity, updateEntity) {
 
 function holderWorker(action, entity) {
     holderAdapter(action, entity) //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered   
+}
+
+function collectorWorker(action, entity) {
+    collectorAdapter(action, entity) //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered   
 }

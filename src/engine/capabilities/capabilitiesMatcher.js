@@ -2,6 +2,7 @@ export function CapabilityMatcher(action) {
     const actionLibrary = {
         "pick": "Holder",
         "drop": "Holder",
+        "collect": "Collector",
         "move_up": "Moveable",
         "move_down": "Moveable",
         "move_right": "Moveable",

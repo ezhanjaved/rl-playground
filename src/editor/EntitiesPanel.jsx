@@ -68,7 +68,7 @@ export default function EntitiesPanel() {
             id: "lib_agent_2",
             label: "Minion",
             image: agent2,
-            payload: { tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Holder"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
+            payload: { tag: "agent", name: "Minion", assetRef: "agents/skelton/Skeleton_Minion.glb", animationRef: { 0: "agents/skelton/Rig_Medium_MovementBasic.glb", 1: "agents/skelton/Rig_Medium_General.glb" }, capabilities: ["Moveable", "Collector"], isDeor: "false", collider: { shape: "capsule", h: 2, r: 0.30 } },
         },
         {
             id: "lib_agent_3",
@@ -92,12 +92,12 @@ export default function EntitiesPanel() {
     ];
 
     const pickableItems = [
-        { id: "lib_pickable_obj_1", image: pick1, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
-        { id: "lib_pickable_obj_2", image: pick2, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Axe.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
-        { id: "lib_pickable_obj_3", image: pick3, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Shield_Large_A.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
-        { id: "lib_pickable_obj_4", image: pick4, payload: { isDecor: "false", isPickable: "true", assetRef: "agents/skelton/Skeleton_Staff.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
-        { id: "lib_pickable_obj_5", image: null, payload: { isDecor: "false", isPickable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } },
-        { id: "lib_pickable_obj_6", image: null, payload: { isDecor: "false", isPickable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } }
+        { id: "lib_pickable_obj_1", image: pick1, payload: { isDecor: "false", isPickable: "true", isCollectable: false, assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_2", image: pick2, payload: { isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Axe.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_3", image: pick3, payload: { isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Shield_Large_A.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_4", image: pick4, payload: { isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Staff.gltf", collider: { shape: "capsule", h: 1, r: 0.4 } } },
+        { id: "lib_pickable_obj_5", image: null, payload: { isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } },
+        { id: "lib_pickable_obj_6", image: null, payload: { isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } }
     ]
 
     return (

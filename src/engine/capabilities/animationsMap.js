@@ -5,6 +5,7 @@ const baseAnimations = {
     move_right: 'Walking_B',
     idle: 'Idle_A',
     pick: "PickUp",
+    collect: "PickUp",
     drop: "Throw"
 };
 
