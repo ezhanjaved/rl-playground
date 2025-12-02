@@ -8,7 +8,7 @@ export function BehaviorGraphEditor() {
     const graph = graphs?.[activeGraphId];
 
     return (
-        <div style={{height: "100%", width: "100%"}}>
+        <div className="trainingEnvContainer" >
             <ReactFlow nodes={graph?.nodes} edges={graph?.edges}>
                 <Background />
                 <Controls />
