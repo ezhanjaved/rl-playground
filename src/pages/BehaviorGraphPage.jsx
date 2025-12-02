@@ -5,10 +5,13 @@ import { useEffect } from "react";
 import Sidebar from "../components/Sidebar.jsx";
 import { DndContext } from "@dnd-kit/core";
 import { useGraphStore } from "../stores/useGraphStore.js";
-export default function BehaviorGraphPage({setCurrentPage}) {
+import { useReactFlow } from "@xyflow/react";
+
+export default function BehaviorGraphPage({ setCurrentPage }) {
     const addGraph = useGraphStore(s => s.addGraph);
     const activeGraphId = useGraphStore(s => s.activeGraphId);
     const addNode = useGraphStore(s => s.addNode);
+    const { screenToFlowPosition, viewportInitialized } = useReactFlow();
 
     useEffect(() => {
         console.log("Making our first graph!");
@@ -16,21 +19,36 @@ export default function BehaviorGraphPage({setCurrentPage}) {
     }, [addGraph])
 
     const onDragEnd = (event) => {
-        console.log("Drag End", event);
-        const data = event.active?.data?.current;
-        if (data) {
-            addNode(activeGraphId, data);
-        }
-    }
+        const nodeData = event.active?.data?.current;
+        console.log(event);
+        if (!nodeData || !viewportInitialized) return;
+
+        const nodeId = `node_${crypto.randomUUID()}`;
+
+        const pointerEvent = event.activatorEvent;
+
+        const position = screenToFlowPosition({
+            x: pointerEvent.clientX,
+            y: pointerEvent.clientY,
+        });
+
+        const newNode = {
+            ...nodeData,
+            id: nodeId,
+            position: position
+        };
+
+        addNode(activeGraphId, newNode);
+    };
 
     return (
         <>
             <div className="container">
                 <Header />
-                <DndContext onDragEnd={onDragEnd}>
-                    <Sidebar setCurrentPage={setCurrentPage} />
-                    <BehaviorGraphEditor />
-                </DndContext>
+                    <DndContext onDragEnd={onDragEnd}>
+                        <Sidebar setCurrentPage={setCurrentPage} />
+                        <BehaviorGraphEditor />
+                    </DndContext>
             </div>
         </>
     )

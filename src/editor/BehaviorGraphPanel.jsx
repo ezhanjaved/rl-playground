@@ -8,8 +8,8 @@ import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
 export function BehaviorGraphPanel() {
 
     const eventNodes = [
-        {id: "event_node_1", image: null, payload: {id: 'n1', position: { x: 0, y: 2 }, data: { label: 'Node 1' }, type: 'input'}},
-        {id: "event_node_2", image: null, payload: {id: 'n2', position: { x: 250, y: 2 }, data: { label: 'Node 2' }, type: 'input'}},
+        {id: "event_node_1", image: null, payload: { data: { label: 'Node 1' }, type: "OnEpisodeStartNode"}},
+        {id: "event_node_2", image: null, payload: { data: { label: 'Node 2' }, type: "OnStepNode"}},
     ]
 
     return (

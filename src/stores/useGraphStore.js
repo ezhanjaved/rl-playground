@@ -48,4 +48,78 @@ export const useGraphStore = create((set, get) => ({
       };
     }),
 
+  setNodes: (graphId, updater) =>
+    set((state) => {
+      const graph = state.graphs[graphId];
+      if (!graph) return state;
+
+      const nextNodes = typeof updater === "function" ? updater(graph.nodes) : updater;
+
+      return {
+        graphs: {
+          ...state.graphs,
+          [graphId]: {
+            ...graph,
+            nodes: nextNodes,
+          },
+        },
+      };
+    }),
+
+  setEdges: (graphId, updater) =>
+    set((state) => {
+      const graph = state.graphs[graphId];
+      if (!graph) return state;
+
+      const nextEdges = typeof updater === "function" ? updater(graph.edges) : updater;
+
+      return {
+        graphs: {
+          ...state.graphs,
+          [graphId]: {
+            ...graph,
+            edges: nextEdges,
+          },
+        },
+      };
+    }),
+
+  updateNode: (graphId, nodeId, partial) =>
+    set((state) => {
+      const graph = state.graphs[graphId];
+      if (!graph) return state;
+
+      const nodes = graph.nodes.map((node) => node.id === nodeId ? { ...node, ...partial } : node);
+
+      return {
+        graphs: {
+          ...state.graphs,
+          [graphId]: {
+            ...graph,
+            nodes,
+          },
+        },
+      };
+    }),
+
+  updateEdge: (graphId, edgeId, partial) =>
+    set((state) => {
+      const graph = state.graphs[graphId];
+      if (!graph) return state;
+
+      const edges = graph.edges.map((edge) =>
+        edge.id === edgeId ? { ...edge, ...partial } : edge
+      );
+
+      return {
+        graphs: {
+          ...state.graphs,
+          [graphId]: {
+            ...graph,
+            edges,
+          },
+        },
+      };
+    }),
+
 }));
