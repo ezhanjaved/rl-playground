@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import Sidebar from "../components/Sidebar.jsx";
 import { DndContext } from "@dnd-kit/core";
 import { useGraphStore } from "../stores/useGraphStore.js";
-export default function BehaviorGraphPage() {
+export default function BehaviorGraphPage({setCurrentPage}) {
     const addGraph = useGraphStore(s => s.addGraph);
     const activeGraphId = useGraphStore(s => s.activeGraphId);
     const addNode = useGraphStore(s => s.addNode);
@@ -28,7 +28,7 @@ export default function BehaviorGraphPage() {
             <div className="container">
                 <Header />
                 <DndContext onDragEnd={onDragEnd}>
-                    <Sidebar />
+                    <Sidebar setCurrentPage={setCurrentPage} />
                     <BehaviorGraphEditor />
                 </DndContext>
             </div>

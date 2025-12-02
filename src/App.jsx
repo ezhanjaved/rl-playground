@@ -1,13 +1,16 @@
-//We will add pages here and wrapped them using a UseContext
 import './styling/index.css';
+import { useState } from 'react';
 import EnvironmentPage from "./pages/EnvironmentPage";
 import BehaviorGraphPage from './pages/BehaviorGraphPage';
 
 function App() {
-return (
-    // <EnvironmentPage />
-    <BehaviorGraphPage />
-)
+  const [currentPage, setCurrentPage] = useState("environment");
+
+  return currentPage === "environment" ? (
+    <EnvironmentPage setCurrentPage={setCurrentPage} />
+  ) : (
+    <BehaviorGraphPage setCurrentPage={setCurrentPage} />
+  );
 }
 
-export default App
+export default App;

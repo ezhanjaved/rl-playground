@@ -231,6 +231,16 @@ body {
   height: 40px;
   padding-top:10px;
 }
+.icon:hover {
+  background: #eaeaea;
+  border-radius: 6px;
+}
+
+.icon.active {
+  background: #d0d0d0;
+  border-radius: 6px;
+  color: black;
+}
 /* Header */
 .controlHeader h2 {
   font-size: 20px;

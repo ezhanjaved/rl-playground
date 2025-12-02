@@ -7,7 +7,7 @@ import TrainingENV from "../components/trainingENV";
 import Header from "../components/header";
 import Sidebar from "../components/Sidebar";
 
-export default function EnvironmentPage() {
+export default function EnvironmentPage({setCurrentPage}) {
     const addEntity = useSceneStore(s => s.addEntity);
     const initializeScene = useSceneStore(s => s.initializeScene);
 
@@ -30,7 +30,7 @@ export default function EnvironmentPage() {
             <div className="container">
                 <Header/>
                 <DndContext onDragEnd={onDragEnd}>
-                    <Sidebar/>
+                    <Sidebar setCurrentPage={setCurrentPage}/>
                     <TrainingENV/>
                 </DndContext>
             </div>
