@@ -2,7 +2,8 @@ import './styling/index.css';
 import { useState } from 'react';
 import EnvironmentPage from "./pages/EnvironmentPage";
 import BehaviorGraphPage from './pages/BehaviorGraphPage';
-import { ReactFlowProvider } from "@xyflow/react";
+import { Signup } from './components/SignUp';
+import { Onboarding } from './components/Onboarding';
 
 function App() {
   const [currentPage, setCurrentPage] = useState("environment");
@@ -10,9 +11,7 @@ function App() {
   return currentPage === "environment" ? (
     <EnvironmentPage setCurrentPage={setCurrentPage} />
   ) : (
-    <ReactFlowProvider>
-        <BehaviorGraphPage setCurrentPage={setCurrentPage} />
-    </ReactFlowProvider>
+    <BehaviorGraphPage setCurrentPage={setCurrentPage} />
   );
 }
 

@@ -5,13 +5,11 @@ import { useEffect } from "react";
 import Sidebar from "../components/Sidebar.jsx";
 import { DndContext } from "@dnd-kit/core";
 import { useGraphStore } from "../stores/useGraphStore.js";
-import { useReactFlow } from "@xyflow/react";
 
 export default function BehaviorGraphPage({ setCurrentPage }) {
     const addGraph = useGraphStore(s => s.addGraph);
     const activeGraphId = useGraphStore(s => s.activeGraphId);
     const addNode = useGraphStore(s => s.addNode);
-    const { screenToFlowPosition, viewportInitialized } = useReactFlow();
 
     useEffect(() => {
         console.log("Making our first graph!");
@@ -21,16 +19,16 @@ export default function BehaviorGraphPage({ setCurrentPage }) {
     const onDragEnd = (event) => {
         const nodeData = event.active?.data?.current;
         console.log(event);
-        if (!nodeData || !viewportInitialized) return;
+        if (!nodeData) return;
 
         const nodeId = `node_${crypto.randomUUID()}`;
 
         const pointerEvent = event.activatorEvent;
 
-        const position = screenToFlowPosition({
+        const position = {
             x: pointerEvent.clientX,
             y: pointerEvent.clientY,
-        });
+        };
 
         const newNode = {
             ...nodeData,

@@ -8,14 +8,30 @@ import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
 export function BehaviorGraphPanel() {
 
     const eventNodes = [
-        {id: "event_node_1", image: null, payload: { data: { label: 'Node 1' }, type: "OnEpisodeStartNode"}},
-        {id: "event_node_2", image: null, payload: { data: { label: 'Node 2' }, type: "OnStepNode"}},
+        {id: "on-episode-start-node", image: null, payload: { data: { label: 'OnEpisodeStart' }, type: "OnEpisodeStartNode"}},
+        {id: "on-step-node", image: null, payload: { data: { label: 'OnStep' }, type: "OnStepNode"}}
+    ]
+
+    const conditionalNodes = [
+        {id: "in-radius-node", image: null, payload: { data: { label: 'WithInRadius', entityOne: null, entityTwo: null, radiusValue: null }, type: "InRadiusNode"}},
+        {id: "last-action-is-node", image: null, payload: { data: { label: 'LastActionIs', agentCapability: null, entityAction: null, actionStatus: null }, type: "LastActionIsNode"}},
+        {id: "state-equals-node", image: null, payload: { data: { label: 'StateEquals', entityCapability: null, entityState: null, StateStatus: null }, type: "StateEqualsToNode"}},
+        {id: "compare-state-node", image: null, payload: { data: { label: 'CompareState', entityCapability: null, entityState: null, StateValue: null, Operator: null }, type: "CompareStateNode"}}
+    ]
+
+    const effectNodes = [
+        {id: "end-episode-node", image: null, payload: { data: { label: 'EndEpisode' }, type: "EndEpisodeNode"}},
+        {id: "add-reward-node", image: null, payload: { data: { label: 'AddReward', agentId: null, rewardValue: null }, type: "AddRewardNode"}},
+        {id: "set-state-node", image: null, payload: { data: { label: 'SetState', entityCapability: null, entityState: null, stateValue: null }, type: "SetStateNode"}},
+        {id: "request-action-node", image: null, payload: { data: { label: 'RequestAction' }, type: "RequestActionNode"}}
     ]
 
     return (
         <>
             <div className="library_main">
                 <Section title="Event Nodes" items={eventNodes} />
+                <Section title="Conditional Nodes" items={conditionalNodes} />
+                <Section title="Effect Nodes" items={effectNodes} />
             </div>
         </>
     )

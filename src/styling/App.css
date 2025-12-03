@@ -21,6 +21,45 @@
     height: 50px;
     font-weight: 500;
     background: white;
-    border: 2px solid #000;
+    border-radius: 20px;
+    border: 2px dotted #000;
+    color: #000;
+}
+
+.conditional-node {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 300px;
+    height: 100%;
+    padding: 10px;
+    background: white;
+    border: 2px dotted #000;
+    border-radius: 20px;
+    color: #000;
+}
+
+.node-heading {
+    font-weight: 700 !important;
+    margin-bottom: 20px;
+}
+
+.conditional-data-form, .effect-data-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.effect-node {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 300px;
+    height: 100%;
+    padding: 10px;
+    background: white;
+    border: 2px dotted #000;
+    border-radius: 20px;
     color: #000;
 }
