@@ -3,14 +3,18 @@ import { Position, Handle } from "@xyflow/react";
 import { useGraphStore } from "../../stores/useGraphStore";
 import { useState, useEffect } from "react";
 
-export function EndEpisodeNode({ data }) {
+export function EndEpisodeNode({ data, id }) {
+    const activeGraphId = useGraphStore((s) => s.activeGraphId);
+    const nodeId = id;
+    const deleteNode = useGraphStore((s) => s.deleteNode);
+
     return (
-        <div className="event-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="event-node">
             <span>{data?.label}</span>
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
         </div>
     )
@@ -19,6 +23,7 @@ export function EndEpisodeNode({ data }) {
 export function AddRewardNode({ data, id }) {
     const activeGraphId = useGraphStore((s) => s.activeGraphId);
     const updateNode = useGraphStore((s) => s.updateNode);
+    const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
     function updateRewardValue(event) {
@@ -30,18 +35,18 @@ export function AddRewardNode({ data, id }) {
         })
     }
     return (
-        <div className="effect-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="effect-node">
             <span className="node-heading">{data?.label}</span>
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
             <div className="effect-data-form">
                 <span>Reward Value</span>
@@ -58,6 +63,7 @@ export function SetStateNode({ data, id }) {
 
     const activeGraphId = useGraphStore((s) => s.activeGraphId);
     const updateNode = useGraphStore((s) => s.updateNode);
+    const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
     const holderState = ["holding", "lastPickSuccess"];
@@ -102,22 +108,22 @@ export function SetStateNode({ data, id }) {
         })
     }
     return (
-        <div className="effect-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="effect-node">
             <span className="node-heading">{data?.label}</span>
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
             <div className="effect-data-form">
                 <span>Entity Capabilities</span>
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
                     <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>
@@ -140,20 +146,24 @@ export function SetStateNode({ data, id }) {
     )
 }
 
-export function RequestAction({ data }) {
+export function RequestAction({ data, id }) {
+    const deleteNode = useGraphStore((s) => s.deleteNode);
+    const activeGraphId = useGraphStore((s) => s.activeGraphId);
+    const nodeId = id;
+
     return (
-        <div className="event-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="event-node">
             <span>{data?.label}</span>
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
         </div>
     )

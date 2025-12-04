@@ -22,7 +22,7 @@
     font-weight: 500;
     background: white;
     border-radius: 20px;
-    border: 2px dotted #000;
+    border: 2px dashed #000;
     color: #000;
 }
 
@@ -35,7 +35,7 @@
     height: 100%;
     padding: 10px;
     background: white;
-    border: 2px dotted #000;
+    border: 2px dashed #000;
     border-radius: 20px;
     color: #000;
 }
@@ -50,6 +50,39 @@
     flex-direction: column;
 }
 
+.conditional-data-form select, .effect-data-form select {
+    background: white;
+    border-radius: 20px;
+    border: 2px dotted #000;
+    color: black;
+    height: 25px;
+    margin-top: 5px;
+}
+
+.conditional-data-form input, .effect-data-form input {
+    background: white;
+    border-radius: 20px;
+    border: 2px dotted #000;
+    color: black;
+    height: 25px;
+    padding-left: 5px;
+    margin-top: 5px;
+}
+
+.conditional-data-form input[type="checkbox"], .effect-data-form input[type="checkbox"] {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    border: 2px solid black;
+    border-radius: 0%;
+    transition: background 120ms ease, border-color 120ms ease;
+}
+
+.conditional-data-form input[type="checkbox"]:checked, .effect-data-form input[type="checkbox"]:checked {
+    background: black;
+}
+
 .effect-node {
     display: flex;
     flex-direction: column;
@@ -59,7 +92,7 @@
     height: 100%;
     padding: 10px;
     background: white;
-    border: 2px dotted #000;
+    border: 2px dashed #000;
     border-radius: 20px;
     color: #000;
 }

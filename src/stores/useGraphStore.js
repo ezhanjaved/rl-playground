@@ -122,4 +122,23 @@ export const useGraphStore = create((set, get) => ({
       };
     }),
 
+  deleteNode: (graphId, nodeId) =>
+    set((state) => {
+      const graph = state.graphs[graphId];
+      if (!graph) return state;
+
+      return {
+        graphs: {
+          ...state.graphs,
+          [graphId]: {
+            ...graph,
+            nodes: graph.nodes.filter((n) => n.id !== nodeId),
+            edges: graph.edges.filter(
+              (e) => e.source !== nodeId && e.target !== nodeId
+            ),
+          },
+        },
+      };
+    }),
+
 }));

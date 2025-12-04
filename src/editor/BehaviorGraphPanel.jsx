@@ -45,8 +45,10 @@ const Section = ({ title, items }) => {
         const { listeners, setNodeRef, attributes, transform } = useDraggable({ id, data: payload });
         const style = { transform: CSS.Translate.toString(transform), cursor: 'grab' }
         return (
-            <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="lib-single-element">
-                <img src={imageSrc} alt={id} className="lib-item-image"></img>
+            <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="lib-single-element-bg">
+                <div className="event-node">
+                    <span>{payload?.data?.label}</span>
+                </div>
             </div>
         )
     }

@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 export function InRadiusNode({ data, id }) {
     const activeGraphId = useGraphStore((s) => s.activeGraphId);
     const updateNode = useGraphStore((s) => s.updateNode);
+    const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
     function UpdateEntityOne(event) {
@@ -36,18 +37,27 @@ export function InRadiusNode({ data, id }) {
     }
 
     return (
-        <div className="conditional-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="conditional-node">
             <span className="node-heading">{data?.label}</span>
 
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
+
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                id="false"
+                style={{ top: "40%", width: "10px", height: "10px", border: "none", background: "red" }}
+            />
+
+            <Handle
+                type="source"
+                position={Position.Right}
+                id="true"
+                style={{ top: "60%", width: "10px", height: "10px", border: "none", background: "green" }}
             />
 
             <div className="conditional-data-form">
@@ -95,6 +105,7 @@ export function LastActionIsNode({ data, id }) {
     const [allActions, setAllActions] = useState([]);
     const activeGraphId = useGraphStore((s) => s.activeGraphId);
     const updateNode = useGraphStore((s) => s.updateNode);
+    const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
     const moveableAction = ["move_up", "move_down", "move_right", "move_left", "idle"];
@@ -142,26 +153,34 @@ export function LastActionIsNode({ data, id }) {
     }
 
     return (
-        <div className="conditional-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="conditional-node">
             <span className="node-heading">{data?.label}</span>
 
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                id="false"
+                style={{ top: "40%", width: "10px", height: "10px", border: "none", background: "red" }}
+            />
+
+            <Handle
+                type="source"
+                position={Position.Right}
+                id="true"
+                style={{ top: "60%", width: "10px", height: "10px", border: "none", background: "green" }}
             />
 
             <div className="conditional-data-form">
                 <span>Agent Capabilities</span>
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                    <label><input type="checkbox" value="Moveable" onChange={handleCheckbox} /> Moveable</label>
-                    <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
+                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+                    <label><input type="checkbox" value="Moveable" onChange={handleCheckbox} /> Moveable </label>
+                    <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder </label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>
 
@@ -192,6 +211,7 @@ export function StateEqualsToNode({ data, id }) {
 
     const activeGraphId = useGraphStore((s) => s.activeGraphId);
     const updateNode = useGraphStore((s) => s.updateNode);
+    const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
     const holderState = ["holding", "lastPickSuccess"];
@@ -237,22 +257,30 @@ export function StateEqualsToNode({ data, id }) {
     }
 
     return (
-        <div className="conditional-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="conditional-node">
             <span className="node-heading">{data?.label}</span>
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                id="false"
+                style={{ top: "40%", width: "10px", height: "10px", border: "none", background: "red" }}
+            />
+
+            <Handle
+                type="source"
+                position={Position.Right}
+                id="true"
+                style={{ top: "60%", width: "10px", height: "10px", border: "none", background: "green" }}
             />
             <div className="conditional-data-form">
                 <span>Entity Capabilities</span>
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
                     <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>
@@ -284,6 +312,7 @@ export function CompareStateNode({ data, id }) {
 
     const activeGraphId = useGraphStore((s) => s.activeGraphId);
     const updateNode = useGraphStore((s) => s.updateNode);
+    const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
     const holderState = ["holding", "lastPickSuccess"];
@@ -338,22 +367,31 @@ export function CompareStateNode({ data, id }) {
     }
 
     return (
-        <div className="conditional-node">
+        <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="conditional-node">
             <span className="node-heading">{data?.label}</span>
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                style={{ width: "10px", height: "10px", border: "none", background: "#000" }}
             />
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ width: "5px", height: "5px", border: "none", background: "#000" }}
+                id="false"
+                style={{top: "40%" ,width: "10px", height: "10px", border: "none", background: "red" }}
             />
+
+            <Handle
+                type="source"
+                position={Position.Right}
+                id="true"
+                style={{top: "60%", width: "10px", height: "10px", border: "none", background: "green" }}
+            />  
+
             <div className="conditional-data-form">
                 <span>Entity Capabilities</span>
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
                     <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>
