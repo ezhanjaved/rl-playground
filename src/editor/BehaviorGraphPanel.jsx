@@ -8,22 +8,22 @@ import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
 export function BehaviorGraphPanel() {
 
     const eventNodes = [
-        {id: "on-episode-start-node", image: null, payload: { data: { label: 'OnEpisodeStart' }, type: "OnEpisodeStartNode"}},
-        {id: "on-step-node", image: null, payload: { data: { label: 'OnStep' }, type: "OnStepNode"}}
+        {id: "on-episode-start-node", payload: { data: { label: 'OnEpisodeStart' }, type: "OnEpisodeStartNode"}},
+        {id: "on-step-node", payload: { data: { label: 'OnStep' }, type: "OnStepNode"}}
     ]
 
     const conditionalNodes = [
-        {id: "in-radius-node", image: null, payload: { data: { label: 'WithInRadius', entityOne: null, entityTwo: null, radiusValue: null }, type: "InRadiusNode"}},
-        {id: "last-action-is-node", image: null, payload: { data: { label: 'LastActionIs', agentCapability: null, entityAction: null, actionStatus: null }, type: "LastActionIsNode"}},
-        {id: "state-equals-node", image: null, payload: { data: { label: 'StateEquals', entityCapability: null, entityState: null, StateStatus: null }, type: "StateEqualsToNode"}},
-        {id: "compare-state-node", image: null, payload: { data: { label: 'CompareState', entityCapability: null, entityState: null, StateValue: null, Operator: null }, type: "CompareStateNode"}}
+        {id: "in-radius-node", payload: { data: { label: 'WithInRadius', entityOne: null, entityTwo: null, radiusValue: null }, type: "InRadiusNode"}},
+        {id: "last-action-is-node", payload: { data: { label: 'LastActionIs', agentCapability: null, entityAction: null, actionStatus: null }, type: "LastActionIsNode"}},
+        {id: "state-equals-node", payload: { data: { label: 'StateEquals', entityCapability: null, entityState: null, StateStatus: null }, type: "StateEqualsToNode"}},
+        {id: "compare-state-node", payload: { data: { label: 'CompareState', entityCapability: null, entityState: null, StateValue: null, Operator: null }, type: "CompareStateNode"}}
     ]
 
     const effectNodes = [
-        {id: "end-episode-node", image: null, payload: { data: { label: 'EndEpisode' }, type: "EndEpisodeNode"}},
-        {id: "add-reward-node", image: null, payload: { data: { label: 'AddReward', agentId: null, rewardValue: null }, type: "AddRewardNode"}},
-        {id: "set-state-node", image: null, payload: { data: { label: 'SetState', entityCapability: null, entityState: null, stateValue: null }, type: "SetStateNode"}},
-        {id: "request-action-node", image: null, payload: { data: { label: 'RequestAction' }, type: "RequestActionNode"}}
+        {id: "end-episode-node", payload: { data: { label: 'EndEpisode' }, type: "EndEpisodeNode"}},
+        {id: "add-reward-node", payload: { data: { label: 'AddReward', agentId: null, rewardValue: null }, type: "AddRewardNode"}},
+        {id: "set-state-node", payload: { data: { label: 'SetState', entityCapability: null, entityState: null, stateValue: null }, type: "SetStateNode"}},
+        {id: "request-action-node", payload: { data: { label: 'RequestAction' }, type: "RequestActionNode"}}
     ]
 
     return (
@@ -41,7 +41,7 @@ const Section = ({ title, items }) => {
 
     const [open, setOpen] = useState(true);
 
-    function DraggableItem({ id, payload, imageSrc }) {
+    function DraggableItem({ id, payload }) {
         const { listeners, setNodeRef, attributes, transform } = useDraggable({ id, data: payload });
         const style = { transform: CSS.Translate.toString(transform), cursor: 'grab' }
         return (
@@ -70,7 +70,7 @@ const Section = ({ title, items }) => {
             {open && (
                 <div className="gridWrapper">
                     {items.map((item) => (
-                        <DraggableItem key={item.id} id={item.id} imageSrc={item.image} payload={item.payload} />
+                        <DraggableItem key={item.id} id={item.id} payload={item.payload} />
                     ))}
                 </div>
             )}

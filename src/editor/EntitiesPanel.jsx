@@ -18,6 +18,7 @@ import agent1 from '../assets/agent1.png';
 import agent2 from '../assets/agent2.png';
 import agent3 from '../assets/agent3.png';
 import agent4 from '../assets/agent4.png';
+import target1 from '../assets/target_1.png';
 
 function DraggableItem({ id, payload, imageSrc }) {
     const { listeners, setNodeRef, attributes, transform } = useDraggable({ id, data: payload });
@@ -102,12 +103,17 @@ export default function EntitiesPanel() {
         { id: "lib_pickable_obj_6", image: pick6, payload: { isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/coin.gltf", collider: { shape: "capsule", h: 1, r: 0.2 } } }
     ]
 
+    const targetItems = [
+        {id: "lib_target_obj_1", image: target1, payload: {isDecor: "false", isPickable: "false", isCollectable: "false", isTarget: "true", assetRef: "resources/chest_gold.gltf", collider: {shape: "sphere", h:2.5, r: 0.5,}, targetStat: {radius: 2}}}
+    ]
+
     return (
         <>
             <div className="library_main">
                 <Section title="Agents" items={agents} />
                 <Section title="Non State Objects" items={nonStateObjects} />
                 <Section title="Pickable Items" items={pickableItems} />
+                <Section title="Target Items" items={targetItems} />
             </div>
         </>
     )

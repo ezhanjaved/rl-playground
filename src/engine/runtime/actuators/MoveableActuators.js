@@ -2,22 +2,21 @@ import { useSceneStore } from "../../../stores/useSceneStore";
 
 export default function moveAdapter(action, position, rotation, agentId) {
     const { bodies } = useSceneStore.getState();
+    const { entities } = useSceneStore.getState();
+    const speed = entities[agentId]?.settings?.speed || 1;
     const body = bodies[agentId];
 
-    const moveSpeed = 1.0;  
+    const moveSpeed = speed;  
     const turnSpeed = 0.05;     
 
     let x, y, z;
 
     if (body) {
-        console.log("Using Physics!");
         const t = body.translation();
-        console.log("Current Body Position: " + t);
         x = t.x;
         y = t.y;
         z = t.z;
     } else {
-        console.log("Fall back");
         [x, y, z] = position;
     }
 

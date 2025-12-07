@@ -79,7 +79,7 @@ export const useSceneStore = create((set, get) => ({
 
 const buildEntitiyFromPartial = (partial, id) => {
     const type = partial.capabilities || [];
-    const {actionSpace, observationsSpace, stateSpace} = addCapabilitySchemas(type);
+    const {actionSpace, observationsSpace, stateSpace, settingSpace} = addCapabilitySchemas(type);
     
     let entity = {
         id: id,
@@ -91,10 +91,12 @@ const buildEntitiyFromPartial = (partial, id) => {
         assetRef: partial.assetRef,
         animationRef: partial.animationRef || null,
         collider: partial.collider || null,
+        targetVisual: partial.targetStat || null,
         actuator_type : partial.actuator_type || 'walker',
         isDecor: partial.isDecor || false,
         isPickable: partial.isPickable || false,
         isCollectable: partial.isCollectable || false, //This flag can help us to make sure that agent with Collector capability is picking only isCollectable item
+        isTarget: partial.isTarget || false,
     }
 
     if (partial.tag === 'agent') {
@@ -111,6 +113,10 @@ const buildEntitiyFromPartial = (partial, id) => {
 
     if (Object.keys(stateSpace).length > 0) {
         entity['state_space'] = stateSpace;
+    }
+
+    if(Object.keys(settingSpace).length > 0) {
+        entity['settings'] = settingSpace;
     }
 
     console.log("Entity created:", entity);

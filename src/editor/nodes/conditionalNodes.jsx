@@ -71,6 +71,7 @@ export function InRadiusNode({ data, id }) {
                     <option value="Agent">Agent</option>
                     <option value="Non-State Object">Non-State Object</option>
                     <option value="Pickable Object">Pickable Object</option>
+                    <option value="Target Object">Target Object</option>
                 </select>
 
                 <br />
@@ -85,6 +86,7 @@ export function InRadiusNode({ data, id }) {
                     <option value="Agent">Agent</option>
                     <option value="Non-State Object">Non-State Object</option>
                     <option value="Pickable Object">Pickable Object</option>
+                    <option value="Target Object">Target Object</option>
                 </select>
 
                 <br />

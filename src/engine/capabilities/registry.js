@@ -3,6 +3,7 @@ export const CAPABILITY_SCHEMAS = {
     Moveable: {
         actions: ['move_up', 'move_down', 'move_left', 'move_right', 'idle'],
         observations : ['self_position_x', 'self_position_y', 'self_position_z'],
+        settings: {speed: 0.5, scale: 1}
     },
 
     Interactable: {
@@ -33,11 +34,13 @@ export const addCapabilitySchemas = (type) => {
     let actionSpace = [];
     let observationsSpace = [];
     let stateSpace = {};
+    let settingSpace = {};
     type.forEach(element => {
        actionSpace = actionSpace.concat(CAPABILITY_SCHEMAS[element].actions || []);
        observationsSpace = observationsSpace.concat(CAPABILITY_SCHEMAS[element].observations || []);
        stateSpace = {...stateSpace, ...(CAPABILITY_SCHEMAS[element].state || {})};
+       settingSpace = {...settingSpace, ...(CAPABILITY_SCHEMAS[element].settings || {})};
     });
     
-    return {actionSpace, observationsSpace, stateSpace};
+    return {actionSpace, observationsSpace, stateSpace, settingSpace};
 }
