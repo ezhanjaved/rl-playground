@@ -1,33 +1,49 @@
 import "../styling/style.css"
 import { LuMessageCircleMore } from "react-icons/lu";
-import { FaCode, FaPause, FaRegUserCircle } from "react-icons/fa";
+import { FaCode, FaPause, FaRegUserCircle, FaAddressBook, FaPlus, FaArrowRight } from "react-icons/fa";
 import { FaPlay } from "react-icons/fa";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useCanvasSetting } from "../stores/useCanvasSetting";
+import { useGraphStore } from "../stores/useGraphStore";
+import { useEffect, useState } from "react";
 
 const Header = () => {
   const togglePlaying = useRunTimeStore((state) => state.togglePlaying);
   const playing = useRunTimeStore((state) => state.playing);
   const toggleDebug = useCanvasSetting((state) => state.toggleDebug);
   const changeColor = useCanvasSetting((state) => state.changeColor);
+  const addGraph = useGraphStore((state) => state.addGraph);
+  const nextGraph = useGraphStore((state) => state.nextGraph);
+  
+  const url = window.location.href;
+  const [visibility, setVisibility] = useState(1);
+
+  useEffect(() => {
+    const options = ["http://localhost:5173/", "http://localhost:5173/behavior-graph"]
+    const index = options.indexOf(url);
+    setVisibility(index+1);
+  }, [])
 
   return (
     <header className='header'>
-        <h1></h1>
-        <div className='Window-Controls'>
-            <span ><LuMessageCircleMore /></span>
-            <span style={{cursor: "pointer"}} onClick={() => toggleDebug()} ><FaCode /></span>
-            <span ><FaRegUserCircle /></span>
-            <span style={{cursor: "pointer"}} onClick={() => togglePlaying()} >{playing ? <FaPause /> : <FaPlay />}</span>
-            <select name="color-picker" id="color-picker" onChange={(e) => changeColor(e.target.value)}>
-              <option value="pink">Pink</option>
-              <option value="orange">Orange</option>
-              <option value="green">Green</option>
-              <option value="peach">Peach</option>
-              <option value="yellow">Yellow</option>
-              <option value="purple">Purple</option>
-            </select>
-        </div>
+      <h1></h1>
+      <div className='Window-Controls'>
+        <span ><LuMessageCircleMore /></span>
+        <span ><FaRegUserCircle /></span>
+        <span ><FaAddressBook /></span>
+        <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => addGraph()} ><FaPlus /></span>
+        <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => nextGraph()} ><FaArrowRight /></span>
+        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => toggleDebug()} ><FaCode /></span>
+        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => togglePlaying()} >{playing ? <FaPause /> : <FaPlay />}</span>
+        <select style={{ display: visibility !== 1 ? "none" : "flex" }} name="color-picker" id="color-picker" onChange={(e) => changeColor(e.target.value)}>
+          <option value="pink">Pink</option>
+          <option value="orange">Orange</option>
+          <option value="green">Green</option>
+          <option value="peach">Peach</option>
+          <option value="yellow">Yellow</option>
+          <option value="purple">Purple</option>
+        </select>
+      </div>
     </header>
   )
 }

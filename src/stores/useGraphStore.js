@@ -3,15 +3,39 @@ import { create } from "zustand";
 
 export const useGraphStore = create((set, get) => ({
   graphs: {},
+  totalGraph: [],
+  indexNumber: 0,
   activeGraphId: null,
+
+  nextGraph: () =>
+    set((state) => {
+      const totalNum = state.totalGraph.length;
+      console.log("Total Num: " + totalNum);
+      if (totalNum === 0 || totalNum === 1) return state;
+      console.log("Total Graphs: " + state.totalGraph);
+
+      const newIndex = (state.indexNumber + 1) % totalNum;
+      const newActiveId = state.totalGraph[newIndex];
+
+      return {
+        ...state,
+        indexNumber: newIndex,
+        activeGraphId: newActiveId
+      };
+    }),
+
 
   addGraph: () =>
     set((state) => {
       const id = `graph_${crypto.randomUUID()}`;
       const graph = { nodes: [], edges: [] };
+      const newTotal = [...state.totalGraph, id];
 
       return {
+        ...state,  
         graphs: { ...state.graphs, [id]: graph },
+        totalGraph: newTotal,
+        indexNumber: newTotal.length - 1, 
         activeGraphId: id,
       };
     }),

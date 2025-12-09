@@ -14,7 +14,7 @@ export function BehaviorGraphEditor() {
     const setEdges = useGraphStore((s) => s.setEdges);
     const addEdgeToStore = useGraphStore((s) => s.addEdge);
 
-    const graph = graphs?.[activeGraphId] ?? { nodes: [], edges: [] };
+    const graph = activeGraphId ? graphs[activeGraphId] : null;
 
     const nodeTypes = {
         OnStepNode: OnStepNode,
@@ -63,6 +63,10 @@ export function BehaviorGraphEditor() {
         console.log("Nodes: " + JSON.stringify(graph?.nodes, null, 2));
         console.log("Edges: " + JSON.stringify(graph?.edges, null, 2));
     }, [graph?.nodes, graph?.edges])
+
+    if (!graph) {
+        return <div>No graph selected</div>;
+    }
 
     return (
         <div className="trainingEnvContainer">

@@ -6,15 +6,18 @@ import Sidebar from "../components/Sidebar.jsx";
 import { DndContext } from "@dnd-kit/core";
 import { useGraphStore } from "../stores/useGraphStore.js";
 
-export default function BehaviorGraphPage({ setCurrentPage }) {
+export default function BehaviorGraphPage() {
     const addGraph = useGraphStore(s => s.addGraph);
     const activeGraphId = useGraphStore(s => s.activeGraphId);
     const addNode = useGraphStore(s => s.addNode);
+    const totalGraph= useGraphStore(s => s.totalGraph);
 
     useEffect(() => {
-        console.log("Making our first graph!");
-        addGraph();
-    }, [addGraph])
+        if (totalGraph.length === 0) {
+            console.log("Making our first graph!");
+            addGraph();
+        }
+    }, [])
 
     const onDragEnd = (event) => {
         const nodeData = event.active?.data?.current;
@@ -44,7 +47,7 @@ export default function BehaviorGraphPage({ setCurrentPage }) {
             <div className="container">
                 <Header />
                     <DndContext onDragEnd={onDragEnd}>
-                        <Sidebar setCurrentPage={setCurrentPage} />
+                        <Sidebar />
                         <BehaviorGraphEditor />
                     </DndContext>
             </div>

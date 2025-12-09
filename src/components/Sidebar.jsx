@@ -6,46 +6,46 @@ import { BiSolidObjectsHorizontalLeft } from "react-icons/bi";
 import { FaCircleNodes } from "react-icons/fa6";
 import { GrProjects } from "react-icons/gr";
 import { FaShare } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
+const Sidebar = () => {
+  const [activePanel, setPanel] = useState(0); //0 is for Entity and 1 is for Behavior
+  const navigate = useNavigate();
 
-const Sidebar = ({ setCurrentPage }) => {
-  const [active, setActive] = useState("home");
+  useEffect(() => {
+    const url = window.location.href;
+    const options = ["http://localhost:5173/", "http://localhost:5173/behavior-graph"]
+    const index = options.indexOf(url);
+    setPanel(index);
+  }, [])
+
   const icons = [
-    { id: "home", icon: <IoHomeOutline />, page: "environment"  },
-    { id: "entities", icon: <BiSolidObjectsHorizontalLeft />, page: "environment"  },
-    { id: "behavior", icon: <FaCircleNodes />, page: "behavior"  },
-    { id: "settings", icon: <GrProjects />, page: "environment"  },
-    { id: "about", icon: <FaShare />, page: "behavior"  },
+    { id: "home", icon: <IoHomeOutline />, page: "http://localhost:5173/" },
+    { id: "entities", icon: <BiSolidObjectsHorizontalLeft />, page: "http://localhost:5173/" },
+    { id: "behavior", icon: <FaCircleNodes />, page: "http://localhost:5173/behavior-graph" },
+    { id: "settings", icon: <GrProjects />, page: "http://localhost:5173/behavior-graph" },
+    { id: "about", icon: <FaShare />, page: "http://localhost:5173/behavior-graph" },
   ];
   const renderContent = () => {
-    switch (active) {
-      case "home":
+    switch (activePanel) {
+      case 0:
         return <EntitiesPanel />;
-      case "entities":
-        return <EntitiesPanel />;
-      case "behavior":
-        return <BehaviorGraphPanel />;
-      case "settings":
-        return <EntitiesPanel />;
-      case "about":
+      case 1:
         return <BehaviorGraphPanel />;
       default:
         return null;
     }
   };
- const handleClick = (item) => {
-    setActive(item.id);
-    setCurrentPage(item.page);
-  };
+
   return (
     <aside className='sidebar'>
       <aside>
-      {icons.map(item => (
+        {icons.map(item => (
           <span
             key={item.id}
-            className={`icon ${active === item.id ? "active" : ""}`}
-            onClick={() => handleClick(item)}
+            className="icon"
+            onClick={() => navigate(item.page)}
           >
             {item.icon}
           </span>
@@ -53,7 +53,7 @@ const Sidebar = ({ setCurrentPage }) => {
       </aside>
       <div className='sidebarContent'>
         <div className="homeIcon">
-        <span className='icon'><IoHomeOutline /></span>
+          <span className='icon'><IoHomeOutline /></span>
         </div>
         {renderContent()}
       </div>
