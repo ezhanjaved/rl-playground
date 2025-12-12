@@ -54,6 +54,7 @@ export const useSceneStore = create((set, get) => ({
         addEntity(
             {
                 tag: "non-state",
+                name: "Bare Tree",
                 assetRef: "nature/Tree_4_A_Color1.gltf",
                 isDecor: "true",
                 position: [2,0,2],
@@ -64,6 +65,7 @@ export const useSceneStore = create((set, get) => ({
         addEntity(
             {
                 tag: "non-state",
+                name: "Bare Tree",
                 assetRef: "nature/Tree_4_A_Color1.gltf",
                 isDecor: "true",
                 position: [6,0,2],

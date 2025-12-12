@@ -3,7 +3,7 @@ export const CAPABILITY_SCHEMAS = {
     Moveable: {
         actions: ['move_up', 'move_down', 'move_left', 'move_right', 'idle'],
         observations : ['self_position_x', 'self_position_y', 'self_position_z'],
-        settings: {speed: 0.5, scale: 1}
+        settings: {speed: 0.5}
     },
 
     Interactable: {

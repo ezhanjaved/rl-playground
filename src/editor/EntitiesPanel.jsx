@@ -104,7 +104,7 @@ export default function EntitiesPanel() {
     ]
 
     const targetItems = [
-        {id: "lib_target_obj_1", image: target1, payload: {isDecor: "false", isPickable: "false", isCollectable: "false", isTarget: "true", assetRef: "resources/chest_gold.gltf", collider: {shape: "sphere", h:2.5, r: 0.5,}, targetStat: {radius: 2}}}
+        {id: "lib_target_obj_1", image: target1, payload: {name: "Chest", tag: "Target Object", isDecor: "false", isPickable: "false", isCollectable: "false", isTarget: "true", assetRef: "resources/chest_gold.gltf", collider: {shape: "sphere", h:2.5, r: 0.5,}, targetStat: {radius: 2}}}
     ]
 
     return (

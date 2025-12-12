@@ -7,6 +7,21 @@ export const useGraphStore = create((set, get) => ({
   indexNumber: 0,
   activeGraphId: null,
 
+  updateName: (graphId, name) => set((state) => {
+    const graph = graphId ? state.graphs[graphId] : state.graph[state.activeGraphId];
+    if(!graph) return state;
+    if(!name) return state;
+    return {
+      graphs: {
+        ...state.graphs,
+        [graphId] : {
+          ...graph,
+          name: name
+        }
+      }
+    }
+  }),
+
   nextGraph: () =>
     set((state) => {
       const totalNum = state.totalGraph.length;
@@ -28,7 +43,7 @@ export const useGraphStore = create((set, get) => ({
   addGraph: () =>
     set((state) => {
       const id = `graph_${crypto.randomUUID()}`;
-      const graph = { nodes: [], edges: [] };
+      const graph = { nodes: [], edges: [], name: null, id: id };
       const newTotal = [...state.totalGraph, id];
 
       return {

@@ -8,6 +8,7 @@ import { GrProjects } from "react-icons/gr";
 import { FaShare } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AssignmentPanel } from "../editor/AssignmentPanel";
 
 const Sidebar = () => {
   const [activePanel, setPanel] = useState(0); //0 is for Entity and 1 is for Behavior
@@ -24,7 +25,7 @@ const Sidebar = () => {
     { id: "home", icon: <IoHomeOutline />, page: "http://localhost:5173/" },
     { id: "entities", icon: <BiSolidObjectsHorizontalLeft />, page: "http://localhost:5173/" },
     { id: "behavior", icon: <FaCircleNodes />, page: "http://localhost:5173/behavior-graph" },
-    { id: "settings", icon: <GrProjects />, page: "http://localhost:5173/behavior-graph" },
+    { id: "settings", icon: <GrProjects />, page: "http://localhost:5173/control-panel" },
     { id: "about", icon: <FaShare />, page: "http://localhost:5173/behavior-graph" },
   ];
   const renderContent = () => {
@@ -34,7 +35,7 @@ const Sidebar = () => {
       case 1:
         return <BehaviorGraphPanel />;
       default:
-        return null;
+        return <AssignmentPanel />;
     }
   };
 

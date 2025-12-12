@@ -4,6 +4,7 @@ import EnvironmentPage from "./pages/EnvironmentPage";
 import BehaviorGraphPage from './pages/BehaviorGraphPage';
 import { Signup } from './components/SignUp';
 import { Onboarding } from './components/Onboarding';
+import ControlPanelPage from './pages/ControlPanelPage'
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
         <Route path="/behavior-graph" element={<BehaviorGraphPage />} />
         <Route path="/signing-in" element={<Signup />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/control-panel" element={<ControlPanelPage />} />
       </Routes>
     </Router>
   )
