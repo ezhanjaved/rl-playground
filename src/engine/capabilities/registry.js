@@ -2,35 +2,24 @@
 export const CAPABILITY_SCHEMAS = { 
     Moveable: {
         actions: ['move_up', 'move_down', 'move_left', 'move_right', 'idle'],
-        observations : ['self_position_x', 'self_position_y', 'self_position_z'],
+        observations : ['self_position_x', 'self_position_y', 'self_position_z', 'dist_to_nearest_target'],
         settings: {speed: 0.5}
-    },
-
-    Interactable: {
-        actions: ['interact'],
-        observations : ['last_action', 'dist_to_object'],
     },
 
     Holder : {
         actions: ['pick', 'drop'], //An agent with holder capability can both pick and drop - this is for carrying stuff
-        observations: ['last_action', 'dist_to_object'],
+        observations: ['holding', 'dist_to_nearest_pickable'],
         state: {holding: false, heldItemAssetRef: null, lastPickSuccess: null},
     },
 
     Collector: {
         actions: ['collect'], //An agent with collector capability will only be able to pick and his state will reflect the number of items collected
-        observations: ['last_action', 'dist_to_object'],
-        state: {lastItemCollected: null, numberOfitemsCollected: null, lastPickSuccess: null}
+        observations: ['dist_to_nearest_collectable', 'items_collected'],
+        state: {lastItemCollected: null, items_collected: 0, lastPickSuccess: null},
     },
-
-    Toggleble : {
-        state: {on: false}
-    }
 };
 
 export const addCapabilitySchemas = (type) => {
-    //type will be an array containing capability types
-    // ['Moveable', 'Interactable']
     let actionSpace = [];
     let observationsSpace = [];
     let stateSpace = {};

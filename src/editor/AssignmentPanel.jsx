@@ -1,38 +1,44 @@
 // Bind placeholders -> entities, fill params
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../styling/App.css";
 import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
-import { useRunTimeStore } from "../stores/useRunTimeStore";
+import { useSceneStore } from "../stores/useSceneStore";
 
 export function AssignmentPanel() {
+    const [trainingConfig, setTrainingConfig] = useState({});
+    const addDraftConfig = useSceneStore((s) => s.addDraftConfig);
+    const [partOne, setOne] = useState({});
+    const [partTwo, setTwo] = useState({});
+
+    useEffect(() => {
+        setTrainingConfig({...partOne, ...partTwo})
+    }, [partOne, partTwo])
+
     return (
         <>
             <div className="library_main">
-                <TrainingSection />
-                <AdvanceSection />
-                <div className="training-btn" style={{display: "flex", flexDirection: "row", gap: "10px"}}><button>Export Env</button><button>Start Training</button></div>
+                <TrainingSection setOne={setOne} />
+                <AdvanceSection setTwo={setTwo} />
+                <div className="training-btn" style={{ display: "flex", flexDirection: "row", gap: "5px" }}><button>Export Env</button><button onClick={() => addDraftConfig(trainingConfig)}>Update Config</button><button>Start Training</button></div>
             </div>
         </>
     )
 }
 
-const TrainingSection = () => {
+const TrainingSection = ({setOne}) => {
     const [open, setOpen] = useState(true);
-    
-    const episodeNumber = useRunTimeStore((state) => state.episodeNumber);
-    const maxStepsPerEpisode = useRunTimeStore((state) => state.maxStepsPerEpisode);
-    const rewardImportance = useRunTimeStore((state) => state.rewardImportance);
-    const algorithm = useRunTimeStore((state) => state.algorithm);
-    const explorationStrategy = useRunTimeStore((state) => state.explorationStrategy);
-    const learningSpeed = useRunTimeStore((state) => state.learningSpeed);
 
-    const setEpisodeNumber = useRunTimeStore((state) => state.setEpisodeNumber);
-    const setMaxEpisodeSteps = useRunTimeStore((state) => state.setMaxEpisodeSteps);
-    const setRewardImportance = useRunTimeStore((state) => state.setRewardImportance);
-    const setAlgorithm = useRunTimeStore((state) => state.setAlgorithm);
-    const setExplorationStrategy = useRunTimeStore((state) => state.setExplorationStrategy);
-    const setLearningSpeed = useRunTimeStore((state) => state.setLearningSpeed);
- 
+    const [episodeNumber, setEpisodeNumber] = useState(100);
+    const [maxStepsPerEpisode, setMaxEpisodeSteps] = useState(1000);
+    const [rewardImportance, setRewardImportance] = useState(0.5);
+    const [algorithm, setAlgorithm] = useState("q-learning");
+    const [explorationStrategy, setExplorationStrategy] = useState("fixed");
+    const [learningSpeed, setLearningSpeed] = useState("Medium");
+
+    useEffect(() => {
+        setOne({episodeNumber, maxStepsPerEpisode, rewardImportance, algorithm, explorationStrategy, learningSpeed})
+    }, [episodeNumber, maxStepsPerEpisode, rewardImportance, algorithm, explorationStrategy, learningSpeed])
+
     return (
         <div className="section">
             <button className="sectionHeader" style={{ background: "#e6e6e6" }} onClick={(() => setOpen(prev => !prev))}>
@@ -73,17 +79,16 @@ const TrainingSection = () => {
     );
 };
 
-const AdvanceSection = () => {
+const AdvanceSection = ({setTwo}) => {
     const [open, setOpen] = useState(true);
 
-    const rewardMultiplier = useRunTimeStore((state) => state.rewardMultiplier);
-    const setRewardMultiplier = useRunTimeStore((state) => state.setRewardMultiplier);
-    
-    const agentSpawnMode = useRunTimeStore((state) => state.agentSpawnMode);
-    const setAgentSpawnMode = useRunTimeStore((state) => state.setAgentSpawnMode);
+    const [rewardMultiplier, setRewardMultiplier] = useState(1);
+    const [agentSpawnMode, setAgentSpawnMode] = useState("Random");
+    const [objectSpawnMode, setObjectSpawnMode] = useState("Random");
 
-    const objectSpawnMode = useRunTimeStore((state) => state.objectSpawnMode);
-    const setObjectSpawnMode = useRunTimeStore((state) => state.setObjectSpawnMode);
+    useEffect(() => {
+        setTwo({rewardMultiplier, agentSpawnMode, objectSpawnMode})
+    }, [rewardMultiplier, agentSpawnMode, objectSpawnMode])
 
     return (
         <div className="section">

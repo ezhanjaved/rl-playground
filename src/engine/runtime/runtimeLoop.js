@@ -1,29 +1,31 @@
 // OBS -> controller -> actuator -> physics -> BG
 import { useSceneStore } from "../../stores/useSceneStore";
+import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
 import moveAdapter from "./actuators/MoveableActuators.js";
 import { holderAdapter } from "./actuators/HolderActuators.js";
 import { collectorAdapter } from "./actuators/CollectorActuators.js";
-import randomController from "./controllers/randomController.js";
 import { CapabilityMatcher } from "../capabilities/capabilitiesMatcher.js";
-import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
+import buildObsSpace from "./observationBuilder.js";
+import ControllerRouter from "./controllers/controllerRouter.js";
 
 export default function runTimeloop(entities) {
     const { updateEntity } = useSceneStore.getState();
-    const playing = useRunTimeStore.getState().playing; // dynamic read every frame
-    if (!playing) return;
-    //We will go through each entity
-    Object.values(entities).forEach(entity => {
+    const { playing, training } = useRunTimeStore.getState();
+    
+    if (!playing || training) return;
+    
+    Object.values(entities).forEach(entity => { //We will go through each entity
         
         if (entity.isDecor || !entity.action_space || entity.isPickable) {
             return;
         } 
 
-        const observation_space = entity.observation_space;
-        //Here we will build the obs space and then give it to controller
+        const observation_space = buildObsSpace(entity); //Here we will build the obs space and then give it to controller
         const action_space = entity.action_space;
-        const action = randomController(action_space); // 5 - pick
-        //Map action to the capability
-        const capabilityMatched = CapabilityMatcher(action);
+
+        const action = ControllerRouter(observation_space, entity.id, action_space); //This will give us action
+        
+        const capabilityMatched = CapabilityMatcher(action); //Map action to the capability
 
         switch (capabilityMatched) {
             case "Moveable":

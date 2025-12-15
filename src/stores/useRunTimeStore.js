@@ -1,44 +1,98 @@
 //We will maintain state of simulation here (Play/pause, step, tick, controller mode, episode state)
 import {create} from 'zustand';
-
+import { useSceneStore } from './useSceneStore';
 export const useRunTimeStore = create((set, get) => ({
      playing: false,
      togglePlaying: () => set({playing: !get().playing}),
      training: false,
      toggleTraining: () => set({training: !get().training}),
+     experiments: {}, //This will hold training data - right?
+     currentExperimentId: null,
 
-     episodeNumber: 0,
-     setEpisodeNumber: (num) => set({episodeNumber: num}),
-     maxStepsPerEpisode: 0,
-     setMaxEpisodeSteps: (num) => set({maxStepsPerEpisode: num}),
-     rewardImportance: 0,
-     setRewardImportance: (num) => set({rewardImportance: num}),
-     algorithm: null,
-     setAlgorithm: (algo) => set({algorithm: algo}),
-     explorationStrategy: null,
-     setExplorationStrategy: (strategy) => set({explorationStrategy: strategy}),
-     learningSpeed: null,
-     setLearningSpeed: (speed) => set({learningSpeed: speed}),
-     agentSpawnMode:null,
-     setAgentSpawnMode: (mode) => set({agentSpawnMode: mode}),
-     objectSpawnMode: null,
-     setObjectSpawnMode: (mode) => set ({objectSpawnMode: mode}),
-     rewardMultiplier: 1,
-     setRewardMultiplier: (multiplier) => set({rewardMultiplier: multiplier}),
+     updateExperiementStatus: (id, statusSignal) => set((state) => ({
+          experiments: {
+               ...state.experiments,
+               [id]: {
+                    ...state.experiments[id],
+                    status: statusSignal
+               }
+          }
+     })),
 
-     trainingConfig: () => {
-          const state = get();
+     syncEpisodeResult: (expId, agentId, updatedTable, episodeIndex, episodeInfo, rewardEpisode) => set((state) => ({
+          experiments: {
+               ...state.experiments,
+               [expId]: {
+                    ...state.experiments[expId],
+                    agents: {
+                         ...state.experiments[expId].agents,
+                         [agentId]: {
+                              ...state.experiments[expId].agents[agentId],
+                              learningState: {
+                                   ...state.experiments[expId].agents[agentId].learningState,
+                                   qTable: updatedTable
+                              },
+                              
+                              episodeState: {
+                                   ...state.experiments[expId].agents[agentId].episodeState,
+                                   episodeIndex: episodeIndex,
+                              },
+
+                              telemetry: {
+                                   episodeRewards: [...state.experiments[expId].agents[agentId].telemetry.episodeRewards, rewardEpisode],
+                                   episodesInfo: {
+                                        ...state.experiments[expId].agents[agentId].telemetry.episodesInfo,
+                                        [episodeIndex]:episodeInfo
+                                   },
+                              }
+                         }
+                    }
+               }
+          }
+     })),
+
+     addExperiement: () => set((state) => {
+          const id = `experiment_${crypto.randomUUID()}`
+          const timeCreated = Date.now()
+          const status = "Training" //Others: Paused, Completed
+          const agents = {}
+          const { assignments }= useSceneStore.getState()
+          for (const agentId of Object.keys(assignments)) { //assignments is object and its keys are agentId
+               agents[agentId] = {
+                    graphId: assignments[agentId].assignedGraphId,
+                    config: structuredClone(assignments[agentId].assignedConfig),
+
+                    learningState: {
+                         algorithm: assignments[agentId].assignedConfig.algorithm,
+                         qTable: {},
+                         epsilon: 1.0
+                    },
+
+                    episodeState: {
+                         episodeIndex: 0,
+                         stepIndex: 0,
+                         rewardSum: 0,
+                         done: false,
+                    },
+
+                    telemetry: {
+                         episodeRewards: [],
+                         episodesInfo: {}
+                    },
+               };
+          }
+
           return {
-               episodeNumber: state.episodeNumber,
-               maxStepsPerEpisode: state.maxStepsPerEpisode,
-               rewardImportance: state.rewardImportance,
-               algorithm: state.algorithm,
-               explorationStrategy: state.explorationStrategy,
-               learningSpeed: state.learningSpeed,
-               agentSpawnMode: state.agentSpawnMode,
-               objectSpawnMode: state.objectSpawnMode,
-               rewardMultiplier: state.rewardMultiplier,
-          };
-     }
-
+               currentExperimentId: id,
+               experiments: {
+                    ...state.experiments,
+                    [id]: {
+                         id,
+                         timeCreated,
+                         status,
+                         agents
+                    }
+               }
+          }
+     }),
 }));
