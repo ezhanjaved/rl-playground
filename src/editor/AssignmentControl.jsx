@@ -57,13 +57,13 @@ export function AssignmentControl() {
                                 </div>
                             </>
                         )}
-                        {entities?.[pickedEntity]?.targetVisual && (
+                        {/* {entities?.[pickedEntity]?.targetVisual && (
                             <>
                                 <label>Set Radius (Current: {entities?.[pickedEntity]?.targetVisual?.radius})</label>
                                 <input value={radius} onChange={(e) => setRadius(e.target.value)} type="number" />
                                 <button onClick={() => updateEntity(pickedEntity, { targetVisual: { radius: radius } })}>Update Radius</button>
                             </>
-                        )}
+                        )} */}
                         {entities?.[pickedEntity]?.tag !== "agent" && (
                             <span><FaInfo /> Only Agents can be bonded to a Behavior Graph!</span>
                         )}

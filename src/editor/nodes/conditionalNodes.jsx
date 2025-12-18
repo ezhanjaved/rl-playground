@@ -27,15 +27,6 @@ export function InRadiusNode({ data, id }) {
         });
     }
 
-    function UpdateRadiusValue(event) {
-        updateNode(activeGraphId, nodeId, {
-            data: {
-                ...data,
-                radiusValue: Number(event.target.value),
-            },
-        });
-    }
-
     return (
         <div onDoubleClick={() => deleteNode(activeGraphId, nodeId)} className="conditional-node">
             <span className="node-heading">{data?.label}</span>
@@ -88,15 +79,6 @@ export function InRadiusNode({ data, id }) {
                     <option value="Pickable Object">Pickable Object</option>
                     <option value="Target Object">Target Object</option>
                 </select>
-
-                <br />
-
-                <span>Radius Value</span>
-                <input
-                    type="number"
-                    value={data.radiusValue ?? ""}
-                    onChange={UpdateRadiusValue}
-                />
             </div>
         </div>
     );
@@ -216,10 +198,12 @@ export function StateEqualsToNode({ data, id }) {
     const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
+    const moveableState = ["targetReached"];
     const holderState = ["holding", "lastPickSuccess"];
     const collectorState = ["lastItemCollected", "numberOfitemsCollected", "lastPickSuccess"];
 
     const stateMap = {
+        Moveable: moveableState,
         Holder: holderState,
         Collector: collectorState,
     };
@@ -283,6 +267,7 @@ export function StateEqualsToNode({ data, id }) {
             <div className="conditional-data-form">
                 <span>Entity Capabilities</span>
                 <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+                     <label><input type="checkbox" value="Moveable" onChange={handleCheckbox} /> Moveable</label>
                     <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>
@@ -317,10 +302,12 @@ export function CompareStateNode({ data, id }) {
     const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
+    const moveableState = ["targetReached"]
     const holderState = ["holding", "lastPickSuccess"];
     const collectorState = ["lastItemCollected", "numberOfitemsCollected", "lastPickSuccess"];
 
     const stateMap = {
+        Moveable: moveableState,
         Holder: holderState,
         Collector: collectorState,
     };
@@ -394,6 +381,7 @@ export function CompareStateNode({ data, id }) {
             <div className="conditional-data-form">
                 <span>Entity Capabilities</span>
                 <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+                    <label><input type="checkbox" value="Moveable" onChange={handleCheckbox} /> Moveable</label>
                     <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>

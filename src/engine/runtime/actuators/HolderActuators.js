@@ -1,10 +1,10 @@
 import { nearbyObject } from "../../utility/nearByObject";
 import { useSceneStore } from "../../../stores/useSceneStore";
-export function holderAdapter(action, entity) {
+export default function holderAdapter(action, entity) {
     const { updateEntity, entities, deleteEntity, addEntity } = useSceneStore.getState();
 
     if (action === "pick") {
-        const pickRadius = 2.0;
+        const pickRadius = 2.0; //Engine Defined - Not User
         const targetObj = nearbyObject(entities, entity.position, pickRadius, entity.capabilities);
 
         if (!targetObj) {

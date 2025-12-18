@@ -1,4 +1,5 @@
 import { useSceneStore } from "../../../stores/useSceneStore";
+import distance3D from "../../utility/3dDistance";
 
 export default function moveAdapter(action, position, rotation, agentId) {
     const { bodies } = useSceneStore.getState();
@@ -63,5 +64,28 @@ export default function moveAdapter(action, position, rotation, agentId) {
     const t = body.translation();
     const updatedPosition = [t.x, t.y, t.z];
     const updatedRotation = [rx, ry, rz];
-    return { updatedPosition, updatedRotation };
+
+    const targetReached = targetReachedFrom(updatedPosition, entities);
+    if (targetReached) {
+        console.log("Agent Reached Target!");
+    }
+    return { updatedPosition, updatedRotation, targetReached };
+}
+
+function targetReachedFrom(agentPos, entities) {
+  let best = Infinity;
+  let targetRadius = 1; //Engine Defined - Not User
+
+  for (const e of Object.values(entities)) {
+    if (!e?.isTarget) continue;
+    const pos = e.position ?? [0, 0, 0];
+    const d = distance3D(agentPos, pos);
+    if (d < best) {
+      best = d;
+      targetRadius = e.radius ?? e.settings?.radius ?? 1;
+    }
+  }
+
+  if (!Number.isFinite(best)) return false;
+  return best <= targetRadius;
 }

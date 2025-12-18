@@ -34,7 +34,7 @@ export default function ColliderBuilder({ entity, children }) {
                         name="targetSensor"
                         onIntersectionEnter={({ other }) => {
                             console.log("ENTER sensor");
-                            console.log("object", other?.rigidBodyObject?.userData);
+                            console.log("object", other);
                         }}
                         onIntersectionExit={({ other }) => {
                             console.log("EXIT sensor");

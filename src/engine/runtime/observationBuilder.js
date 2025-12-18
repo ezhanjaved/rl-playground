@@ -1,8 +1,10 @@
 // Build obs vectors from entity + registry
 import { useSceneStore } from "../../stores/useSceneStore";
+import distance3D from "../utility/3dDistance";
 export default function buildObsSpace(agent) {
     const obs = agent?.observation_space ?? []; //['self_position_x', 'self_position_y', 'self_position_z', 'dist_to_nearest_target']
     const position = agent?.position ?? [0, 0, 0]; //[2.1212, 0, 3.12111]  
+    const rotation = agent?.rotation ??[0, 0, 0];
     const constructedObs = [];
     
     for (const obsVar of obs) {
@@ -15,6 +17,15 @@ export default function buildObsSpace(agent) {
                 break;
             case "self_position_z":
                 constructedObs.push(position[2]);
+                break;
+            case "self_rotation_x":
+                constructedObs.push(rotation[0]);
+                break;
+            case "self_rotation_y":
+                constructedObs.push(rotation[1]);
+                break;
+            case "self_rotation_z":
+                constructedObs.push(rotation[2]);
                 break;
             case "dist_to_nearest_target": {
                 const distanceCalculated = nearestDistance(position, (e) => e.isTarget === true);
@@ -46,9 +57,3 @@ function nearestDistance(position, predicate) {
     return Number.isFinite(min) ? min : MAX_DIST;
 }
 
-function distance3D(a, b) {
-    const dx = (a[0] ?? 0) - (b[0] ?? 0);
-    const dy = (a[1] ?? 0) - (b[1] ?? 0);
-    const dz = (a[2] ?? 0) - (b[2] ?? 0);
-    return Math.sqrt(dx*dx + dy*dy + dz*dz);
-}
