@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 const Header = () => {
   const togglePlaying = useRunTimeStore((state) => state.togglePlaying);
   const playing = useRunTimeStore((state) => state.playing);
+  const training = useRunTimeStore((s) => s.training);
 
   const toggleDebug = useCanvasSetting((state) => state.toggleDebug);
   const changeColor = useCanvasSetting((state) => state.changeColor);
@@ -35,6 +36,7 @@ const Header = () => {
     <header className='header'>
       <h1></h1>
       <div className='Window-Controls'>
+        {training && (<span style={{fontSize: "22px", marginTop: "2px"}}>Training...</span>)}
         {setting && (
           <div className="setting-pop-up">
             <input value={name} type="text" placeholder="Enter Graph Name" onChange={(e) => setName(e.target.value)} />
@@ -52,7 +54,7 @@ const Header = () => {
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => addGraph()} ><FaPlus /></span>
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => nextGraph()} ><FaArrowRight /></span>
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => toggleDebug()} ><FaCode /></span>
-        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => togglePlaying()} >{playing ? <FaPause /> : <FaPlay />}</span>
+        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => {if (!training) togglePlaying();}} >{playing ? <FaPause /> : <FaPlay />}</span>
         <select style={{ display: visibility !== 1 ? "none" : "flex" }} name="color-picker" id="color-picker" onChange={(e) => changeColor(e.target.value)}>
           <option value="pink">Pink</option>
           <option value="orange">Orange</option>

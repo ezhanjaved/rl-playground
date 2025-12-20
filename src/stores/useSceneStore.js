@@ -12,12 +12,14 @@ export const useSceneStore = create((set, get) => ({
     initialized: false,
     bodies: {},
     draftTrainingConfig: {},
-    
+    worldMounted: false,
+    setWorldMounted: (v) => set({ worldMounted: v }),
+
     addDraftConfig: (configData) => set({ draftTrainingConfig: configData }),
 
     addAssignment: (entityId, graphId) => set((state) => {
         if (!entityId) return state;
-        if(!graphId) return state;
+        if (!graphId) return state;
         return {
             assignments: {
                 ...state.assignments,
@@ -32,16 +34,17 @@ export const useSceneStore = create((set, get) => ({
 
     deleteAssignment: (entityId) => set(state => {
         const newAssignments = { ...state.assignments };
-        delete newAssignments[entityId]; 
-        return { assignments: newAssignments }; 
+        delete newAssignments[entityId];
+        return { assignments: newAssignments };
     }),
 
     setActiveEntity: (entityId) => set({ activeEntity: entityId }),
     setDragging: (dragging) => set({ isDragging: dragging }),
 
-    registerBody: (id, body) => set((state) => ({
-        bodies: { ...state.bodies, [id]: body },
-    })),
+    registerBody: (id, body) => set((state) => {
+        console.log("[registerBody called]", id);
+        return { bodies: { ...state.bodies, [id]: body } };
+    }),
 
     unregisterBody: (id) => set(state => {
         const existing = { ...state.bodies };
@@ -118,7 +121,7 @@ const buildEntitiyFromPartial = (partial, id) => {
         animationRef: partial.animationRef || null,
         collider: partial.collider || null,
         actuator_type: partial.actuator_type || 'walker',
-        
+
         targetVisual: partial.targetStat || null,
         isDecor: partial.isDecor || false,
         isPickable: partial.isPickable || false,

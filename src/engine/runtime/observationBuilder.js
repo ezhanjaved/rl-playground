@@ -53,7 +53,5 @@ function nearestDistance(position, predicate) {
         const d = distance3D(position, targetObjPos);
         if (d < min) min = d;
     }
-
     return Number.isFinite(min) ? min : MAX_DIST;
 }
-

@@ -1,71 +1,110 @@
 //We will maintain state of simulation here (Play/pause, step, tick, controller mode, episode state)
-import {create} from 'zustand';
+import { create } from 'zustand';
 import { useSceneStore } from './useSceneStore';
 export const useRunTimeStore = create((set, get) => ({
      playing: false,
-     togglePlaying: () => set({playing: !get().playing}),
+     togglePlaying: () => set({ playing: !get().playing }),
      training: false,
-     toggleTraining: () => set({training: !get().training}),
+     toggleTraining: () => set({ training: !get().training }),
      experiments: {}, //This will hold training data - right?
      currentExperimentId: null,
+     selectedAgent: null,
+     setAgent: (id) => set({ selectedAgent: id }),
 
-     updateExperiementStatus: (id, statusSignal) => set((state) => ({
-          experiments: {
-               ...state.experiments,
-               [id]: {
-                    ...state.experiments[id],
-                    status: statusSignal
-               }
-          }
-     })),
+     updateExperiementStatus: (expId, statusSignal) =>
+          set((state) => {
+               const exp = state.experiments?.[expId];
+               if (!exp) return state;
 
-     syncEpisodeResult: (expId, agentId, updatedTable, episodeIndex, episodeInfo, rewardEpisode) => set((state) => ({
-          experiments: {
-               ...state.experiments,
-               [expId]: {
-                    ...state.experiments[expId],
-                    agents: {
-                         ...state.experiments[expId].agents,
-                         [agentId]: {
-                              ...state.experiments[expId].agents[agentId],
-                              learningState: {
-                                   ...state.experiments[expId].agents[agentId].learningState,
-                                   qTable: updatedTable
-                              },
-                              
-                              episodeState: {
-                                   ...state.experiments[expId].agents[agentId].episodeState,
-                                   episodeIndex: episodeIndex,
-                              },
+               if (exp.status === statusSignal) return state;
 
-                              telemetry: {
-                                   episodeRewards: [...state.experiments[expId].agents[agentId].telemetry.episodeRewards, rewardEpisode],
-                                   episodesInfo: {
-                                        ...state.experiments[expId].agents[agentId].telemetry.episodesInfo,
-                                        [episodeIndex]:episodeInfo
+               return {
+                    experiments: {
+                         ...state.experiments,
+                         [expId]: {
+                              ...exp,
+                              status: statusSignal,
+                         },
+                    },
+               };
+          }),
+
+
+     syncEpisodeResult: (
+          expId,
+          agentId,
+          updatedQTable,
+          episodeIndex,
+          episodeInfo,
+          rewardEpisode
+     ) =>
+          set((state) => {
+               const exp = state.experiments?.[expId];
+               if (!exp) return state;
+
+               const agent = exp.agents?.[agentId];
+               if (!agent) return state;
+
+               const prevRewards = agent.telemetry?.episodeRewards ?? [];
+               const prevEpisodesInfo = agent.telemetry?.episodesInfo ?? {};
+
+               return {
+                    experiments: {
+                         ...state.experiments,
+                         [expId]: {
+                              ...exp,
+                              agents: {
+                                   ...exp.agents,
+                                   [agentId]: {
+                                        ...agent,
+
+                                        learningState: {
+                                             ...agent.learningState,
+                                             qTable: updatedQTable,
+                                        },
+
+                                        episodeState: {
+                                             ...agent.episodeState,
+                                             episodeIndex,
+                                        },
+
+                                        telemetry: {
+                                             ...agent.telemetry,
+                                             episodeRewards: [...prevRewards, rewardEpisode],
+                                             episodesInfo: {
+                                                  ...prevEpisodesInfo,
+                                                  [episodeIndex]: episodeInfo,
+                                             },
+                                        },
                                    },
-                              }
-                         }
-                    }
-               }
-          }
-     })),
+                              },
+                         },
+                    },
+               };
+          }),
 
-     addExperiement: () => set((state) => {
-          const id = `experiment_${crypto.randomUUID()}`
-          const timeCreated = Date.now()
-          const status = "Training" //Others: Paused, Completed
-          const agents = {}
-          const { assignments }= useSceneStore.getState()
-          for (const agentId of Object.keys(assignments)) { //assignments is object and its keys are agentId
+
+     addExperiment: () => {
+          const id = `experiment_${crypto.randomUUID()}`;
+          const timeCreated = Date.now();
+          const status = "Not Yet Started";
+
+          const { assignments, entities } = useSceneStore.getState();
+          const agents = {};
+
+          for (const agentId of Object.keys(assignments || {})) {
+               const a = assignments[agentId];
+               if (!a?.assignedConfig || !a?.assignedGraphId) continue;
+
                agents[agentId] = {
-                    graphId: assignments[agentId].assignedGraphId,
-                    config: structuredClone(assignments[agentId].assignedConfig),
+                    graphId: a.assignedGraphId,
+                    config: structuredClone(a.assignedConfig),
+                    fixedPosition: structuredClone(entities?.[agentId]?.position),
 
                     learningState: {
-                         algorithm: assignments[agentId].assignedConfig.algorithm,
+                         algorithm: a.assignedConfig.algorithm,
                          qTable: {},
-                         epsilon: 1.0
+                         epsilon: 1.0,
                     },
 
                     episodeState: {
@@ -77,22 +116,20 @@ export const useRunTimeStore = create((set, get) => ({
 
                     telemetry: {
                          episodeRewards: [],
-                         episodesInfo: {}
+                         episodesInfo: {},
                     },
                };
           }
 
-          return {
+          set((state) => ({
                currentExperimentId: id,
                experiments: {
-                    ...state.experiments,
-                    [id]: {
-                         id,
-                         timeCreated,
-                         status,
-                         agents
-                    }
-               }
-          }
-     }),
+                    ...(state.experiments || {}),
+                    [id]: { id, timeCreated, status, agents },
+               },
+          }));
+
+          return id;
+     },
+
 }));

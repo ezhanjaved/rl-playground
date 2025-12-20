@@ -4,9 +4,25 @@ import EntityMeshes from './EntityMeshes.jsx';
 import ColliderBuilder from "./ColliderBuild.jsx";
 import ColliderDebug from "./CollidersDebug.jsx";
 import { Physics, RigidBody, CuboidCollider } from "@react-three/rapier";
+import { useEffect } from "react";
 
 export default function World() {
-    const entities = useSceneStore((state) => state.entities); //entities json {1: agebt ,1}
+    const entities = useSceneStore((state) => state.entities); 
+
+    useEffect(() => {
+        console.log("[World] mounted");
+        return () => console.log("[World] unmounted");
+    }, []);
+
+    useEffect(() => {
+        console.log("[World] entities keys:", Object.keys(entities ?? {}));
+    }, [entities]);
+
+    useEffect(() => {
+        useSceneStore.getState().setWorldMounted(true);
+        return () => useSceneStore.getState().setWorldMounted(false);
+    }, []);
+
     return (
         <>
             <Physics gravity={[0, -9.81, 0]}>

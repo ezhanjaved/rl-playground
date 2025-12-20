@@ -9,6 +9,7 @@ import { FaShare } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AssignmentPanel } from "../editor/AssignmentPanel";
+import { TrainingInfoPanel } from "../editor/TrainingInfoPanel"
 
 const Sidebar = () => {
   const [activePanel, setPanel] = useState(0); //0 is for Entity and 1 is for Behavior
@@ -16,7 +17,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     const url = window.location.href;
-    const options = ["http://localhost:5173/", "http://localhost:5173/behavior-graph"]
+    const options = ["http://localhost:5173/", "http://localhost:5173/behavior-graph", "http://localhost:5173/control-panel"]
     const index = options.indexOf(url);
     setPanel(index);
   }, [])
@@ -26,7 +27,7 @@ const Sidebar = () => {
     { id: "entities", icon: <BiSolidObjectsHorizontalLeft />, page: "http://localhost:5173/" },
     { id: "behavior", icon: <FaCircleNodes />, page: "http://localhost:5173/behavior-graph" },
     { id: "settings", icon: <GrProjects />, page: "http://localhost:5173/control-panel" },
-    { id: "about", icon: <FaShare />, page: "http://localhost:5173/behavior-graph" },
+    { id: "about", icon: <FaShare />, page: "http://localhost:5173/training-info" },
   ];
   const renderContent = () => {
     switch (activePanel) {
@@ -34,8 +35,10 @@ const Sidebar = () => {
         return <EntitiesPanel />;
       case 1:
         return <BehaviorGraphPanel />;
-      default:
+      case 2:
         return <AssignmentPanel />;
+      default:
+        return <TrainingInfoPanel />;
     }
   };
 

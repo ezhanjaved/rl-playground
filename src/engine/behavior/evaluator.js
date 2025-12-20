@@ -2,7 +2,7 @@
 import { useSceneStore } from "../../stores/useSceneStore";
 import { useGraphStore } from "../../stores/useGraphStore";
 
-export function BehaviorGraphEval(agentId, obsVector) {
+export default function BehaviorGraphEval(agentId, obsVector) {
     const { assignments, entities } = useSceneStore.getState();
     const { graphs } = useGraphStore.getState();
 
@@ -46,7 +46,8 @@ function visitNode(NodeId, graph, ctxObj) {
     }
 
     if (currentNodeData.type === "AddRewardNode") {
-        ctxObj.reward += currentNodeData.data.rewardValue * config.rewardMultiplier; //Will do proper calculation with assignmentConfig but for now this works!
+        const multiplier = config?.rewardMultiplier ?? 1;
+        ctxObj.reward += currentNodeData?.data?.rewardValue * multiplier; //Will do proper calculation with assignmentConfig but for now this works!
     }
 
     if (currentNodeData.type === "EndEpisodeNode") {
@@ -57,8 +58,9 @@ function visitNode(NodeId, graph, ctxObj) {
     if (currentNodeData.type === "StateEqualsToNode") {
         const key = currentNodeData.data?.entityState //holding
         const expected = currentNodeData.data?.StateStatus //true or false
+        const expectedBool = (expected === true || expected === "true");
         const value = ctxObj.facts.state_space?.[key]
-        const result = value === expected;
+        const result = value === expectedBool;
 
         const edges = findEdges(NodeId, graph);
         const chosenEdge = edges.find(e => result ? e.sourceHandle?.toLowerCase().includes("true") : e.sourceHandle?.toLowerCase().includes("false"));
@@ -121,8 +123,8 @@ function visitNode(NodeId, graph, ctxObj) {
         const isAgent1 = entityOne === "Agent";
         const isAgent2 = entityTwo === "Agent";
 
-        const hasHolder = ctxObj.capabilities?.includes("Holder");
-        const hasCollector = ctxObj.capabilities?.includes("Collector");
+        const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+        const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
 
         if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) {
             return; //For distance to be calculated at least ONE entity has to be an agent!
@@ -131,7 +133,7 @@ function visitNode(NodeId, graph, ctxObj) {
 
         const getObs = (key) => {
             const idx = ctxObj.obs_space.indexOf(key);
-            return idx === 1 ? null : ctxObj.obsVector[idx]
+            return idx === -1 ? null : ctxObj.obsVector[idx]
         }
 
         if (entityTwo === "Target Object") {

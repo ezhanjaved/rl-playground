@@ -21,17 +21,27 @@ export default function EditorCanvas() {
     const colorLibrary = useCanvasSetting((state) => state.colorLibrary);
     const pickedColor = useCanvasSetting((state) => state.pickedColor);
     const [colorCanvas, colorGrid] = colorLibrary[pickedColor];
-    
-    function PlaySimulation() {
-    
+
+    // function PlaySimulation() {
+
+    //     useFrame(() => {
+    //         const playing = useRunTimeStore.getState().playing;
+    //         if (!playing) return;
+    //         const { entities } = useSceneStore.getState();
+    //         runTimeloop(entities);
+    //     });
+
+    //     return null;
+    // }
+
+    function SimulationLoop() {
         useFrame(() => {
-            const playing = useRunTimeStore.getState().playing;
-            if (!playing) return;
+            const { playing, training } = useRunTimeStore.getState();
+            if (!playing && !training) return;
+
             const { entities } = useSceneStore.getState();
             runTimeloop(entities);
         });
-        
-        return null;
     }
 
     function setLastPointerWorldPos(intersection) {
@@ -95,7 +105,7 @@ export default function EditorCanvas() {
                     <directionalLight position={[15, 15, 15]} />
 
                     {/* <TestCharacter /> */}
-                    <PlaySimulation /> {/* //My understanding is that this will run on each frame */}
+                    <SimulationLoop /> {/* //My understanding is that this will run on each frame */}
 
                     <OrbitControls
                         ref={controlRef}

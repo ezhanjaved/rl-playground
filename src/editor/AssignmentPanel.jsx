@@ -3,29 +3,56 @@ import { useEffect, useState } from "react";
 import "../styling/App.css";
 import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
 import { useSceneStore } from "../stores/useSceneStore";
+import { useRunTimeStore } from "../stores/useRunTimeStore";
+import { trainingLoop } from "../engine/runtime/trainingLoop";
 
 export function AssignmentPanel() {
     const [trainingConfig, setTrainingConfig] = useState({});
     const addDraftConfig = useSceneStore((s) => s.addDraftConfig);
+    const { training, addExperiment, toggleTraining, togglePlaying, playing } = useRunTimeStore.getState();
     const [partOne, setOne] = useState({});
     const [partTwo, setTwo] = useState({});
 
     useEffect(() => {
-        setTrainingConfig({...partOne, ...partTwo})
+        setTrainingConfig({ ...partOne, ...partTwo })
     }, [partOne, partTwo])
+
+    const nextFrame = () => new Promise(requestAnimationFrame);
+
+    async function waitForWorldAndBodies() {
+        while (!useSceneStore.getState().worldMounted) {
+            await nextFrame();
+        }
+
+        while (true) {
+            const { bodies, assignments } = useSceneStore.getState();
+            const agentIds = Object.keys(assignments);
+
+            if (agentIds.length > 0 && agentIds.every((id) => bodies[id])) return;
+            await nextFrame();
+        }
+    }
+
+    const startTraining = async () => {
+        if (playing) togglePlaying();
+        const expId = addExperiment();
+        if (!training) toggleTraining();
+        await waitForWorldAndBodies();     
+        await trainingLoop(expId);
+    };
 
     return (
         <>
             <div className="library_main">
                 <TrainingSection setOne={setOne} />
                 <AdvanceSection setTwo={setTwo} />
-                <div className="training-btn" style={{ display: "flex", flexDirection: "row", gap: "5px" }}><button>Export Env</button><button onClick={() => addDraftConfig(trainingConfig)}>Update Config</button><button>Start Training</button></div>
+                <div className="training-btn" style={{ display: "flex", flexDirection: "row", gap: "5px" }}><button>Export Env</button><button onClick={() => addDraftConfig(trainingConfig)}>Update Config</button><button onClick={() => startTraining()}>Start Training</button></div>
             </div>
         </>
     )
 }
 
-const TrainingSection = ({setOne}) => {
+const TrainingSection = ({ setOne }) => {
     const [open, setOpen] = useState(true);
 
     const [episodeNumber, setEpisodeNumber] = useState(100);
@@ -36,7 +63,7 @@ const TrainingSection = ({setOne}) => {
     const [learningSpeed, setLearningSpeed] = useState("Medium");
 
     useEffect(() => {
-        setOne({episodeNumber, maxStepsPerEpisode, rewardImportance, algorithm, explorationStrategy, learningSpeed})
+        setOne({ episodeNumber, maxStepsPerEpisode, rewardImportance, algorithm, explorationStrategy, learningSpeed })
     }, [episodeNumber, maxStepsPerEpisode, rewardImportance, algorithm, explorationStrategy, learningSpeed])
 
     return (
@@ -79,7 +106,7 @@ const TrainingSection = ({setOne}) => {
     );
 };
 
-const AdvanceSection = ({setTwo}) => {
+const AdvanceSection = ({ setTwo }) => {
     const [open, setOpen] = useState(true);
 
     const [rewardMultiplier, setRewardMultiplier] = useState(1);
@@ -87,7 +114,7 @@ const AdvanceSection = ({setTwo}) => {
     const [objectSpawnMode, setObjectSpawnMode] = useState("Random");
 
     useEffect(() => {
-        setTwo({rewardMultiplier, agentSpawnMode, objectSpawnMode})
+        setTwo({ rewardMultiplier, agentSpawnMode, objectSpawnMode })
     }, [rewardMultiplier, agentSpawnMode, objectSpawnMode])
 
     return (
