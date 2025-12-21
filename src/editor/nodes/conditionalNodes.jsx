@@ -94,7 +94,7 @@ export function LastActionIsNode({ data, id }) {
 
     const moveableAction = ["move_up", "move_down", "move_right", "move_left", "idle"];
     const holderAction = ["pick", "drop"];
-    const collectorAction = ["pick"];
+    const collectorAction = ["collect"];
 
     const handleCheckbox = (e) => {
         const value = e.target.value;
@@ -198,7 +198,7 @@ export function StateEqualsToNode({ data, id }) {
     const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
-    const moveableState = ["targetReached"];
+    const moveableState = ["targetReached", "notReached"];
     const holderState = ["holding", "lastPickSuccess"];
     const collectorState = ["lastItemCollected", "numberOfitemsCollected", "lastPickSuccess"];
 
@@ -267,7 +267,7 @@ export function StateEqualsToNode({ data, id }) {
             <div className="conditional-data-form">
                 <span>Entity Capabilities</span>
                 <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-                     <label><input type="checkbox" value="Moveable" onChange={handleCheckbox} /> Moveable</label>
+                    <label><input type="checkbox" value="Moveable" onChange={handleCheckbox} /> Moveable</label>
                     <label><input type="checkbox" value="Holder" onChange={handleCheckbox} /> Holder</label>
                     <label><input type="checkbox" value="Collector" onChange={handleCheckbox} /> Collector</label>
                 </div>
@@ -302,7 +302,7 @@ export function CompareStateNode({ data, id }) {
     const deleteNode = useGraphStore((s) => s.deleteNode);
     const nodeId = id;
 
-    const moveableState = ["targetReached"]
+    const moveableState = ["targetReached", "notReached"];
     const holderState = ["holding", "lastPickSuccess"];
     const collectorState = ["lastItemCollected", "numberOfitemsCollected", "lastPickSuccess"];
 

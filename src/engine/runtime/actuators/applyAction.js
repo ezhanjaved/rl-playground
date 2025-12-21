@@ -26,7 +26,6 @@ export default function applyAction(action_picked, agent) {
 
 function moveableWorker(action, entity, updateEntity) {
     const { updatedPosition, updatedRotation, targetReached } = moveAdapter(action, entity.position, entity.rotation, entity.id);
-    //Update entity's last_action
     updateEntity(entity.id, { last_action: action, position: updatedPosition, rotation: updatedRotation, state_space: {targetReached: targetReached} });
 }
 

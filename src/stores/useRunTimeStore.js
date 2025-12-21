@@ -4,10 +4,14 @@ import { useSceneStore } from './useSceneStore';
 export const useRunTimeStore = create((set, get) => ({
      playing: false,
      togglePlaying: () => set({ playing: !get().playing }),
+
      training: false,
      toggleTraining: () => set({ training: !get().training }),
+     setTraining: (value) => set({ training: value }),
+
      experiments: {}, //This will hold training data - right?
      currentExperimentId: null,
+
      selectedAgent: null,
      setAgent: (id) => set({ selectedAgent: id }),
 
@@ -36,7 +40,8 @@ export const useRunTimeStore = create((set, get) => ({
           updatedQTable,
           episodeIndex,
           episodeInfo,
-          rewardEpisode
+          rewardEpisode,
+          epsilon
      ) =>
           set((state) => {
                const exp = state.experiments?.[expId];
@@ -61,6 +66,7 @@ export const useRunTimeStore = create((set, get) => ({
                                         learningState: {
                                              ...agent.learningState,
                                              qTable: updatedQTable,
+                                             epsilon: epsilon,
                                         },
 
                                         episodeState: {
@@ -91,7 +97,27 @@ export const useRunTimeStore = create((set, get) => ({
 
           const { assignments, entities } = useSceneStore.getState();
           const agents = {};
-
+          const envEntities = {};
+          for (const [id, e] of Object.entries(entities)) {
+               const resettable = e.tag !== "agent" && (e.isPickable || e.isCollectable || e.isTarget);
+               if (!resettable) continue;
+               envEntities[id] = {
+                    tag: e.tag,
+                    name: e.name,
+                    capabilities: e.capabilities,
+                    position: structuredClone(e.position),
+                    rotation: structuredClone(e.rotation),
+                    assetRef: e.assetRef,
+                    animationRef: e.animationRef,
+                    collider: e.collider,
+                    actuator_type: e.actuator_type,
+                    isDecor: e.isDecor,
+                    isPickable: e.isPickable,
+                    isCollectable: e.isCollectable,
+                    isTarget: e.isTarget,
+                    targetStat: e.targetVisual,
+               };
+          }
           for (const agentId of Object.keys(assignments || {})) {
                const a = assignments[agentId];
                if (!a?.assignedConfig || !a?.assignedGraphId) continue;
@@ -125,7 +151,7 @@ export const useRunTimeStore = create((set, get) => ({
                currentExperimentId: id,
                experiments: {
                     ...(state.experiments || {}),
-                    [id]: { id, timeCreated, status, agents },
+                    [id]: { id, timeCreated, status, agents, envEntities },
                },
           }));
 

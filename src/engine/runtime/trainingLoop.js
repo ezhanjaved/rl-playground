@@ -14,7 +14,9 @@ export async function trainingLoop(experimentId) {
   const exp0 = runtime0.experiments?.[experimentId];
   if (!exp0) return;
 
-  if (!useRunTimeStore.getState().training) {
+  let completeNaturally = true;
+
+  if (!runtime0.training) {
     runtime0.updateExperiementStatus(experimentId, "Paused");
     return;
   }
@@ -24,6 +26,7 @@ export async function trainingLoop(experimentId) {
   }
 
   const pauseAndExit = async () => {
+    completeNaturally = false;
     useRunTimeStore.getState().updateExperiementStatus(experimentId, "Paused");
     await tick();
   };
@@ -43,6 +46,9 @@ export async function trainingLoop(experimentId) {
   for (const agentId of agentIds) {
     fixedPositions[agentId] = structuredClone(exp0?.agents?.[agentId]?.fixedPosition ?? [0, 0, 0]);
   }
+
+  const min = 0.05;
+  const decay = 0.995;
 
   for (const agentId of agentIds) {
     if (!useRunTimeStore.getState().training) {
@@ -67,8 +73,14 @@ export async function trainingLoop(experimentId) {
         return;
       }
 
-      const resetOk = resetAgentForEpisode(agentId, fixedPositions[agentId]);
+      const resetOk = resetAgentForEpisode(agentId, fixedPositions[agentId], "training");
       if (!resetOk) {
+        await pauseAndExit();
+        return;
+      }
+
+      const resetOkToo = resetEpisodeEnv(experimentId);
+      if (!resetOkToo) {
         await pauseAndExit();
         return;
       }
@@ -92,12 +104,9 @@ export async function trainingLoop(experimentId) {
         }
 
         const obsVector = buildObsSpace(agent);
-        console.log("OBS Vector: " + obsVector);
         const actionSpace = agent.action_space;
-        
-        const actionPicked = ControllerRouter(obsVector, agentId, actionSpace, experimentId);
-        console.log("Action Picked: " + actionPicked);
-        
+        const actionPicked = ControllerRouter(obsVector, agentId, actionSpace, experimentId, "training");
+
         const { reward, done: stepDone, nextObs } = envSet(actionPicked, agent, obsVector);
 
         qTable = qLearningLearner(qTable, actionPicked, obsVector, nextObs, reward, stepDone, config);
@@ -110,24 +119,36 @@ export async function trainingLoop(experimentId) {
         if (step % 50 === 0) await tick();
       }
 
-      const episodeInfo = { episodeIndex: ep, stepTaken, rewardSum, done };
+      const finalResetAgent = resetAgentForEpisode(agentId, fixedPositions[agentId], "done");
+      if (finalResetAgent) {
+        console.log("Agent was reset at the end of training back to starting position!");
+      }
+      const finalResetEnv = resetEpisodeEnv(experimentId);
+      if (finalResetEnv) {
+        console.log("Env was reset at the end of training back to starting position!");
+      }
+      const epsPrev = useRunTimeStore.getState().experiments?.[experimentId]?.agents?.[agentId]?.learningState?.epsilon ?? 1.0;
+      const epsilon = Math.max(min, epsPrev * decay);
+      const episodeInfo = { episodeIndex: ep, stepTaken, rewardSum, done, epsilon }; //add it into episode info - we can chart it against episode
 
       useRunTimeStore
         .getState()
-        .syncEpisodeResult(experimentId, agentId, qTable, ep, episodeInfo, rewardSum);
+        .syncEpisodeResult(experimentId, agentId, qTable, ep, episodeInfo, rewardSum, epsilon); //call syncEpisode function
 
       await tick();
     }
   }
 
-  if (useRunTimeStore.getState().training) {
-    useRunTimeStore.getState().updateExperiementStatus(experimentId, "Completed");
+  if (completeNaturally) {
+    const rt = useRunTimeStore.getState();
+    rt.updateExperiementStatus(experimentId, "Completed");
+    rt.setTraining(false);
   } else {
-    await pauseAndExit();
+    await tick();
   }
 }
 
-function resetAgentForEpisode(agentId, fixedPosition) {
+function resetAgentForEpisode(agentId, fixedPosition, mode) {
   const scene = useSceneStore.getState();
   const agent = scene.entities?.[agentId];
   if (!agent) return false;
@@ -141,7 +162,7 @@ function resetAgentForEpisode(agentId, fixedPosition) {
   let updatedPosition = [0, 0, 0];
   let updatedRotation = [0, 0, 0];
 
-  if (spawnMode === "Fixed") {
+  if (spawnMode === "Fixed" || mode === "done") {
     updatedPosition = structuredClone(fixedPosition ?? [0, 0, 0]);
     updatedRotation = [0, 0, 0];
   } else {
@@ -174,6 +195,24 @@ function resetAgentForEpisode(agentId, fixedPosition) {
     last_action: null,
   });
 
+  return true;
+}
+
+function resetEpisodeEnv(experimentId) {
+  const scene = useSceneStore.getState();
+  const runtime = useRunTimeStore.getState();
+  const snapshot = runtime.experiments?.[experimentId]?.envEntities;
+  if (!snapshot) return false;
+
+  for (const [id, e] of Object.entries(scene.entities)) {
+    const resettable = e.tag !== "agent" && (e.isPickable || e.isCollectable || e.isTarget);
+    if (!resettable) continue;
+    scene.deleteEntity(id);
+  }
+
+  for (const [id, partial] of Object.entries(snapshot)) {
+    scene.addEntityWithId(id, structuredClone(partial));
+  }
   return true;
 }
 

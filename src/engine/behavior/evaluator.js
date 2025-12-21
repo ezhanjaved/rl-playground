@@ -19,7 +19,7 @@ export default function BehaviorGraphEval(agentId, obsVector) {
         reward: 0,
         done: false,
         facts: { capabilities: agent.capabilities, last_action: agent.last_action, state_space: agent.state_space, obs_space: agent.observation_space },
-        maxSteps: 10,
+        maxSteps: 50,
         stepCount: 0,
         visitedNodes,
         config,
@@ -40,14 +40,14 @@ function visitNode(NodeId, graph, ctxObj) {
     ctxObj.stepCount++;
 
     const currentNodeData = graph.nodes.find(e => e.id === NodeId);
+    if (!currentNodeData) return;
 
-    if (currentNodeData.type === "OnEpisodeStartNode" || currentNodeData.type === "OnStepNode") {
-        console.log("Working with Event Nodes!")
-    }
+    // if (currentNodeData.type === "OnEpisodeStartNode" || currentNodeData.type === "OnStepNode") {
+    // }
 
     if (currentNodeData.type === "AddRewardNode") {
-        const multiplier = config?.rewardMultiplier ?? 1;
-        ctxObj.reward += currentNodeData?.data?.rewardValue * multiplier; //Will do proper calculation with assignmentConfig but for now this works!
+        const multiplier = ctxObj?.config?.rewardMultiplier ?? 1;
+        ctxObj.reward += (currentNodeData?.data?.rewardValue ?? 0) * multiplier; //Will do proper calculation with assignmentConfig but for now this works!
     }
 
     if (currentNodeData.type === "EndEpisodeNode") {
@@ -96,10 +96,13 @@ function visitNode(NodeId, graph, ctxObj) {
         }
 
         const key = currentNodeData?.data?.entityState; //This is state in question
-        const numericValue = currentNodeData?.data?.StateValue; //This is actual numeric value
+        const numericValue = Number(currentNodeData?.data?.StateValue);
+        if (!Number.isFinite(numericValue)) return;
         if (typeof numericValue !== "number") return;
-        const currentState = ctxObj.facts.state_space?.[key]; 
-        if (typeof currentState !== "number") return;
+        
+        const currentStateRaw = ctxObj.facts.state_space?.[key];
+        const currentState = Number(currentStateRaw);
+        if (!Number.isFinite(currentState)) return;
 
         const operator = currentNodeData?.data?.Operator; //This is operator
         const opFunction = operations[operator];
@@ -132,14 +135,14 @@ function visitNode(NodeId, graph, ctxObj) {
         }
 
         const getObs = (key) => {
-            const idx = ctxObj.obs_space.indexOf(key);
+            const idx = ctxObj?.facts?.obs_space.indexOf(key);
             return idx === -1 ? null : ctxObj.obsVector[idx]
         }
 
         if (entityTwo === "Target Object") {
                 //proceed further
                 const actualDistanceToTarget = getObs("dist_to_nearest_target")
-                if (actualDistanceToTarget <= radiusCheck && actualDistanceToTarget) {
+                if (actualDistanceToTarget !== null && actualDistanceToTarget <= radiusCheck) {
                     inRadius = true;
                 }
         }
@@ -147,12 +150,12 @@ function visitNode(NodeId, graph, ctxObj) {
         if (entityTwo === "Pickable Object") {
             if (hasHolder) {
                 const actualDistanceToPickable = getObs("dist_to_nearest_pickable");
-                if (actualDistanceToPickable <= radiusCheck && actualDistanceToPickable) {
+                if (actualDistanceToPickable !== null && actualDistanceToPickable <= radiusCheck) {
                     inRadius = true;
                 }
             } else if (hasCollector) {
                 const actualDistanceToCollector = getObs("dist_to_nearest_collectable");
-                if (actualDistanceToCollector <= radiusCheck && actualDistanceToCollector) {
+                if (actualDistanceToCollector !== null && actualDistanceToCollector <= radiusCheck) {
                     inRadius = true;
                 }
             } else {

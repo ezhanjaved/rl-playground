@@ -58,6 +58,11 @@ export const useSceneStore = create((set, get) => ({
         return { entities: { ...state.entities, [id]: entity } };
     }),
 
+    addEntityWithId: (id, partial) => set((state) => {
+        const entity = buildEntitiyFromPartial(partial, id);
+        return { entities: { ...state.entities, [id]: entity } };
+    }),
+
     updateEntity: (id, updated) => set(state => {
         const existing = state.entities[id] || {}; //We used id to get entity details and saved it in existing
         const entity = { ...existing, ...updated }; //We are merging existing entity with updated details
@@ -66,6 +71,8 @@ export const useSceneStore = create((set, get) => ({
 
     deleteEntity: (id) => set(state => {
         const newEntities = { ...state.entities }; //Create a copy of existing entities
+        // const newBodies = { ...state.bodies };
+        // delete newBodies[id];
         delete newEntities[id]; //Delete the entity with given id from the copied object
         return { entities: newEntities }; //Update the state with the new entities object
     }),
@@ -78,27 +85,27 @@ export const useSceneStore = create((set, get) => ({
         const { initialized, addEntity } = get();
         if (initialized) return;
 
-        addEntity(
-            {
-                tag: "non-state",
-                name: "Bare Tree",
-                assetRef: "nature/Tree_4_A_Color1.gltf",
-                isDecor: "true",
-                position: [2, 0, 2],
-                collider: { shape: "capsule", h: 3, r: 0.8 }
-            }
-        ),
+        // addEntity(
+        //     {
+        //         tag: "non-state",
+        //         name: "Bare Tree",
+        //         assetRef: "nature/Tree_4_A_Color1.gltf",
+        //         isDecor: "true",
+        //         position: [2, 0, 2],
+        //         collider: { shape: "capsule", h: 3, r: 0.8 }
+        //     }
+        // ),
 
-            addEntity(
-                {
-                    tag: "non-state",
-                    name: "Bare Tree",
-                    assetRef: "nature/Tree_4_A_Color1.gltf",
-                    isDecor: "true",
-                    position: [6, 0, 2],
-                    collider: { shape: "capsule", h: 3, r: 0.8 }
-                }
-            )
+        //     addEntity(
+        //         {
+        //             tag: "non-state",
+        //             name: "Bare Tree",
+        //             assetRef: "nature/Tree_4_A_Color1.gltf",
+        //             isDecor: "true",
+        //             position: [6, 0, 2],
+        //             collider: { shape: "capsule", h: 3, r: 0.8 }
+        //         }
+        //     )
 
         set({ initialized: true });
 

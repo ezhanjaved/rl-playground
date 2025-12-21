@@ -22,18 +22,6 @@ export default function EditorCanvas() {
     const pickedColor = useCanvasSetting((state) => state.pickedColor);
     const [colorCanvas, colorGrid] = colorLibrary[pickedColor];
 
-    // function PlaySimulation() {
-
-    //     useFrame(() => {
-    //         const playing = useRunTimeStore.getState().playing;
-    //         if (!playing) return;
-    //         const { entities } = useSceneStore.getState();
-    //         runTimeloop(entities);
-    //     });
-
-    //     return null;
-    // }
-
     function SimulationLoop() {
         useFrame(() => {
             const { playing, training } = useRunTimeStore.getState();

@@ -11,13 +11,13 @@ export default function runTimeloop(entities) {
     if (!playing || training) return;
     
     Object.values(entities).forEach(entity => { //We will go through each entity
-        if (entity.isDecor || !entity.action_space || entity.isPickable) {
+        if (entity.isDecor || !entity.action_space || entity.isPickable || entity.isTarget) {
             return;
         } 
         const observation_space = buildObsSpace(entity); //Here we will build the obs space and then give it to controller
         const action_space = entity.action_space;
 
-        const action = ControllerRouter(observation_space, entity.id, action_space, currentExperimentId); //This will give us action
+        const action = ControllerRouter(observation_space, entity.id, action_space, currentExperimentId, "playing"); //This will give us action
         applyAction(action, entity)
     })
 }

@@ -56,12 +56,12 @@ const Header = () => {
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => toggleDebug()} ><FaCode /></span>
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => {if (!training) togglePlaying();}} >{playing ? <FaPause /> : <FaPlay />}</span>
         <select style={{ display: visibility !== 1 ? "none" : "flex" }} name="color-picker" id="color-picker" onChange={(e) => changeColor(e.target.value)}>
-          <option value="pink">Pink</option>
+          <option value="purple">Purple</option>
           <option value="orange">Orange</option>
           <option value="green">Green</option>
           <option value="peach">Peach</option>
           <option value="yellow">Yellow</option>
-          <option value="purple">Purple</option>
+          <option value="pink">Pink</option>
         </select>
       </div>
     </header>

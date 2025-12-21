@@ -43,7 +43,7 @@ const AssignedAgents = () => {
       </button>
 
       {open && (
-        <div className="sectionBody">
+        <div className="gridWrapper">
           {agentIds.length === 0 ? (
             <div className="emptyText">No agents assigned</div>
           ) : (
@@ -55,7 +55,7 @@ const AssignedAgents = () => {
                 <button
                   key={agentId}
                   type="button"
-                  className={`agentRow ${isSelected ? "active" : ""}`}
+                  className={`agentRow ${isSelected ? "activeAgent" : ""}`}
                   onClick={() => setAgent(agentId)}
                   title={name}
                 >
