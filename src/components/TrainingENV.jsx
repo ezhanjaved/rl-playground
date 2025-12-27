@@ -1,5 +1,5 @@
 import "../styling/style.css";
-import EditorCanvas from "../scene/EditorCanvas";
+import CanvasPad from "../scene/EditorCanvas";
 
 const TrainingENV = () => {
   return (
@@ -8,7 +8,7 @@ const TrainingENV = () => {
       <p className="envSubtitle">Drag and drop items to build your RL environment</p>
 
       <div className="canvasBox">
-         <EditorCanvas />
+         <CanvasPad />
       </div>
     </main>
   );

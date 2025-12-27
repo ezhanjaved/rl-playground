@@ -12,6 +12,13 @@ export const useRunTimeStore = create((set, get) => ({
      experiments: {}, //This will hold training data - right?
      currentExperimentId: null,
 
+     clearExperiment: (id) => set((state) => {
+          const currentExp = {...state.experiments}
+          delete currentExp[id];
+          console.log("Exp is cleared!");
+          return { experiments: currentExp}
+     }),
+
      selectedAgent: null,
      setAgent: (id) => set({ selectedAgent: id }),
 

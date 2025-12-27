@@ -4,7 +4,7 @@ import { useSceneStore } from "../stores/useSceneStore";
 import { FaInfo } from "react-icons/fa";
 import { useEffect, useState } from "react";
 
-export function AssignmentControl() {
+export default function  AssignmentControl() {
     const entities = useSceneStore((s) => s.entities);
     const graphs = useGraphStore((s) => s.graphs);
     const updateEntity = useSceneStore((s) => s.updateEntity);

@@ -6,7 +6,7 @@ import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { trainingLoop } from "../engine/runtime/trainingLoop";
 
-export function AssignmentPanel() {
+export default function ControlPanel() {
     const [trainingConfig, setTrainingConfig] = useState({});
     const addDraftConfig = useSceneStore((s) => s.addDraftConfig);
     const { training, addExperiment, toggleTraining, togglePlaying, playing } = useRunTimeStore.getState();

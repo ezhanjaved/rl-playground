@@ -8,7 +8,7 @@ import { GrProjects } from "react-icons/gr";
 import { FaShare } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AssignmentPanel } from "../editor/AssignmentPanel";
+import  ControlPanel  from "../editor/AssignmentPanel";
 import { TrainingInfoPanel } from "../editor/TrainingInfoPanel"
 
 const Sidebar = () => {
@@ -36,7 +36,7 @@ const Sidebar = () => {
       case 1:
         return <BehaviorGraphPanel />;
       case 2:
-        return <AssignmentPanel />;
+        return <ControlPanel />;
       default:
         return <TrainingInfoPanel />;
     }

@@ -1,7 +1,7 @@
 import "../styling/style.css"
 import { LuMessageCircleMore } from "react-icons/lu";
 import { FaCode, FaPause, FaRegUserCircle, FaAddressBook, FaPlus, FaArrowRight, FaFileSignature } from "react-icons/fa";
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaCross } from "react-icons/fa";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useCanvasSetting } from "../stores/useCanvasSetting";
 import { useGraphStore } from "../stores/useGraphStore";
@@ -11,6 +11,8 @@ const Header = () => {
   const togglePlaying = useRunTimeStore((state) => state.togglePlaying);
   const playing = useRunTimeStore((state) => state.playing);
   const training = useRunTimeStore((s) => s.training);
+  const clearExperiment = useRunTimeStore((s) => s.clearExperiment);
+  const currentExpId= useRunTimeStore((s) => s.currentExperimentId);
 
   const toggleDebug = useCanvasSetting((state) => state.toggleDebug);
   const changeColor = useCanvasSetting((state) => state.changeColor);
@@ -54,6 +56,7 @@ const Header = () => {
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => addGraph()} ><FaPlus /></span>
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => nextGraph()} ><FaArrowRight /></span>
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => toggleDebug()} ><FaCode /></span>
+        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => clearExperiment(currentExpId)} ><FaCross /></span>
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => {if (!training) togglePlaying();}} >{playing ? <FaPause /> : <FaPlay />}</span>
         <select style={{ display: visibility !== 1 ? "none" : "flex" }} name="color-picker" id="color-picker" onChange={(e) => changeColor(e.target.value)}>
           <option value="purple">Purple</option>

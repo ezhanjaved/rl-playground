@@ -13,7 +13,7 @@ export let orbitControlsRef = null;
 import { useCanvasSetting } from "../stores/useCanvasSetting.js";
 import { Perf } from 'r3f-perf';
 
-export default function EditorCanvas() {
+export default function CanvasPad() {
 
     const controlRef = React.useRef();
     orbitControlsRef = controlRef;

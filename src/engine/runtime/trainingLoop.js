@@ -89,6 +89,7 @@ export async function trainingLoop(experimentId) {
       let stepTaken = 0;
       let done = false;
 
+      console.log("Episode Number:  " + ep);
       for (let step = 0; step < maxSteps; step++) {
         if (!useRunTimeStore.getState().training) {
           await pauseAndExit();
@@ -103,20 +104,24 @@ export async function trainingLoop(experimentId) {
           return;
         }
 
+        console.log("Step Number: " + step);
+
         const obsVector = buildObsSpace(agent);
+        console.log("OBS Vector created during step: " + obsVector);
         const actionSpace = agent.action_space;
-        const actionPicked = ControllerRouter(obsVector, agentId, actionSpace, experimentId, "training");
-
+        const actionPicked = ControllerRouter(obsVector, agentId, actionSpace, experimentId, qTable ,"training");
+        console.log("Action Picked by Controller during step: " + actionPicked);
         const { reward, done: stepDone, nextObs } = envSet(actionPicked, agent, obsVector);
-
-        qTable = qLearningLearner(qTable, actionPicked, obsVector, nextObs, reward, stepDone, config);
+        console.log("Reward Computed In This Step: " + reward + " Done Status: " + stepDone);
+        qTable = qLearningLearner(qTable, actionPicked, obsVector, nextObs, reward, stepDone, config, agentId);
 
         rewardSum += reward;
         stepTaken += 1;
         done = stepDone;
 
-        if (done) break;
-        if (step % 50 === 0) await tick();
+        console.log("Reward Sum Value: " + rewardSum);
+        if (done) {console.log("Episode was terminated because Agent picked right action"); break;}
+        if (step % 50 === 0) {console.log("Episode was terminated because Agent was out of steps"); await tick();}
       }
 
       const finalResetAgent = resetAgentForEpisode(agentId, fixedPositions[agentId], "done");
@@ -136,6 +141,7 @@ export async function trainingLoop(experimentId) {
         .syncEpisodeResult(experimentId, agentId, qTable, ep, episodeInfo, rewardSum, epsilon); //call syncEpisode function
 
       await tick();
+      console.log();
     }
   }
 

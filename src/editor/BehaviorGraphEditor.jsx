@@ -4,7 +4,7 @@ import "@xyflow/react/dist/style.css";
 import { useGraphStore } from "../stores/useGraphStore.js";
 import { useCallback, useEffect } from "react";
 import { OnStepNode, OnEpisodeStartNode } from "./nodes/eventNodes.jsx";
-import { InRadiusNode, LastActionIsNode, StateEqualsToNode, CompareStateNode } from "./nodes/conditionalNodes.jsx";
+import { InRadiusNode, LastActionIsNode, StateEqualsToNode, CompareStateNode, IsDistanceLessNode } from "./nodes/conditionalNodes.jsx";
 import { EndEpisodeNode, AddRewardNode, SetStateNode, RequestAction } from "./nodes/effectNodes.jsx";
 
 export function BehaviorGraphEditor() {
@@ -18,6 +18,7 @@ export function BehaviorGraphEditor() {
 
     const nodeTypes = {
         OnStepNode: OnStepNode,
+        IsDistanceLessNode: IsDistanceLessNode,
         OnEpisodeStartNode: OnEpisodeStartNode,
         InRadiusNode: InRadiusNode,
         LastActionIsNode: LastActionIsNode,

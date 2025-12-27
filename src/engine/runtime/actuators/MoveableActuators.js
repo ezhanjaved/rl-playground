@@ -1,7 +1,7 @@
 import { useSceneStore } from "../../../stores/useSceneStore";
 import distance3D from "../../utility/3dDistance";
 
-export default function moveAdapter(action, position, rotation, agentId) {
+export default function moveAdapter(action, position, rotation, agentId, observation_space) {
     const { bodies, entities } = useSceneStore.getState();
     const speed = entities[agentId]?.settings?.speed ?? 1;
     const body = bodies[agentId];
@@ -59,7 +59,7 @@ export default function moveAdapter(action, position, rotation, agentId) {
 
     const targetReached = targetReachedFrom(updatedPosition, entities);
 
-    return { updatedPosition, updatedRotation, targetReached };
+    return { updatedPosition, updatedRotation, targetReached, previousDistance: observation_space[2] };
 }
 
 function targetReachedFrom(agentPos, entities) {

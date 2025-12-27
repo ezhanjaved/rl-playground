@@ -14,6 +14,7 @@ export function BehaviorGraphPanel() {
 
     const conditionalNodes = [
         {id: "in-radius-node", payload: { data: { label: 'WithInRadius', entityOne: null, entityTwo: null }, type: "InRadiusNode"}},
+        {id: "is-distance-less-node", payload: { data: { label: 'IsDistanceLess', entityOne: null, entityTwo: null }, type: "IsDistanceLessNode"}},
         {id: "last-action-is-node", payload: { data: { label: 'LastActionIs', agentCapability: null, entityAction: null, actionStatus: null }, type: "LastActionIsNode"}},
         {id: "state-equals-node", payload: { data: { label: 'StateEquals', entityCapability: null, entityState: null, StateStatus: null }, type: "StateEqualsToNode"}},
         {id: "compare-state-node", payload: { data: { label: 'CompareState', entityCapability: null, entityState: null, StateValue: null, Operator: null }, type: "CompareStateNode"}}

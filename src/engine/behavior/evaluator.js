@@ -1,6 +1,7 @@
 // Walks the graph, evaluates nodes per tick
 import { useSceneStore } from "../../stores/useSceneStore";
 import { useGraphStore } from "../../stores/useGraphStore";
+import { nearestDistance } from "../runtime/observationBuilder";
 
 export default function BehaviorGraphEval(agentId, obsVector) {
     const { assignments, entities } = useSceneStore.getState();
@@ -18,7 +19,7 @@ export default function BehaviorGraphEval(agentId, obsVector) {
     let ctxObj = {
         reward: 0,
         done: false,
-        facts: { capabilities: agent.capabilities, last_action: agent.last_action, state_space: agent.state_space, obs_space: agent.observation_space },
+        facts: { position: agent.position, capabilities: agent.capabilities, last_action: agent.last_action, state_space: agent.state_space, obs_space: agent.observation_space },
         maxSteps: 50,
         stepCount: 0,
         visitedNodes,
@@ -165,6 +166,58 @@ function visitNode(NodeId, graph, ctxObj) {
 
         const edges = findEdges(NodeId, graph);
         const chosenEdge = edges.find(e => inRadius ? e.sourceHandle?.toLowerCase().includes("true") : e.sourceHandle?.toLowerCase().includes("false"));
+        if (chosenEdge) {
+            visitNode(chosenEdge.target, graph, ctxObj);
+        }
+        return;
+    }
+
+    if (currentNodeData.type === "IsDistanceLessNode") {
+        let distanceLess = false;
+        const entityOne = currentNodeData.data.entityOne; //Will make sure EntityOne is always Agent - at least for POC
+        const entityTwo = currentNodeData.data.entityTwo;
+
+        const isAgent1 = entityOne === "Agent";
+        const isAgent2 = entityTwo === "Agent";
+
+        const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+        const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+
+        const targetPredicate = (e) => e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
+        const pickablePredicate = (e) => e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+        const collectPredicate =  (e) => e.isCollectable === true || e.isCollectable === "true" || e.isCollectable ===1;
+
+        if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) {
+            return; //For distance to be calculated at least ONE entity has to be an agent!
+            //Also both can not be Agent as well - at least for POC!
+        }
+
+        const diffCal = (predicate, key) => {
+             const agentCurrentPos = ctxObj?.facts?.position;
+             const previousDistance = ctxObj?.facts?.state_space?.[key];
+             const currentDistance = nearestDistance(agentCurrentPos, predicate, "both");
+             if (currentDistance !== null && currentDistance.toFixed(2) < previousDistance.toFixed(2)) {
+                    distanceLess = true;
+                    console.log("Distance was decreased");
+            }
+        }
+
+        if (entityTwo === "Target Object") {
+                diffCal(targetPredicate, "previous_distance_target");
+        }
+
+        if (entityTwo === "Pickable Object") {
+            if (hasHolder) {
+                diffCal(pickablePredicate, "previous_distance_pickable");
+            } else if (hasCollector) {
+                diffCal(collectPredicate, "previous_distance_collect");
+            } else {
+                return;
+            }
+        }
+
+        const edges = findEdges(NodeId, graph);
+        const chosenEdge = edges.find(e => distanceLess ? e.sourceHandle?.toLowerCase().includes("true") : e.sourceHandle?.toLowerCase().includes("false"));
         if (chosenEdge) {
             visitNode(chosenEdge.target, graph, ctxObj);
         }
