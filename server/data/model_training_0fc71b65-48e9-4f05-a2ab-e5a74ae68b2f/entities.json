@@ -1,0 +1,60 @@
+{
+    "entity_f112111a-bae6-4d92-aacd-5cc5296290eb": {
+        "id": "entity_f112111a-bae6-4d92-aacd-5cc5296290eb",
+        "tag": "agent",
+        "name": "Mage",
+        "capabilities": [
+            "Moveable",
+            "Finder"
+        ],
+        "position": [
+            0.5257774970968737,
+            0,
+            -4.210554199545088
+        ],
+        "rotation": [
+            0,
+            0,
+            0
+        ],
+        "assetRef": "agents/skelton/Skeleton_Mage.glb",
+        "animationRef": {
+            "0": "agents/skelton/Rig_Medium_MovementBasic.glb",
+            "1": "agents/skelton/Rig_Medium_General.glb"
+        },
+        "collider": {
+            "shape": "capsule",
+            "h": 2,
+            "r": 0.3
+        },
+        "actuator_type": "walker",
+        "targetVisual": null,
+        "isDecor": false,
+        "isPickable": false,
+        "isCollectable": false,
+        "isTarget": false,
+        "last_action": "idle",
+        "isAssigned": true,
+        "action_space": [
+            "move_up",
+            "move_down",
+            "move_left",
+            "move_right",
+            "idle",
+            "interact"
+        ],
+        "observation_space": [
+            "dist_x_to_target",
+            "dist_z_to_target",
+            "dist_to_nearest_target",
+            "in_target_radius"
+        ],
+        "state_space": {
+            "targetReached": false,
+            "previous_distance_target": null
+        },
+        "settings": {
+            "speed": 2
+        }
+    }
+}
