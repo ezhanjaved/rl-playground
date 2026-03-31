@@ -4,6 +4,8 @@ import { useDraggable } from "@dnd-kit/core";
 import { useState } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
 import lib1 from "../assets/lib1.png";
 import lib2 from "../assets/lib2.png";
 import lib3 from "../assets/lib3.png";
@@ -20,7 +22,7 @@ import agent3 from "../assets/agent3.png";
 import agent4 from "../assets/agent4.png";
 import target1 from "../assets/target_1.png";
 
-function DraggableItem({ id, payload, imageSrc }) {
+function DraggableItem({ id, payload, imageSrc, ...rest }) {
     const { listeners, setNodeRef, attributes, transform } = useDraggable({
         id,
         data: payload,
@@ -36,6 +38,7 @@ function DraggableItem({ id, payload, imageSrc }) {
             {...attributes}
             {...listeners}
             className="lib-single-element"
+            {...rest}
         >
             <img src={imageSrc} alt={id} className="lib-item-image"></img>
         </div>
@@ -63,14 +66,24 @@ const Section = ({ title, items }) => {
 
             {open && (
                 <div className="gridWrapper">
-                    {items.map((item) => (
-                        <DraggableItem
-                            key={item.id}
-                            id={item.id}
-                            imageSrc={item.image}
-                            payload={item.payload}
-                        />
-                    ))}
+                    {items.map((item) => {
+                        const tooltipLines = [
+                            item.payload.name || item.label || item.id,
+                            item.payload.capabilities ? `Capabilities: ${item.payload.capabilities.join(", ")}` : null,
+                            item.payload.tag ? `Tag: ${item.payload.tag}` : null
+                        ].filter(Boolean);
+
+                        return (
+                            <DraggableItem
+                                key={item.id}
+                                id={item.id}
+                                imageSrc={item.image}
+                                payload={item.payload}
+                                data-tooltip-id="my-tooltip"
+                                data-tooltip-content={tooltipLines.join("\n")}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </div>
@@ -155,6 +168,7 @@ export default function EntitiesPanel() {
             id: "lib_non_state_obj_1",
             image: lib1,
             payload: {
+                name: "Tall Tree",
                 isDecor: "true",
                 assetRef: "nature/Tree_2_A_Color1.gltf",
                 collider: { shape: "capsule", h: 3, r: 0.6 },
@@ -164,6 +178,7 @@ export default function EntitiesPanel() {
             id: "lib_non_state_obj_2",
             image: lib2,
             payload: {
+                name: "Wide Tree",
                 isDecor: "true",
                 assetRef: "nature/Tree_4_A_Color1.gltf",
                 collider: { shape: "capsule", h: 3, r: 0.6 },
@@ -173,6 +188,7 @@ export default function EntitiesPanel() {
             id: "lib_non_state_obj_3",
             image: lib3,
             payload: {
+                name: "Bush",
                 isDecor: "true",
                 assetRef: "nature/Bush_4_B_Color1.gltf",
                 collider: { shape: "capsule", h: 1, r: 0.1 },
@@ -182,6 +198,7 @@ export default function EntitiesPanel() {
             id: "lib_non_state_obj_4",
             image: lib4,
             payload: {
+                name: "Rock",
                 isDecor: "true",
                 assetRef: "nature/Rock_1_D_Color1.gltf",
                 collider: { shape: "capsule", h: 2, r: 0.4 },
@@ -302,6 +319,7 @@ export default function EntitiesPanel() {
                 <Section title="Pickable Items" items={pickableItems} />
                 <Section title="Target Items" items={targetItems} />
             </div>
+            <Tooltip id="my-tooltip" style={{ whiteSpace: "pre-line", zIndex: 100 }} />
         </>
     );
 }
