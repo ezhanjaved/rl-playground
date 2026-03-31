@@ -10,174 +10,174 @@ import { SkeletonUtils } from "three-stdlib";
 import animationsMapper from "../engine/capabilities/animationFinder";
 
 function EntityRenderer({ entity }) {
+  const modelLoaded = useGLTF(`/models/${entity.assetRef}`);
 
-    const modelLoaded = useGLTF(`/models/${entity.assetRef}`);
+  const playing = useRunTimeStore((state) => state.playing);
 
-    const playing = useRunTimeStore((state) => state.playing);
+  const handRef = useRef(null);
 
-    const handRef = useRef(null);
+  const animationRefs = useMemo(() => {
+    if (!entity.animationRef) return [];
+    return typeof entity.animationRef === "object"
+      ? Object.values(entity.animationRef)
+      : [entity.animationRef];
+  }, [entity.animationRef]);
 
-    const animationRefs = useMemo(() => {
-        if (!entity.animationRef) return [];
-        return typeof entity.animationRef === "object"
-            ? Object.values(entity.animationRef)
-            : [entity.animationRef];
-    }, [entity.animationRef]);
+  const animationGLTFs = animationRefs.map((ref) => useGLTF(`/models/${ref}`));
 
-    const animationGLTFs = animationRefs.map(ref => useGLTF(`/models/${ref}`));
+  const allAnimations = useMemo(
+    () => animationGLTFs.flatMap((g) => g.animations || []),
+    [animationRefs],
+  );
 
-    const allAnimations = useMemo(
-        () => animationGLTFs.flatMap(g => g.animations || []),
-        [animationRefs]);
+  const { clonedScene, size, handBone } = useMemo(() => {
+    const clone = SkeletonUtils.clone(modelLoaded.scene);
 
-    const { clonedScene, size, handBone } = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(clone);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
 
-        const clone = SkeletonUtils.clone(modelLoaded.scene);
+    clone.position.sub(center);
+    clone.position.y -= (size.y / 2) * -1;
 
-        const box = new THREE.Box3().setFromObject(clone);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
+    let foundHand = null;
 
-        clone.position.sub(center);
-        clone.position.y -= (size.y / 2) * -1;
+    clone.traverse((obj) => {
+      if (obj.isBone && obj.name === "handr") {
+        console.log("Hand Bone Found!");
+        foundHand = obj;
+      }
+    });
 
-        let foundHand = null;
+    return { clonedScene: clone, size, handBone: foundHand };
+  }, [modelLoaded]);
 
-        clone.traverse(obj => {
-            if (obj.isBone && obj.name === 'handr') {
-                console.log("Hand Bone Found!");
-                foundHand = obj;
-            }
-        });
+  useEffect(() => {
+    handRef.current = handBone;
+  }, [handBone]);
 
-        return { clonedScene: clone, size, handBone: foundHand };
+  const heldItemAssetRef = entity.state_space?.heldItemAssetRef || null;
+  let heldItemGLTF = null;
+  if (heldItemAssetRef) {
+    heldItemGLTF = useGLTF(`/models/${heldItemAssetRef}`);
+  }
 
-    }, [modelLoaded]);
-
-    useEffect(() => {
-        handRef.current = handBone;
-    }, [handBone])
-
-    const heldItemAssetRef = entity.state_space?.heldItemAssetRef || null;
-    let heldItemGLTF = null;
-    if (heldItemAssetRef) {
-        heldItemGLTF = useGLTF(`/models/${heldItemAssetRef}`);
+  useEffect(() => {
+    if (!handRef.current) {
+      console.log(`${entity?.name || entity.id} does not have a hand`);
+      return; //Entity does not have a hand
     }
 
-    useEffect(() => {
+    handRef.current.children.forEach((child) => {
+      handRef.current.remove(child);
+    });
 
-        if (!handRef.current) {
-            console.log(`${entity?.name || entity.id} does not have a hand`);
-            return; //Entity does not have a hand
-        }
-
-        handRef.current.children.forEach(child => {
-            handRef.current.remove(child);
-        });
-
-        if (!entity.state_space?.holding || !heldItemGLTF.scene) {
-            console.log(`${entity?.name} is not holding anything!`);
-            return; //Agent isn't holding anything
-        }
-
-        if (heldItemGLTF && entity.state_space?.holding) {
-            const pickedObjectLoad = SkeletonUtils.clone(heldItemGLTF.scene);
-
-            handRef.current.add(pickedObjectLoad);
-
-            pickedObjectLoad.position.set(0.02, 0, 0);
-            pickedObjectLoad.rotation.set(0, Math.PI / 2, 0);
-            pickedObjectLoad.scale.set(1, 1, 1);
-        }
-
-    }, [entity.state_space?.holding, heldItemAssetRef, heldItemGLTF, handBone])
-
-    useEffect(() => {
-        if (!handRef.current) return;
-
-        const isHolding = entity.state_space?.holding;
-
-        if (!isHolding) {
-            console.log("We are removing OBJ from hand!");
-            handRef.current.children.forEach(child => {
-                handRef.current.remove(child);
-            });
-        }
-
-    }, [
-        entity.state_space?.holding,
-        entity.state_space?.heldItemAssetRef
-    ]);
-
-    const actions = useAnimations(allAnimations, clonedScene);
-
-    const setActiveEntity = useSceneStore(s => s.setActiveEntity);
-    const setDragging = useSceneStore(s => s.setDragging);
-    const deleteEntity = useSceneStore(s => s.deleteEntity);
-
-    const onPointerDown = (e) => {
-        e.stopPropagation();
-        setActiveEntity(entity.id);
-        setDragging(true);
-
-        if (orbitControlsRef?.current) {
-            orbitControlsRef.current.enabled = false;
-        }
-    };
-
-    const removeEntity = (e) => {
-        e.stopPropagation();
-        if (!e.shiftKey) return;
-        deleteEntity(entity.id);
+    if (!entity.state_space?.holding || !heldItemGLTF.scene) {
+      console.log(`${entity?.name} is not holding anything!`);
+      return; //Agent isn't holding anything
     }
 
-    useFrame(() => {
-        if (!playing) {
-            return;
-        }
+    if (heldItemGLTF && entity.state_space?.holding) {
+      const pickedObjectLoad = SkeletonUtils.clone(heldItemGLTF.scene);
 
-        if (entity.isDecor || !actions) {
-            return;
-        }
+      handRef.current.add(pickedObjectLoad);
 
-        const actionPerformed = entity.last_action; //MoveForward, TurnLeft, etc.
-        const name = entity.name; //Mage, Lizard, etc.
-        //We will play the animation based on last_action
-        animationLoop(name, actionPerformed, actions, playing);
-    })
+      pickedObjectLoad.position.set(0.02, 0, 0);
+      pickedObjectLoad.rotation.set(0, Math.PI / 2, 0);
+      pickedObjectLoad.scale.set(1, 1, 1);
+    }
+  }, [entity.state_space?.holding, heldItemAssetRef, heldItemGLTF, handBone]);
 
-    useEffect(() => {
-        if (!actions) return;
+  useEffect(() => {
+    if (!handRef.current) return;
 
-        if (!playing) {
-            Object.values(actions.actions).forEach(action => action.stop());
-        }
-    }, [playing, actions]);
+    const isHolding = entity.state_space?.holding;
 
-    function animationLoop(name, last_action, actions, playing) {
-        const animationName = animationsMapper(name, last_action) || null;
-        if (actions && animationName && playing) {
-            actions["actions"][animationName].play();
-        } else {
-            actions["actions"][animationName].pause();
-        }
+    if (!isHolding) {
+      console.log("We are removing OBJ from hand!");
+      handRef.current.children.forEach((child) => {
+        handRef.current.remove(child);
+      });
+    }
+  }, [entity.state_space?.holding, entity.state_space?.heldItemAssetRef]);
+
+  const actions = useAnimations(allAnimations, clonedScene);
+
+  const setActiveEntity = useSceneStore((s) => s.setActiveEntity);
+  const setDragging = useSceneStore((s) => s.setDragging);
+  const deleteEntity = useSceneStore((s) => s.deleteEntity);
+
+  const onPointerDown = (e) => {
+    e.stopPropagation();
+    setActiveEntity(entity.id);
+    setDragging(true);
+
+    if (orbitControlsRef?.current) {
+      orbitControlsRef.current.enabled = false;
+    }
+  };
+
+  const removeEntity = (e) => {
+    e.stopPropagation();
+    if (!e.shiftKey) return;
+    deleteEntity(entity.id);
+  };
+
+  useFrame(() => {
+    if (!playing) {
+      return;
     }
 
-    return (
-        <group onDoubleClick={(e) => removeEntity(e)} rotation={entity.rotation} position={entity.position}>
-            <primitive object={clonedScene} onPointerDown={onPointerDown} />
-            <mesh visible={false} position={[0, 1.3, 0]} onPointerDown={onPointerDown}>
-                <boxGeometry args={[size.x, size.y, size.z]} />
-                <meshBasicMaterial color="orange" opacity={0.2} transparent />
-            </mesh>
-        </group>
-    );
+    if (entity.isDecor || !actions) {
+      return;
+    }
+
+    const actionPerformed = entity.last_action; //MoveForward, TurnLeft, etc.
+    const name = entity.name; //Mage, Lizard, etc.
+    //We will play the animation based on last_action
+    animationLoop(name, actionPerformed, actions, playing);
+  });
+
+  useEffect(() => {
+    if (!actions) return;
+
+    if (!playing) {
+      Object.values(actions.actions).forEach((action) => action.stop());
+    }
+  }, [playing, actions]);
+
+  function animationLoop(name, last_action, actions, playing) {
+    const animationName = animationsMapper(name, last_action) || null;
+    if (actions && animationName && playing) {
+      actions["actions"][animationName].play();
+    } else {
+      actions["actions"][animationName].pause();
+    }
+  }
+
+  return (
+    <group
+      onDoubleClick={(e) => removeEntity(e)}
+      rotation={entity.rotation}
+      position={entity.position}
+    >
+      <primitive object={clonedScene} onPointerDown={onPointerDown} />
+      <mesh
+        visible={false}
+        position={[0, 1.3, 0]}
+        onPointerDown={onPointerDown}
+      >
+        <boxGeometry args={[size.x, size.y, size.z]} />
+        <meshBasicMaterial color="orange" opacity={0.2} transparent />
+      </mesh>
+    </group>
+  );
 }
 
 export default function EntityMeshes({ entity }) {
-    return (
-        <>
-            <EntityRenderer key={entity.id} entity={entity} />
-        </>
-    );
+  return (
+    <>
+      <EntityRenderer key={entity.id} entity={entity} />
+    </>
+  );
 }
