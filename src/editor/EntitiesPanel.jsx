@@ -58,6 +58,7 @@ const Section = ({ title, items }) => {
     );
 };
 
+
 export default function EntitiesPanel() {
 
     const agents = [
@@ -95,16 +96,16 @@ export default function EntitiesPanel() {
     ];
 
     const pickableItems = [
-        { id: "lib_pickable_obj_1", image: pick1, payload: { name: "Blade", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: {radius: 2} } },
-        { id: "lib_pickable_obj_2", image: pick2, payload: { name: "Axe", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Axe.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: {radius: 2} } },
-        { id: "lib_pickable_obj_3", image: pick3, payload: { name: "Shield", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Shield_Large_A.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: {radius: 2} } },
-        { id: "lib_pickable_obj_4", image: pick4, payload: { name: "Staff", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Staff.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: {radius: 2} } },
-        { id: "lib_pickable_obj_5", image: pick5, payload: { name: "Key", tag: "Collectible Object", isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 }, targetStat: {radius: 1} } },
-        { id: "lib_pickable_obj_6", image: pick6, payload: { name: "Coin", tag: "Collectible Object", isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/coin.gltf", collider: { shape: "capsule", h: 1, r: 0.2 }, targetStat: {radius: 1} } }
+        { id: "lib_pickable_obj_1", image: pick1, payload: { name: "Blade", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Blade.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: { radius: 2 } } },
+        { id: "lib_pickable_obj_2", image: pick2, payload: { name: "Axe", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Axe.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: { radius: 2 } } },
+        { id: "lib_pickable_obj_3", image: pick3, payload: { name: "Shield", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Shield_Large_A.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: { radius: 2 } } },
+        { id: "lib_pickable_obj_4", image: pick4, payload: { name: "Staff", tag: "Pickable Object", isDecor: "false", isPickable: "true", isCollectable: "false", assetRef: "agents/skelton/Skeleton_Staff.gltf", collider: { shape: "capsule", h: 1, r: 0.4 }, targetStat: { radius: 2 } } },
+        { id: "lib_pickable_obj_5", image: pick5, payload: { name: "Key", tag: "Collectible Object", isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/key.gltf", collider: { shape: "capsule", h: 1, r: 0.2 }, targetStat: { radius: 1 } } },
+        { id: "lib_pickable_obj_6", image: pick6, payload: { name: "Coin", tag: "Collectible Object", isDecor: "false", isPickable: "true", isCollectable: "true", assetRef: "resources/coin.gltf", collider: { shape: "capsule", h: 1, r: 0.2 }, targetStat: { radius: 1 } } }
     ]
 
     const targetItems = [
-        {id: "lib_target_obj_1", image: target1, payload: {name: "Chest", tag: "Target Object", isDecor: "false", isPickable: "false", isCollectable: "false", isTarget: "true", assetRef: "resources/chest_gold.gltf", collider: {shape: "sphere", h:2.5, r: 0.5,}, targetStat: {radius: 2}}}
+        { id: "lib_target_obj_1", image: target1, payload: { name: "Chest", tag: "Target Object", isDecor: "false", isPickable: "false", isCollectable: "false", isTarget: "true", assetRef: "resources/chest_gold.gltf", collider: { shape: "sphere", h: 2.5, r: 0.5, }, targetStat: { radius: 2 } } }
     ]
 
     return (
