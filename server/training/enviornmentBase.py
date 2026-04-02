@@ -12,8 +12,8 @@ class EnvironmentCore:
         for aid in self.runtime.agents_ids:
             self.runtime.truncated_agents[aid] = False
             self.runtime.terminated_agents[aid] = False
-            self.runtime.rewards_agent[aid][self.runtime.episode_count] = 0
-            self.runtime.episode_reward[self.runtime.episode_count] = 0
+            self.runtime.rewards_agent[aid] = 0
+            self.runtime.episode_reward[aid] = 0
 
     def sync_state_from_world(
         self, world
@@ -25,8 +25,10 @@ class EnvironmentCore:
 
     def get_observation(self):  # will call it to build observation of agents
         obs = {}
+        runtimeSnapShot = self.runtime.entities
         for agent_id in self.runtime.agents_ids:
-            obs[agent_id] = buildObs(agent_id)
+            agentData = self.runtime.entities[agent_id]  # Single Agent Data
+            obs[agent_id] = buildObs(agent_id, agentData, runtimeSnapShot)
         return obs
 
     def compute_reward(self):  # will call it to calculate reward

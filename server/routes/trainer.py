@@ -4,6 +4,7 @@ from typing import Any, Dict
 from fastapi import APIRouter
 from objectClass.sceneClass import make_runtime_state
 from pydantic import BaseModel
+from training.training import trainingPipeline
 from utilities.compile import compiler
 from utilities.extractor import extact_graph_per_agent, extract_agent_list
 from utilities.loader import json_handler
@@ -36,6 +37,7 @@ async def getData(data: RequestModel):
         runTimeState = make_runtime_state(
             scenarioObject, agent_list, graphs_per_agent
         )  # form a runtime obj that will mutate while training
+        trainingPipeline(scenarioObject, runTimeState)
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
         return {"message": exceptionMsg, "status": 0}

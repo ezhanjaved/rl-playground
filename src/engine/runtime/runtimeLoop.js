@@ -21,6 +21,7 @@ export default function runTimeloop(entities) {
     ) {
       return;
     }
+    console.log("Rotation: " + entity.rotation);
     const observation_space = buildObsSpace(entity); //Here we will build the obs space and then give it to controller
     console.log("Current OBS: " + observation_space);
     const state_key = discretize(observation_space, entity);

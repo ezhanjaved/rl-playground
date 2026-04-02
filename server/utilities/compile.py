@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from server.objectClass.assignmentClass import Assignment, AssignmentConfig
-from server.objectClass.entitiesClass import Agent, Object, StateSpace
-from server.objectClass.graphClass import Edge, Graph, Node
-from server.objectClass.sceneClass import Scenario
-from server.utilities.loader import json_loader
+from objectClass.assignmentClass import Assignment, AssignmentConfig
+from objectClass.entitiesClass import Agent, Object, StateSpace
+from objectClass.graphClass import Edge, Graph, Node
+from objectClass.sceneClass import Scenario
+from utilities.loader import json_loader
 
 
 def compiler(id):

@@ -2,9 +2,9 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Union
 
-from server.objectClass.assignmentClass import Assignment
-from server.objectClass.entitiesClass import Agent, Object
-from server.objectClass.graphClass import Graph
+from objectClass.assignmentClass import Assignment
+from objectClass.entitiesClass import Agent, Object
+from objectClass.graphClass import Graph
 
 
 # Blueprint
@@ -34,7 +34,7 @@ class TrainingState:
     truncated_agents: dict[str, bool] = field(default_factory=dict)
     terminated_agents: dict[str, bool] = field(default_factory=dict)
 
-    rewards_agent: dict[str, dict] = field(default_factory=dict)
+    rewards_agent: dict[str, float] = field(default_factory=dict)
     episode_reward: dict[str, float] = field(default_factory=dict)
 
     info_by_agent: dict[str, dict] = field(default_factory=dict)
