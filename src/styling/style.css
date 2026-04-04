@@ -71,6 +71,11 @@ body {
   color: white;
 }
 
+.sidebar .icon.active {
+  background-color: blueviolet;
+  color: white;
+}
+
 .sidebar aside {
   width: 22%;
   display: flex;
