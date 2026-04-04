@@ -1,18 +1,20 @@
 import "../styling/style.css"
 import { LuMessageCircleMore } from "react-icons/lu";
-import { FaCode, FaPause, FaRegUserCircle, FaAddressBook, FaPlus, FaArrowRight, FaFileSignature } from "react-icons/fa";
-import { FaPlay, FaCross } from "react-icons/fa";
+import { FaCode, FaPause, FaRegUserCircle, FaAddressBook, FaPlus, FaArrowRight, FaFileSignature, FaListUl } from "react-icons/fa";
+import { FaPlay, FaCross, FaBookOpen } from "react-icons/fa";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useCanvasSetting } from "../stores/useCanvasSetting";
 import { useGraphStore } from "../stores/useGraphStore";
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
+  const location = useLocation();
   const togglePlaying = useRunTimeStore((state) => state.togglePlaying);
   const playing = useRunTimeStore((state) => state.playing);
   const training = useRunTimeStore((s) => s.training);
   const clearExperiment = useRunTimeStore((s) => s.clearExperiment);
-  const currentExpId= useRunTimeStore((s) => s.currentExperimentId);
+  const currentExpId = useRunTimeStore((s) => s.currentExperimentId);
 
   const toggleDebug = useCanvasSetting((state) => state.toggleDebug);
   const changeColor = useCanvasSetting((state) => state.changeColor);
@@ -22,23 +24,22 @@ const Header = () => {
   const nextGraph = useGraphStore((state) => state.nextGraph);
   const updateName = useGraphStore((state) => state.updateName);
   const activeGraphId = useGraphStore((state) => state.activeGraphId);
-  
-  const url = window.location.href;
+
   const [visibility, setVisibility] = useState(1);
   const [setting, setSetting] = useState(null);
   const [name, setName] = useState("");
 
   useEffect(() => {
-    const options = ["http://localhost:5173/", "http://localhost:5173/behavior-graph"]
-    const index = options.indexOf(url);
-    setVisibility(index+1);
-  }, [])
+    if (location.pathname === "/") setVisibility(1);
+    else if (location.pathname === "/behavior-graph") setVisibility(2);
+    else setVisibility(0); // For other pages, hide specific controls
+  }, [location.pathname])
 
   return (
     <header className='header'>
       <h1></h1>
       <div className='Window-Controls'>
-        {training && (<span style={{fontSize: "22px", marginTop: "2px"}}>Training...</span>)}
+        {training && (<span style={{ fontSize: "22px", marginTop: "2px" }}>Training...</span>)}
         {setting && (
           <div className="setting-pop-up">
             <input value={name} type="text" placeholder="Enter Graph Name" onChange={(e) => setName(e.target.value)} />
@@ -48,16 +49,21 @@ const Header = () => {
             }}>Update</button>
           </div>
         )}
-        <span style={{display: visibility !== 2 ? "none" : "flex"}}>{graphs[activeGraphId]?.name || null}</span>
+        <span style={{ display: visibility !== 2 ? "none" : "flex" }}>{graphs[activeGraphId]?.name || null}</span>
         <span ><LuMessageCircleMore /></span>
         <span ><FaRegUserCircle /></span>
+        <Link to="/records" style={{ color: "inherit", textDecoration: "none", display: "flex", alignItems: "center" }}>
+            <span ><FaListUl /></span>
+        </Link>
         <span ><FaAddressBook /></span>
-        <span style={{display: visibility !== 2 ? "none" : "flex", cursor: "pointer"}} onClick={() => setSetting(prev => !prev)}><FaFileSignature /></span>
+        <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => setSetting(prev => !prev)}><FaFileSignature /></span>
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => addGraph()} ><FaPlus /></span>
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => nextGraph()} ><FaArrowRight /></span>
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => toggleDebug()} ><FaCode /></span>
+        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => { href }} ><FaBookOpen /></span>
+
         <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => clearExperiment(currentExpId)} ><FaCross /></span>
-        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => {if (!training) togglePlaying();}} >{playing ? <FaPause /> : <FaPlay />}</span>
+        <span style={{ display: visibility !== 1 ? "none" : "flex", cursor: "pointer" }} onClick={() => { if (!training) togglePlaying(); }} >{playing ? <FaPause /> : <FaPlay />}</span>
         <select style={{ display: visibility !== 1 ? "none" : "flex" }} name="color-picker" id="color-picker" onChange={(e) => changeColor(e.target.value)}>
           <option value="purple">Purple</option>
           <option value="orange">Orange</option>

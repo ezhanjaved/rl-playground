@@ -6,6 +6,8 @@ import { Signup } from './components/SignUp';
 import { Onboarding } from './components/Onboarding';
 import ControlPanelPage from './pages/ControlPanelPage'
 import { TrainingInfoPage } from './pages/TrainingPage';
+import RecordPage from './pages/RecordPage';
+import VisualizePage from './pages/VisualizePage';
 
 function App() {
 
@@ -13,11 +15,14 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<EnvironmentPage />} />
+        <Route path="/entities" element={<EnvironmentPage />} />
         <Route path="/behavior-graph" element={<BehaviorGraphPage />} />
         <Route path="/signing-in" element={<Signup />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/control-panel" element={<ControlPanelPage />} />
         <Route path="/training-info" element={<TrainingInfoPage />} />
+        <Route path="/records" element={<RecordPage />} />
+        <Route path="/visualize/:id" element={<VisualizePage />} />
       </Routes>
     </Router>
   )

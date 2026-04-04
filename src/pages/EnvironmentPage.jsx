@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 import { lastPointerWorldPos } from "../scene/EditorCanvas";
 import TrainingENV from "../components/trainingENV";
-import Header from "../components/header";
+import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import SidebarV2 from "../components/SidebarV2";
 
 export default function EnvironmentPage() {
     const addEntity = useSceneStore(s => s.addEntity);
@@ -30,7 +31,7 @@ export default function EnvironmentPage() {
             <div className="container">
                 <Header/>
                 <DndContext onDragEnd={onDragEnd}>
-                    <Sidebar/>
+                    <SidebarV2 />
                     <TrainingENV/>
                 </DndContext>
             </div>

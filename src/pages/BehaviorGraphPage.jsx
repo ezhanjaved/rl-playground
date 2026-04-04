@@ -1,8 +1,8 @@
 import "../styling/index.css";
-import Header from "../components/header";
+import Header from "../components/Header";
 import { BehaviorGraphEditor } from "../editor/BehaviorGraphEditor.jsx";
 import { useEffect } from "react";
-import Sidebar from "../components/Sidebar.jsx";
+import SidebarV2 from "../components/SidebarV2.jsx";
 import { DndContext } from "@dnd-kit/core";
 import { useGraphStore } from "../stores/useGraphStore.js";
 
@@ -47,7 +47,7 @@ export default function BehaviorGraphPage() {
             <div className="container">
                 <Header />
                     <DndContext onDragEnd={onDragEnd}>
-                        <Sidebar />
+                        <SidebarV2 />
                         <BehaviorGraphEditor />
                     </DndContext>
             </div>
