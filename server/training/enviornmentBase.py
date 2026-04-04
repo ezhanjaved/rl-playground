@@ -1,4 +1,5 @@
 from engine.observationBuilder import buildObs
+from utilities.previousDist import previousDistanceCorrection
 
 
 class EnvironmentCore:
@@ -31,13 +32,29 @@ class EnvironmentCore:
             obs[agent_id] = buildObs(agent_id, agentData, runtimeSnapShot)
         return obs
 
-    def compute_reward(self):  # will call it to calculate reward
-        pass
+    def update_previous_distances(self, obs, actions, runTime):
+        entities = runTime.entities
+        for agent_id, action in actions.items():
+            agentData = entities[agent_id]
+            agentObs = obs[agent_id]
+            previousDistanceCorrection(entities, agentObs, action, agentData)
 
-    def update_counters(self):
-        pass
-
-    def is_done(self):  # will call it to decide if episode has ended
-        done = True
-        truncated = False
-        return done, truncated
+    def compute_reward(self, obs):  # will call it to calculate reward
+        runtimeSnap = self.runtime
+        for aid, agent_obs in obs.items():
+            graph = runtimeSnap.graph_per_agent[aid]
+            config = runtimeSnap.assignment_by_agent[aid]
+            agentData = runtimeSnap.entities[aid]
+            r, ter, tru, i = evaluator(
+                aid, agent_obs, agentData, graph, config, runtimeSnap
+            )
+            runtimeSnap.rewards_agent[aid] = r
+            runtimeSnap.terminated_agents[aid] = ter
+            runtimeSnap.truncated_agents[aid] = tru
+            runtimeSnap.info[aid] = i
+        return (
+            runtimeSnap.rewards_agent,
+            runtimeSnap.terminated_agents,
+            runtimeSnap.truncated_agents,
+            runtimeSnap.info,
+        )

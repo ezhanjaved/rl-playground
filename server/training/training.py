@@ -5,10 +5,8 @@ from training.simulationBase import SimulationEnv
 def trainingPipeline(scenario, runTimeState):
     env = SimulationEnv(scenario, runTimeState)
     obs = env.reset()  # OBS: {agent_id: [obs_vector], agent_id: [obs_vector]}
-    print("Observation Space")
-    print(obs)
-    # for _ in range(100):
-    #     actions = random_controller(
-    #         obs, runTimeState
-    #     )  # Actions: {agent_id: actionPicked, agent_id: actionPicked}
-    #     obs, reward, done, info = env.step(actions)
+    for _ in range(1000):
+        actions = random_controller(
+            obs, runTimeState
+        )  # Actions: {agent_id: actionPicked, agent_id: actionPicked}
+        obs = env.step(actions)

@@ -128,7 +128,6 @@ def build_objects(obj):
         id=obj["id"],
         tag=obj["tag"],
         name=obj["name"],
-        capabilities=obj.get("capabilities", []),
         position=obj.get("position", []),
         rotation=obj.get("rotation", []),
         isDecor=obj.get("isDecor", False),

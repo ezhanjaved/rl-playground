@@ -1,8 +1,8 @@
 import math
 
 
-def getYaw(rot):
-    return rot[2]
+def getYaw(euler):
+    return euler[2]  # yaw
 
 
 def getForwardVectorFromYaw(rz):

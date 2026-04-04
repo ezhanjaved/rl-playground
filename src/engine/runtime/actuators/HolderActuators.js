@@ -43,6 +43,7 @@ export default function holderAdapter(action, entity) {
         updateEntity(entity.id, {
           last_action: action,
         });
+        return;
       }
     }
   }

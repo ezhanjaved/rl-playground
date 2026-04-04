@@ -43,7 +43,7 @@ class TrainingState:
 def make_runtime_state(scenario, agents_ids, graphPerAgent):
     return TrainingState(
         entities=deepcopy(scenario.entities),
-        assignment_by_agent=deepcopy(scenario.assignment),
+        assignment_by_agent=deepcopy(scenario.assignments),
         graph_per_agent=graphPerAgent,
         agents_ids=agents_ids,
     )

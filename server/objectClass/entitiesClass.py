@@ -20,7 +20,6 @@ class Entities:
     id: str
     tag: str
     name: str
-    capabilities: list[str]
     position: list[float]
     rotation: list[float]
 
@@ -36,6 +35,7 @@ class Entities:
 class Agent(Entities):
     isAssigned: bool
     last_action: str
+    capabilities: list[str]
     observation_space: list[str] = field(default_factory=list)
     action_space: list[str] = field(default_factory=list)
     state_space: StateSpace = field(default_factory=lambda: cast(StateSpace, {}))

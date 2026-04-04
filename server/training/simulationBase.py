@@ -8,24 +8,34 @@ class SimulationEnv:
         self.world = PyBulletWorld(scenario)
 
     def reset(self):
-        self.world.load()
-        self.world.spawn_entities(self.core.runtime.entities.values())
 
         self.core.reset()
-        self.core.sync_state_from_world(self.world)
+        print("Core reset done")
 
-        return self.core.get_observation()
+        self.world.load()
+        print("World loaded")
+
+        self.world.spawn_entities(self.core.runtime.entities.values())
+        print("Entities spawned")
+
+        print("Entity mapping:", self.world.entity_mapping)
+
+        self.core.sync_state_from_world(self.world)
+        print("Synced state")
+
+        obs = self.core.get_observation()
+
+        return obs
 
     def step(
         self, actions
     ):  # This is main step function it calls functions from both Env Base & PyBullet
-        self.world.apply_actions(actions)
+        self.world.apply_actions(actions, self.core.runtime.entities)
         self.world.step_simulation()
 
         self.core.sync_state_from_world(self.world)
         obs = self.core.get_observation()
-        rewards = self.core.compute_reward()
-        done, truncated = self.core.is_done()
-        self.core.update_counters()
-
-        return obs, rewards, done, truncated
+        self.core.update_previous_distances(obs, actions, self.core.runtime)
+        # reward, terminated, truncated, info = self.core.compute_reward(obs)
+        # return obs, reward, terminated, truncated, info
+        return obs

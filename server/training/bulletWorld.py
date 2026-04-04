@@ -1,5 +1,8 @@
+import time
+
 import pybullet as p
 import pybullet_data
+from engine.actuators.mainActuator import process_action
 from utilities.positionSwap import positionSwap, rotationSwap
 
 
@@ -23,8 +26,11 @@ class PyBulletWorld:
         pos, rot = p.getBasePositionAndOrientation(bullet_id)
         return pos, rot
 
-    def apply_actions(self, action):
-        pass
+    def apply_actions(self, actions, entities):
+        for agent_id, action in actions.items():
+            print("Action Picked: ", action)
+            agentData = entities[agent_id]
+            process_action(agent_id, agentData, action, self.entity_mapping, entities)
 
     def spawn(self, entity):
         positionEntity = positionSwap(entity.position)
@@ -37,21 +43,33 @@ class PyBulletWorld:
             id = self.spawn_non_state(positionEntity, convertedRot)
         elif entity.tag == "target":
             id = self.spawn_target(positionEntity, convertedRot)
+        elif entity.tag == "Pickable Object":
+            id = self.spawn_holders(positionEntity, convertedRot)
         else:
             pass
         return id
 
-    def step_simulation(self):
-        pass
+    def step_simulation(self, steps=100):
+        for _ in range(steps):
+            p.stepSimulation()
+            time.sleep(1 / 240)
 
-    def spawn_agent(self, pos, rot):
-        agentSpawned = p.loadURDF("r2d2.urdf", pos, rot)
-        return agentSpawned.id
+    @staticmethod
+    def spawn_agent(pos, rot):
+        agentSpawned = p.loadURDF("r2d2.urdf", pos, rot, useFixedBase=False)
+        return agentSpawned
 
-    def spawn_non_state(self, pos, rot):
-        non_stateSpawned = p.loadURDF("cylinder.urdf", pos, rot, useFixedBase=True)
-        return non_stateSpawned.id
+    @staticmethod
+    def spawn_non_state(pos, rot):
+        non_stateSpawned = p.loadURDF("cube.urdf", pos, rot, useFixedBase=True)
+        return non_stateSpawned
 
-    def spawn_target(self, pos, rot):
+    @staticmethod
+    def spawn_target(pos, rot):
         targetSpawned = p.loadURDF("cube.urdf", pos, rot, useFixedBase=True)
-        return targetSpawned.id
+        return targetSpawned
+
+    @staticmethod
+    def spawn_holders(pos, rot):
+        holderSpawned = p.loadURDF("cube.urdf", pos, rot, useFixedBase=True)
+        return holderSpawned

@@ -1,5 +1,5 @@
 def extract_agent_list(dataObj):
-    return list(dataObj.assignment)
+    return list(dataObj.assignments)
 
 
 def extact_graph_per_agent(dataObj, agentList):
