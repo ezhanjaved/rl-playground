@@ -1,3 +1,4 @@
+from engine.eval import evaluator
 from engine.observationBuilder import buildObs
 from utilities.previousDist import previousDistanceCorrection
 
@@ -44,10 +45,7 @@ class EnvironmentCore:
         for aid, agent_obs in obs.items():
             graph = runtimeSnap.graph_per_agent[aid]
             config = runtimeSnap.assignment_by_agent[aid]
-            agentData = runtimeSnap.entities[aid]
-            r, ter, tru, i = evaluator(
-                aid, agent_obs, agentData, graph, config, runtimeSnap
-            )
+            r, ter, tru, i = evaluator(aid, agent_obs, graph, config, runtimeSnap)
             runtimeSnap.rewards_agent[aid] = r
             runtimeSnap.terminated_agents[aid] = ter
             runtimeSnap.truncated_agents[aid] = tru

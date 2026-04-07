@@ -4,14 +4,13 @@ from pathlib import Path
 
 def json_handler(id, data):
     folder_name = f"model_training_{id}"
-
-    base_dir = Path(
-        "C:/Users/User/Documents/GitHub/rl-playground/server/data"
-    )  # hard-coded
-    folder = base_dir / folder_name
+    parent_dir = Path.cwd().parent
+    base_dir = Path(parent_dir)  # hard-coded
+    folder = base_dir / "data" / folder_name
     folder.mkdir(parents=True, exist_ok=True)
     try:
         json_iterator(data, folder)
+        return str(folder)
     except Exception as exceptionMsg:
         print(exceptionMsg)
 

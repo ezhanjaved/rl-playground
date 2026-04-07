@@ -4,8 +4,8 @@ from training.enviornmentBase import EnvironmentCore
 
 class SimulationEnv:
     def __init__(self, scenario, runtime_state):
-        self.core = EnvironmentCore(scenario, runtime_state)
-        self.world = PyBulletWorld(scenario)
+        self.core = EnvironmentCore(scenario, runtime_state)  # Logic handling
+        self.world = PyBulletWorld(scenario)  # Physics handling
 
     def reset(self):
 
@@ -36,6 +36,5 @@ class SimulationEnv:
         self.core.sync_state_from_world(self.world)
         obs = self.core.get_observation()
         self.core.update_previous_distances(obs, actions, self.core.runtime)
-        # reward, terminated, truncated, info = self.core.compute_reward(obs)
-        # return obs, reward, terminated, truncated, info
-        return obs
+        reward, terminated, truncated, info = self.core.compute_reward(obs)
+        return obs, reward, terminated, truncated, info
