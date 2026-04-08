@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from r2Client import s3
+from storage.r2Client import s3
 
 
 def downloadModel(id):
