@@ -8,17 +8,17 @@ from utilities.loader import json_loader
 
 
 def compiler(id):
-    path = Path(
-        f"C:/Users/User/Documents/GitHub/rl-playground/server/data/model_training_{id}"
-    )
+    parent_dir = Path.cwd().parent
+    base_path = Path(parent_dir)
+    folder_path = base_path / "data" / f"model_training_{id}"
 
     key1 = "entities.json"
     key2 = "graphs.json"
     key3 = "assignments.json"
 
-    entPath = path / key1
-    graphPath = path / key2
-    assPath = path / key3
+    entPath = folder_path / key1
+    graphPath = folder_path / key2
+    assPath = folder_path / key3
 
     entities = json_loader(entPath)
     graphs = json_loader(graphPath)
