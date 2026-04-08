@@ -20,9 +20,13 @@ def runpod_job(uid: str):
     runTimeState = make_runtime_state(
         scenarioObject, agent_list, graphs_per_agent
     )  # form a runtime obj that will mutate while training
-    trainer = TrainingLoop(scenarioObject, runTimeState, uid)
-    trainer.train()
-    local_path = trainer.save()
-    s3Path = uploadModel(uid, local_path)
+    print("Runtime: ", runTimeState)
+    print("Scenario Object: ", scenarioObject)
+    print("Training ID: ", uid)
+    # trainer = TrainingLoop(scenarioObject, runTimeState, uid)
+    # trainer.train()
+    # local_path = trainer.save()
+    # s3Path = uploadModel(uid, local_path)
     update_status(uid, "saved")
+    s3Path = "abc"
     call_webhook(uid, s3Path)
