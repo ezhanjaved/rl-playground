@@ -6,7 +6,7 @@ import time
 
 import requests
 
-WEBHOOK_URL = "http://127.0.0.1:8000/webhook"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 SECRET = os.getenv("WEB_SECRET")
 
 
