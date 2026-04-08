@@ -1,8 +1,9 @@
 from database.update import update_status
 from objectClass.sceneClass import make_runtime_state
 from storage.downloadModel import download_from_s3
-from storage.uploadModel import uploadModel
-from training.training import TrainingLoop
+
+# from storage.uploadModel import uploadModel
+# from training.training import TrainingLoop
 from utilities.callWebhook import call_webhook
 from utilities.compile import compiler
 from utilities.extractor import extact_graph_per_agent, extract_agent_list
