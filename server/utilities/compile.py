@@ -10,7 +10,9 @@ from utilities.loader import json_loader
 def compiler(id):
     parent_dir = Path.cwd().parent
     base_path = Path(parent_dir)
-    folder_path = base_path / "data" / f"model_training_{id}"
+    folder_path = (
+        base_path / "rl-playground" / "server" / "data" / f"model_training_{id}"
+    )
 
     key1 = "entities.json"
     key2 = "graphs.json"
