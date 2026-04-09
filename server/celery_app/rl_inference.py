@@ -1,13 +1,28 @@
-from server.celery_app import celery_worker
+from server.celery_app.celery_worker import celery_app
+from server.celery_app.connectionPod import connectToPod
 from server.database.update import update_model, update_status
 
 
-@celery_worker.celery_app.task(bind=True, max_retries=3)
-def runningThemodel(uid: str):
+@celery_app.task(bind=True, max_retries=3)
+def runningThemodel(self, uid: str):
     try:
         update_status(uid, "connecting", "simulation", "model_id")
         # connect to pod
+        remote_cmd = (
+            f"nohup bash -c 'cd /workspace/rl-playground && "
+            f"server/venv/bin/python -m server.trigger_inference {uid}' "
+            f"> /workspace/rl-playground/server/pod/trigger_inference.log 2>&1 &"
+        )
+        connectToPod(remote_cmd)
         update_status(uid, "running", "simulation", "model_id")
+    except ConnectionError as e:
+        try:
+            raise self.retry(exc=e, countdown=10 * (2**self.request.retries))
+        except self.MaxRetriesExceededError:
+            update_model(
+                uid, {"status": "failed", "error": str(e)}, "simulation", "model_id"
+            )
+            raise
     except Exception as e:
         update_model(
             uid, {"status": "failed", "error": str(e)}, "simulation", "model_id"
