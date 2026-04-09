@@ -8,11 +8,11 @@ def runningThemodel(self, uid: str):
     try:
         update_status(uid, "connecting", "simulation", "model_id")
         # connect to pod
-        remote_cmd = (
-            f"nohup bash -c 'cd /workspace/rl-playground && "
-            f"server/venv/bin/python -m server.trigger_inference {uid}' "
-            f"> /workspace/rl-playground/server/pod/trigger_inference.log 2>&1 &"
-        )
+        remote_cmd = f"""
+        cd /workspace/rl-playground
+        nohup server/venv/bin/python -m server.trigger_inference {uid} > server/trigger_inference.log 2>&1 &
+        exit
+        """
         connectToPod(remote_cmd)
         update_status(uid, "running", "simulation", "model_id")
     except ConnectionError as e:

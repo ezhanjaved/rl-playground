@@ -6,12 +6,12 @@ load_dotenv()
 
 
 def triggerRemote():
-    remote_cmd = (
-        f"nohup bash -c 'cd /workspace/rl-playground && "
-        f"server/venv/bin/python -m server.hey ezhan"
-        f"> /workspace/rl-playground/server/hey.log 2>&1 &"
-    )
-    connectToPod(remote_cmd)
+    command = f"""
+    cd /workspace/rl-playground
+    nohup server/venv/bin/python -m server.hey ezhan > server/hey.log 2>&1 &
+    exit
+    """
+    connectToPod(command)
 
 
 if __name__ == "__main__":

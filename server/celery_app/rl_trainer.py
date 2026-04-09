@@ -7,11 +7,11 @@ from server.database.update import update_model, update_status
 def rl_trainer_celery(self, uid: str):
     try:
         update_status(uid, "queued", "models", "training_id")
-        remote_cmd = (
-            f"nohup bash -c 'cd /workspace/rl-playground && "
-            f"server/venv/bin/python -m server.trigger_training {uid}' "
-            f"> /workspace/rl-playground/server/pod/trigger_training.log 2>&1 &"
-        )
+        remote_cmd = f"""
+        cd /workspace/rl-playground
+        nohup server/venv/bin/python -m server.trigger_training {uid} > server/trigger_training.log 2>&1 &
+        exit
+        """
         connectToPod(remote_cmd)
         update_status(uid, "training", "models", "training_id")
     except ConnectionError as e:
