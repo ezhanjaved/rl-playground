@@ -1,6 +1,6 @@
 import math
 
-from utilities.distance3D import distance3D
+from server.utilities.distance3D import distance3D
 
 
 def getNearestTargetInfo(agentPos, entities, type):

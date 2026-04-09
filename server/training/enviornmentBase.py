@@ -1,6 +1,6 @@
-from engine.eval import evaluator
-from engine.observationBuilder import buildObs
-from utilities.previousDist import previousDistanceCorrection
+from server.engine.eval import evaluator
+from server.engine.observationBuilder import buildObs
+from server.utilities.previousDist import previousDistanceCorrection
 
 
 class EnvironmentCore:

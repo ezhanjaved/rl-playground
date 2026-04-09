@@ -1,4 +1,4 @@
-from engine.observationBuilder import (
+from server.engine.observationBuilder import (
     collect_predicate,
     nearestDistance,
     obstacle_predicate,

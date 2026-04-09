@@ -1,6 +1,6 @@
-from database.supabaseClient import supabase
+from server.database.supabaseClient import supabase
 
 
-def create_model(data):
-    response = supabase.table("models").insert(data).execute()
+def create_model(data, table):
+    response = supabase.table(table).insert(data).execute()
     return response.data

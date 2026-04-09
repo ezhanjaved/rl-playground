@@ -1,4 +1,4 @@
-from utilities.nearestTarget import getNearestTargetInfo
+from server.utilities.nearestTarget import getNearestTargetInfo
 
 
 def finderActuator(action, agentData, entities):

@@ -1,6 +1,6 @@
 import os
 
-from storage.r2Client import s3
+from server.storage.r2Client import s3
 
 
 def uploadModel(path, id):

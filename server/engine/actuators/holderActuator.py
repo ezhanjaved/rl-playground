@@ -1,6 +1,7 @@
 import pybullet as p
-from objectClass.entitiesClass import Object
-from utilities.nearPick import nearbyPickable
+
+from server.objectClass.entitiesClass import Object
+from server.utilities.nearPick import nearbyPickable
 
 
 def holderActuator(action, agentData, entities, eM):

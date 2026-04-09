@@ -1,5 +1,5 @@
-from trainer.singleAgent import SingleAgentTrainer
-from wrappers.mainWrapper import wrapperSelector
+from server.training.trainer.singleAgent import SingleAgentTrainer
+from server.training.wrappers.mainWrapper import wrapperSelector
 
 
 class TrainingLoop:
@@ -26,4 +26,5 @@ class TrainingLoop:
         return path
 
     def load(self):
-        self.trainer.load(self.training_id)
+        self.model = self.trainer.load(self.training_id)
+        return self.model

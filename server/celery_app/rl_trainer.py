@@ -1,9 +1,10 @@
 import os
 import subprocess
 
-from celery_app.celery_worker import celery_app
-from database.update import update_model, update_status
 from dotenv import load_dotenv
+
+from server.celery_app.celery_worker import celery_app
+from server.database.update import update_model, update_status
 
 load_dotenv()
 
@@ -11,17 +12,21 @@ load_dotenv()
 @celery_app.task(bind=True, max_retries=3)
 def rl_trainer_celery(self, uid: str):
     try:
-        update_status(uid, "queued")
+        update_status(uid, "queued", "models", "training_id")
         connectToPod(uid)
-        update_status(uid, "training")
+        update_status(uid, "training", "models", "training_id")
     except ConnectionError as e:
         try:
             raise self.retry(exc=e, countdown=10 * (2**self.request.retries))
         except self.MaxRetriesExceededError:
-            update_model(uid, {"status": "failed", "error": str(e)})
+            update_model(
+                uid, {"status": "failed", "error": str(e)}, "models", "training_id"
+            )
             raise
     except Exception as e:
-        update_model(uid, {"status": "failed", "error": str(e)})
+        update_model(
+            uid, {"status": "failed", "error": str(e)}, "models", "training_id"
+        )
         raise
 
 

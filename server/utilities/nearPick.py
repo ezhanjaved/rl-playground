@@ -1,5 +1,5 @@
-from objectClass.entitiesClass import Object
-from utilities.distance3D import distance3D
+from server.objectClass.entitiesClass import Object
+from server.utilities.distance3D import distance3D
 
 
 def nearbyPickable(entities, position, pickRadius, cap):

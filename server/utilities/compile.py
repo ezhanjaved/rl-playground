@@ -1,18 +1,13 @@
-from pathlib import Path
-
-from objectClass.assignmentClass import Assignment, AssignmentConfig
-from objectClass.entitiesClass import Agent, Object, StateSpace
-from objectClass.graphClass import Edge, Graph, Node
-from objectClass.sceneClass import Scenario
-from utilities.loader import json_loader
+from server.objectClass.assignmentClass import Assignment, AssignmentConfig
+from server.objectClass.entitiesClass import Agent, Object, StateSpace
+from server.objectClass.graphClass import Edge, Graph, Node
+from server.objectClass.sceneClass import Scenario
+from server.path_config import DATA_DIR
+from server.utilities.loader import json_loader
 
 
 def compiler(id):
-    parent_dir = Path.cwd().parent
-    base_path = Path(parent_dir)
-    folder_path = (
-        base_path / "rl-playground" / "server" / "data" / f"model_training_{id}"
-    )
+    folder_path = DATA_DIR / "model_training_{id}"
 
     key1 = "entities.json"
     key2 = "graphs.json"

@@ -2,11 +2,12 @@ import hashlib
 import hmac
 import os
 
-from database.update import update_model
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from routes.trainer import trainer
+
+from server.database.update import update_model
+from server.routes.trainer import trainer
 
 origins = ["*"]
 load_dotenv()

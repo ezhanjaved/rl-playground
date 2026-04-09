@@ -2,9 +2,9 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Union
 
-from objectClass.assignmentClass import Assignment
-from objectClass.entitiesClass import Agent, Object
-from objectClass.graphClass import Graph
+from server.objectClass.assignmentClass import Assignment
+from server.objectClass.entitiesClass import Agent, Object
+from server.objectClass.graphClass import Graph
 
 
 # Blueprint

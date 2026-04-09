@@ -2,8 +2,9 @@ import time
 
 import pybullet as p
 import pybullet_data
-from engine.actuators.mainActuator import process_action
-from utilities.positionSwap import positionSwap, rotationSwap
+
+from server.engine.actuators.mainActuator import process_action
+from server.utilities.positionSwap import positionSwap, rotationSwap
 
 
 class PyBulletWorld:

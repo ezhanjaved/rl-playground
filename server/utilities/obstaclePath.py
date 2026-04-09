@@ -1,4 +1,4 @@
-from utilities.rotationCal import getForwardVectorFromYaw
+from server.utilities.rotationCal import getForwardVectorFromYaw
 
 
 def obstacleAvoid(pos, rot, obstaclePos):

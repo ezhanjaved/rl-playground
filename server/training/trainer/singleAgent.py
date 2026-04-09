@@ -1,7 +1,8 @@
 import os
-from pathlib import Path
 
 from stable_baselines3 import PPO
+
+from server.path_config import MODEL_DIR
 
 
 class SingleAgentTrainer:
@@ -19,7 +20,7 @@ class SingleAgentTrainer:
     ):  # use the uid to create file_name and upload the model to S3 bucket
         self.model_file_name = f"model_{id}"
 
-        self.mode_dir = Path(os.getcwd()) / "models"
+        self.mode_dir = MODEL_DIR
         os.makedirs(self.mode_dir, exist_ok=True)
 
         save_path = self.mode_dir / self.model_file_name
@@ -34,7 +35,7 @@ class SingleAgentTrainer:
     ):  # use the uid to fetch from S3 bucket the model using file_name and run it
         model_file_name = f"model_{id}"
 
-        mode_dir = Path(os.getcwd()) / "models"
+        mode_dir = MODEL_DIR
         path = mode_dir / model_file_name
 
         if not path.with_suffix(".zip").exists():
@@ -42,3 +43,4 @@ class SingleAgentTrainer:
 
         final_path = str(path) + ".zip"
         self.model = PPO.load(final_path, env=self.env)
+        return self.model

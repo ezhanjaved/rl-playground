@@ -1,8 +1,8 @@
-from engine.actuators.collectorActuator import collectorActuator
-from engine.actuators.finderActuator import finderActuator
-from engine.actuators.holderActuator import holderActuator
-from engine.actuators.moveableActuator import moveableActuator
-from utilities.capabilitiesMatch import capabilityMatcher
+from server.engine.actuators.collectorActuator import collectorActuator
+from server.engine.actuators.finderActuator import finderActuator
+from server.engine.actuators.holderActuator import holderActuator
+from server.engine.actuators.moveableActuator import moveableActuator
+from server.utilities.capabilitiesMatch import capabilityMatcher
 
 
 def process_action(agent_id, agent_data, action, entityMapping, entities):

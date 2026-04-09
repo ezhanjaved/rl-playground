@@ -1,6 +1,6 @@
-from utilities.distance3D import distance3D
-from utilities.nearestTarget import getNearestTargetInfo
-from utilities.obstaclePath import obstacleAvoid
+from server.utilities.distance3D import distance3D
+from server.utilities.nearestTarget import getNearestTargetInfo
+from server.utilities.obstaclePath import obstacleAvoid
 
 
 def target_predicate(e):

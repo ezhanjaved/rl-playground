@@ -1,12 +1,11 @@
 import json
-from pathlib import Path
+
+from server.path_config import DATA_DIR
 
 
 def json_handler(id, data):
     folder_name = f"model_training_{id}"
-    parent_dir = Path.cwd().parent
-    base_dir = Path(parent_dir)  # hard-coded
-    folder = base_dir / "data" / folder_name
+    folder = DATA_DIR / folder_name
     folder.mkdir(parents=True, exist_ok=True)
     try:
         json_iterator(data, folder)

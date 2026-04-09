@@ -1,5 +1,6 @@
 import pybullet as p
-from utilities.nearPick import nearbyPickable
+
+from server.utilities.nearPick import nearbyPickable
 
 
 def collectorActuator(action, agent, entities, eM):

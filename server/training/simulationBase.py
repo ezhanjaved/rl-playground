@@ -1,5 +1,5 @@
-from training.bulletWorld import PyBulletWorld
-from training.enviornmentBase import EnvironmentCore
+from server.training.bulletWorld import PyBulletWorld
+from server.training.enviornmentBase import EnvironmentCore
 
 
 class SimulationEnv:

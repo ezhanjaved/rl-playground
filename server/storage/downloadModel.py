@@ -1,13 +1,12 @@
 import os
-from pathlib import Path
 
-from storage.r2Client import s3
+from server.path_config import DATA_DIR, MODEL_DIR
+from server.storage.r2Client import s3
 
 
 def downloadModel(id):
     file_name = f"model_training_{id}/model_{id}.zip"
-    parent_dir = Path.cwd().parent
-    download_model_path = parent_dir / "training" / "trainer" / "models"
+    download_model_path = MODEL_DIR
     download_model_path.mkdir(parents=True, exist_ok=True)
     full_path = download_model_path / file_name
     s3.download_file("rl-models", file_name, str(full_path))
@@ -19,8 +18,7 @@ def download_from_s3(uid):
     prefix = f"model_training_{uid}/"
     local_dir = f"model_training_{uid}"
 
-    parent_dir = Path.cwd().parent
-    folder_dir = Path(parent_dir / "data" / local_dir)
+    folder_dir = DATA_DIR / local_dir
 
     os.makedirs(folder_dir, exist_ok=True)
 

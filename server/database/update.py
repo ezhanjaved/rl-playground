@@ -1,12 +1,9 @@
-from database.supabaseClient import supabase
+from server.database.supabaseClient import supabase
 
 
-def update_status(id, status):
+def update_status(id, status, table_name, id_name):
     response = (
-        supabase.table("models")
-        .update({"status": status})
-        .eq("training_id", id)
-        .execute()
+        supabase.table(table_name).update({"status": status}).eq(id_name, id).execute()
     )
 
     if response.data:
@@ -16,6 +13,6 @@ def update_status(id, status):
         return None
 
 
-def update_model(id, data):
-    response = supabase.table("models").update(data).eq("training_id", id).execute()
+def update_model(id, data, table, id_name):
+    response = supabase.table(table).update(data).eq(id_name, id).execute()
     print(response)
