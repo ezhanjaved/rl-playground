@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from database.update import update_model
+from server.database.update import update_model
 
 # from storage.uploadModel import uploadConfig
 # from database.insert import create_model
