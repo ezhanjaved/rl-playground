@@ -3,7 +3,7 @@ from server.celery_app.connectionPod import connectToPod
 from server.database.update import update_model, update_status
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(name="rl_trainer", bind=True, max_retries=3)
 def rl_trainer_celery(self, uid: str):
     try:
         update_status(uid, "queued", "models", "training_id")

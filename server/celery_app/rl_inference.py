@@ -3,7 +3,7 @@ from server.celery_app.connectionPod import connectToPod
 from server.database.update import update_model, update_status
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(name="rl_inference", bind=True, max_retries=3)
 def runningThemodel(self, uid: str):
     try:
         update_status(uid, "connecting", "simulation", "model_id")
