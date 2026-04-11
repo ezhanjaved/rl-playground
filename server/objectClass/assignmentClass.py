@@ -12,6 +12,13 @@ class AssignmentConfig:
     rewardMultiplier: int
     agentSpawnMode: str
     objectSpawnMode: str
+    typeOfTraining: str
+    clipRange: float
+    gaeLambda: float
+    valLossCf: float
+    batch: int
+    epoch: int
+    n_steps: int
 
 
 @dataclass

@@ -85,6 +85,13 @@ def build_assignmentConfig(config_dict):
         rewardMultiplier=config_dict["rewardMultiplier"],
         agentSpawnMode=config_dict["agentSpawnMode"],
         objectSpawnMode=config_dict["objectSpawnMode"],
+        typeOfTraining=config_dict["typeOfTraining"],
+        clipRange=config_dict["clipRange"],
+        gaeLambda=config_dict["gaeLambda"],
+        valLossCf=config_dict["valLossCf"],
+        batch=config_dict["batch"],
+        epoch=config_dict["epoch"],
+        n_steps=config_dict["n_steps"],
     )
 
 

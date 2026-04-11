@@ -28,6 +28,8 @@ class TrainingState:
 
     agents_ids: list[str]
 
+    env_type: str = "SARL"
+
     episode_count: int = 0
     step_count: int = 0
 

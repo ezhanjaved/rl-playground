@@ -14,10 +14,12 @@ export default function ControlPanel() {
     useRunTimeStore.getState();
   const [partOne, setOne] = useState({});
   const [partTwo, setTwo] = useState({});
+  const [partThree, setThree] = useState({});
+  const [algorithm, setAlgorithm] = useState("q-learning");
 
   useEffect(() => {
-    setTrainingConfig({ ...partOne, ...partTwo });
-  }, [partOne, partTwo]);
+    setTrainingConfig({ ...partOne, ...partTwo, ...partThree });
+  }, [partOne, partTwo, partThree]);
 
   const nextFrame = () => new Promise(requestAnimationFrame);
 
@@ -46,7 +48,12 @@ export default function ControlPanel() {
   return (
     <>
       <div className="library_main">
-        <TrainingSection setOne={setOne} />
+        <TrainingSection
+          setOne={setOne}
+          algorithm={algorithm}
+          setAlgorithm={setAlgorithm}
+        />
+        {algorithm === "ppo" && <PPOSection setThree={setThree} />}
         <AdvanceSection setTwo={setTwo} />
         <div
           className="training-btn"
@@ -63,13 +70,12 @@ export default function ControlPanel() {
   );
 }
 
-const TrainingSection = ({ setOne }) => {
+const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
   const [open, setOpen] = useState(true);
 
   const [episodeNumber, setEpisodeNumber] = useState(100);
   const [maxStepsPerEpisode, setMaxEpisodeSteps] = useState(1000);
   const [rewardImportance, setRewardImportance] = useState(0.5);
-  const [algorithm, setAlgorithm] = useState("q-learning");
   const [explorationStrategy, setExplorationStrategy] = useState("fixed");
   const [learningSpeed, setLearningSpeed] = useState("Medium");
 
@@ -136,7 +142,7 @@ const TrainingSection = ({ setOne }) => {
             <option value="q-learning">Q Learning</option>
             <option value="ppo">PPO</option>
           </select>
-          <label htmlFor="">Exploration Strategy</label>
+          <label htmlFor="">Entropy Coefficient</label>
           <select
             value={explorationStrategy}
             onChange={(e) => setExplorationStrategy(e.target.value)}
@@ -147,7 +153,7 @@ const TrainingSection = ({ setOne }) => {
             <option value="decay">Decay</option>
             <option value="none">None</option>
           </select>
-          <label htmlFor="">Learning Speed</label>
+          <label htmlFor="">Learning Rate</label>
           <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
             <label>
               <input
@@ -189,10 +195,16 @@ const AdvanceSection = ({ setTwo }) => {
   const [rewardMultiplier, setRewardMultiplier] = useState(1);
   const [agentSpawnMode, setAgentSpawnMode] = useState("Random");
   const [objectSpawnMode, setObjectSpawnMode] = useState("Random");
+  const [typeOfTraining, setType] = useState("SARL");
 
   useEffect(() => {
-    setTwo({ rewardMultiplier, agentSpawnMode, objectSpawnMode });
-  }, [rewardMultiplier, agentSpawnMode, objectSpawnMode]);
+    setTwo({
+      rewardMultiplier,
+      agentSpawnMode,
+      objectSpawnMode,
+      typeOfTraining,
+    });
+  }, [rewardMultiplier, agentSpawnMode, objectSpawnMode, typeOfTraining]);
 
   return (
     <div className="section">
@@ -259,6 +271,100 @@ const AdvanceSection = ({ setTwo }) => {
               Fixed{" "}
             </label>
           </div>
+          <label htmlFor="">Type of Training</label>
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+            <label>
+              <input
+                checked={typeOfTraining === "SARL"}
+                onChange={(e) => setType(e.target.value)}
+                type="radio"
+                value="SARL"
+              />{" "}
+              SARL{" "}
+            </label>
+            <label>
+              <input
+                checked={typeOfTraining === "MARL"}
+                onChange={(e) => setType(e.target.value)}
+                type="radio"
+                value="MARL"
+              />{" "}
+              MARL{" "}
+            </label>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PPOSection = ({ setThree }) => {
+  const [open, setOpen] = useState(true);
+
+  const [clipRange, setClipRange] = useState(0.2);
+  const [gaeLambda, setGAElambda] = useState(0.95);
+  const [valLossCf, setVLcf] = useState(0.5);
+  const [batch, setBatch] = useState(64);
+  const [epoch, setEpoch] = useState(10);
+  const [n_steps, setnSteps] = useState(2048);
+
+  useEffect(() => {
+    setThree({ clipRange, gaeLambda, valLossCf, batch, epoch, n_steps });
+  }, [clipRange, gaeLambda, valLossCf, batch, epoch, n_steps]);
+
+  return (
+    <div className="section">
+      <button
+        className="sectionHeader"
+        style={{ background: "#e6e6e6" }}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <IoMoonOutline />
+        <div className="sectionTitle">
+          <span>PPO Specific Settings</span>
+          <span className="arrowIcon">
+            {open ? <IoChevronUp /> : <IoChevronDown />}
+          </span>
+        </div>
+      </button>
+      {open && (
+        <div className="setting">
+          <label htmlFor="">Clip Range</label>
+          <input
+            value={clipRange}
+            type="number"
+            onChange={(e) => setClipRange(Number(e.target.value))}
+          />
+          <label htmlFor="">GAE Lambda</label>
+          <input
+            value={gaeLambda}
+            type="number"
+            onChange={(e) => setGAElambda(Number(e.target.value))}
+          />
+          <label htmlFor="">Value Loss Coefficient</label>
+          <input
+            value={valLossCf}
+            type="number"
+            onChange={(e) => setVLcf(Number(e.target.value))}
+          />
+          <label htmlFor="">Batch Size</label>
+          <input
+            value={batch}
+            type="number"
+            onChange={(e) => setBatch(Number(e.target.value))}
+          />
+          <label htmlFor="">Number of Epochs</label>
+          <input
+            value={epoch}
+            type="number"
+            onChange={(e) => setEpoch(Number(e.target.value))}
+          />
+          <label htmlFor="">Number of Steps</label>
+          <input
+            value={n_steps}
+            type="number"
+            onChange={(e) => setnSteps(Number(e.target.value))}
+          />
         </div>
       )}
     </div>

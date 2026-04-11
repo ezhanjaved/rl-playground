@@ -46,5 +46,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.close()
                 return
 
-    except:
+    except Exception as e:
+        print("WebSocket error:", e)
         manager.disconnect(websocket)

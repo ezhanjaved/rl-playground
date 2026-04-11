@@ -9,9 +9,16 @@ class TrainingLoop:
         self.ws = wrapperSelector(sc, runtime)
         self.env = self.ws.get_env()
         self.type = runtime.env_type
+
+        self.assignments = runtime.assignment_by_agent
+        self.agentsIds = runtime.agents_ids
+
+        self.pickedAgent = self.agentsIds[0]  # picking first agent
+        self.pickedAssignment = self.assignments[self.pickedAgent]
+
         self.training_id = trainingId
         if self.type == "SARL":
-            self.trainer = SingleAgentTrainer(self.env)
+            self.trainer = SingleAgentTrainer(self.env, self.pickedAssignment)
         else:
             pass
 
