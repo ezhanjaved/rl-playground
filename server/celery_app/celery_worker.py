@@ -12,5 +12,10 @@ celery_app.conf.update(
     task_routes={
         "rl_trainer": {"queue": "trainer"},
         "rl_inference": {"queue": "inference"},
+        "rl_test": {"queue": "celery"},
     }
 )
+
+import server.celery_app.rl_inference
+import server.celery_app.rl_test
+import server.celery_app.rl_trainer

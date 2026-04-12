@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from jose import JWTError, jwt
 
-SECRET_KEY = ""
+SECRET_KEY = "HSAS121KK1LJKLASASASKAND"
 ALGORITHM = "HS256"
 
 

@@ -5,6 +5,8 @@ from typing import Any, Dict
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from server.celery_app.rl_inference import rl_inference_celery
+from server.celery_app.rl_test import rl_test
 from server.celery_app.rl_trainer import rl_trainer_celery
 from server.database.insert import create_model
 from server.database.select import fetchModels
@@ -19,6 +21,7 @@ class RequestModel(BaseModel):
     entities: Dict[str, Any]
     graphs: Dict[str, Any]
     assignments: Dict[str, Any]
+    user_uid: str
 
 
 class RunModel(BaseModel):
@@ -31,6 +34,7 @@ trainer = APIRouter()
 
 @trainer.get("/")
 def trainerTest():
+    rl_test.delay()
     return {"message": "Trainer is ready"}
 
 
@@ -39,8 +43,12 @@ async def getData(data: RequestModel):
     try:
         model_id = str(uuid.uuid4())
         path = json_handler(model_id, data.dict())  # saves the data into machine
+        user_uid = data.dict()["user_uid"]
         config_path = uploadConfig(path)  # upload data from machine to s3 bucket
-        create_model({"training_id": model_id, "config_path": config_path}, "models")
+        create_model(
+            {"training_id": model_id, "config_path": config_path, "user_id": user_uid},
+            "models",
+        )
         rl_trainer_celery.delay(model_id)  # call celery with uid
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
@@ -53,8 +61,8 @@ async def getData(data: RequestModel):
 async def run_the_model(data: RunModel):
     try:
         dictObj = data.dict()
-        model_id = dictObj["model_id"]
-        user_id = dictObj["user_id"]
+        model_id = dictObj["model_uid"]
+        user_id = dictObj["user_uid"]
         status = validateOwner(model_id, user_id)
         if status:
             session_id = str(uuid.uuid4())
@@ -66,9 +74,11 @@ async def run_the_model(data: RunModel):
             # a function that uses model_id and feteches entities.json and return it with response.
             entities = fetchEnt(model_id)
             # call celery
+            rl_inference_celery.delay(model_id)
             return {
                 "message": "Ownership test passed",
                 "status": 1,
+                "user_id": user_id,
                 "session_id": session_id,
                 "jwt_token": token,
                 "entities": entities,

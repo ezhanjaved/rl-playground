@@ -8,8 +8,3 @@ def fetchModels(uid, table, id):
     else:
         print("Error:", response.error)
         return None
-
-
-models = fetchModels("125810d4-6d11-4d7d-9804-e472a261d345", "models", "user_id")
-print("MODELS: ", models)
-print(type(models))

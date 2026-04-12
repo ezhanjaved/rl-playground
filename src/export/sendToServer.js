@@ -10,6 +10,7 @@ export async function sendServer() {
     entities,
     graphs,
     assignments,
+    user_uid: "125810d4-6d11-4d7d-9804-e472a261d345",
   };
 
   const empty = emptyRoutine(data);
