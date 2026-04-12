@@ -1,6 +1,7 @@
 import numpy as np
 from gymnasium import spaces
-from utilities.refined import actionTrasnlator, refined, simplify
+
+from server.utilities.refined import actionTrasnlator, refined, simplify
 
 
 class GymWrapper:

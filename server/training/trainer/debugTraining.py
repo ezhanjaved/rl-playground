@@ -1,5 +1,4 @@
-from engine.controller.randomController import random_controller
-
+from server.engine.controller.randomController import random_controller
 from server.training.simulationBase import SimulationEnv
 
 

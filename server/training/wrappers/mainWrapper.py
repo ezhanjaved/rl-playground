@@ -1,7 +1,6 @@
-from wrappers.gymWrapper import GymWrapper
-from wrappers.pettingZooWrapper import PettingZooWrapper
-
 from server.training.simulationBase import SimulationEnv
+from server.training.wrappers.gymWrapper import GymWrapper
+from server.training.wrappers.pettingZooWrapper import PettingZooWrapper
 
 
 class wrapperSelector:
