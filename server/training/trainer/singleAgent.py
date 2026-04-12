@@ -60,7 +60,7 @@ class SingleAgentTrainer:
                 clip_range=self.clip_range,
                 vf_coef=self.vf_coef,
                 gamma=self.gamma,
-                ent_coef=self.entropy_coef,
+                ent_coef=0.01,
                 verbose=1,
                 target_kl=0.03,
             )
