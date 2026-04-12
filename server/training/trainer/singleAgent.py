@@ -1,6 +1,6 @@
 import os
-from typing import Callable, Union, cast
 
+# from typing import Callable, Union, cast
 from stable_baselines3 import PPO
 
 from server.path_config import MODEL_DIR
@@ -23,7 +23,7 @@ class SingleAgentTrainer:
         self.batch = self.assignment.batch
         self.epoch = self.assignment.epoch
         self.n_steps = self.assignment.n_steps
-        mode_entropy_coef = self.assignment.explorationStrategy
+        # mode_entropy_coef = self.assignment.explorationStrategy
 
         if self.learning_rate == "Slow":
             self.learning_rate = 1e-4
@@ -32,21 +32,18 @@ class SingleAgentTrainer:
         elif self.learning_rate == "Fast":
             self.learning_rate = 1e-3
 
-        if mode_entropy_coef == "Fixed":
-            self.entropy_coef = 0.01
-        elif mode_entropy_coef == "Decay":
-            self.entropy_coef = lambda p: 0.02 * p
-        elif mode_entropy_coef == "None":
-            self.entropy_coef = 0.0
+        # if mode_entropy_coef == "Fixed":
+        #     self.entropy_coef = 0.01
+        # elif mode_entropy_coef == "Decay":
+        #     self.entropy_coef = lambda p: 0.02 * p
+        # elif mode_entropy_coef == "None":
+        #     self.entropy_coef = 0.0
 
     def train(self):
         self.batch = min(self.batch, self.n_steps)
         self.n_steps = max(512, self.n_steps)
         self.clip_range = max(0.1, min(self.clip_range, 0.3))
         self.gae_lambda = max(0.9, min(self.gae_lambda, 0.98))
-        self.entropy_coef = cast(
-            Union[float, Callable[[float], float]], self.entropy_coef
-        )
 
         if self.model is None:
             self.model = PPO(
