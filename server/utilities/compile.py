@@ -7,7 +7,7 @@ from server.utilities.loader import json_loader
 
 
 def compiler(id):
-    folder_path = DATA_DIR / "model_training_{id}"
+    folder_path = DATA_DIR / f"model_training_{id}"
 
     key1 = "entities.json"
     key2 = "graphs.json"
