@@ -18,13 +18,16 @@ export async function sendServer() {
 
   try {
     console.log("Body: " + JSON.stringify(data, null, 2));
-    // const response = await fetch("http://127.0.0.1:8000/trainer/export-data", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(data),
-    // });
-    // const result = await response.json();
-    // console.log("Result from the server: " + JSON.stringify(result, null, 2));
+    const response = await fetch(
+      "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/export-data",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    console.log("Result from the server: " + JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(error);
   }

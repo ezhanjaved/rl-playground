@@ -54,7 +54,10 @@ async def webhookTrained(request: Request):
     path = payload["path"]
     # DB update
     update_model(
-        uid, {"status": "completed", "model_path": path}, "models", "training_id"
+        uid,
+        {"status": "training is completed", "model_path": path},
+        "models",
+        "training_id",
     )
     # Email Send
     print(f"Sending Email to User for Model Trained: {uid}")

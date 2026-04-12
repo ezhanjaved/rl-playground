@@ -4,13 +4,13 @@ from server.database.update import update_model, update_status
 
 
 @celery_app.task(name="rl_inference", bind=True, max_retries=3)
-def rl_inference_celery(self, uid: str):
+def rl_inference(self, uid: str):
     try:
         update_status(uid, "connecting", "simulation", "model_id")
         # connect to pod
         remote_cmd = f"""
         cd /workspace/rl-playground
-        nohup server/venv/bin/python -m server.trigger_inference {uid} > server/trigger_inference.log 2>&1 &
+        nohup server/venv/bin/python -m server.pod.trigger_inference {uid} > server/trigger_inference.log 2>&1 &
         exit
         """
         connectToPod(remote_cmd)

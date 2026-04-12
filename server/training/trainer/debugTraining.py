@@ -1,5 +1,6 @@
 from engine.controller.randomController import random_controller
-from training.simulationBase import SimulationEnv
+
+from server.training.simulationBase import SimulationEnv
 
 
 def debugPipeline(scenario, runTimeState):

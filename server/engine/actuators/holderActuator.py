@@ -5,7 +5,7 @@ from server.utilities.nearPick import nearbyPickable
 
 
 def holderActuator(action, agentData, entities, eM):
-    from training.bulletWorld import PyBulletWorld
+    from server.training.bulletWorld import PyBulletWorld
 
     agentPos = agentData.position
     capabilities = agentData.capabilities

@@ -5,9 +5,9 @@ from typing import Any, Dict
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from server.celery_app.rl_inference import rl_inference_celery
+from server.celery_app.rl_inference import rl_inference
 from server.celery_app.rl_test import rl_test
-from server.celery_app.rl_trainer import rl_trainer_celery
+from server.celery_app.rl_trainer import rl_trainer
 from server.database.insert import create_model
 from server.database.select import fetchModels
 from server.pod.jwt_token.generateJWT import create_access_token
@@ -49,7 +49,7 @@ async def getData(data: RequestModel):
             {"training_id": model_id, "config_path": config_path, "user_id": user_uid},
             "models",
         )
-        rl_trainer_celery.delay(model_id)  # call celery with uid
+        rl_trainer.delay(model_id)  # call celery with uid
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
         print("An Error Occured")
@@ -74,7 +74,7 @@ async def run_the_model(data: RunModel):
             # a function that uses model_id and feteches entities.json and return it with response.
             entities = fetchEnt(model_id)
             # call celery
-            rl_inference_celery.delay(model_id)
+            rl_inference.delay(model_id)
             return {
                 "message": "Ownership test passed",
                 "status": 1,

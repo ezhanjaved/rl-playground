@@ -10,8 +10,8 @@ broker_url = url
 celery_app = Celery("worker", broker=str(broker_url))
 celery_app.conf.update(
     task_routes={
-        "rl_trainer": {"queue": "trainer"},
-        "rl_inference": {"queue": "inference"},
+        "rl_trainer": {"queue": "celery"},
+        "rl_inference": {"queue": "celery"},
         "rl_test": {"queue": "celery"},
     }
 )

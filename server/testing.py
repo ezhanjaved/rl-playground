@@ -1,7 +1,4 @@
-import time
-from pathlib import Path
-
-from server.database.update import update_model
+import secrets
 
 # from storage.uploadModel import uploadConfig
 # from database.insert import create_model
@@ -48,7 +45,7 @@ from server.database.update import update_model
 
 
 def test():
-    print(time.time())
+    print(secrets.token_hex(32))
 
 
 test()

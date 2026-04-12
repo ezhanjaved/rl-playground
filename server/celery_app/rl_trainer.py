@@ -4,16 +4,15 @@ from server.database.update import update_model, update_status
 
 
 @celery_app.task(name="rl_trainer", bind=True, max_retries=3)
-def rl_trainer_celery(self, uid: str):
+def rl_trainer(self, uid: str):
     try:
         update_status(uid, "queued", "models", "training_id")
         remote_cmd = f"""
         cd /workspace/rl-playground
-        nohup server/venv/bin/python -m server.trigger_training {uid} > server/trigger_training.log 2>&1 &
+        nohup server/venv/bin/python -m server.pod.trigger_training {uid} > server/pod/trigger_training.log 2>&1 &
         exit
         """
         connectToPod(remote_cmd)
-        update_status(uid, "training", "models", "training_id")
     except ConnectionError as e:
         try:
             raise self.retry(exc=e, countdown=10 * (2**self.request.retries))
