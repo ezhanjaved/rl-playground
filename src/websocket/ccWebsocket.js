@@ -1,0 +1,48 @@
+let socket = null;
+let onActionCallback = null;
+
+export function connectCloudSocket(podUrl, onAction) {
+  if (socket) return;
+
+  onActionCallback = onAction;
+
+  socket = new WebSocket(podUrl);
+
+  socket.onopen = () => {
+    console.log("Connected to cloud computer.");
+  };
+
+  socket.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.action && onActionCallback) {
+        onActionCallback(data.action);
+      }
+    } catch (err) {
+      console.error("Invalid JSON from cloud:", err);
+    }
+  };
+
+  socket.onclose = () => {
+    console.log("❌ Disconnected from cloud");
+    socket = null;
+  };
+
+  socket.onerror = (err) => {
+    console.error("Cloud WS Error:", err);
+  };
+}
+
+export function sendObsToCloud(obs, session_token, jwt_token) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    console.warn("Socket not ready — observation dropped");
+    return;
+  }
+  socket.send(
+    JSON.stringify({
+      obs,
+      session_token,
+      jwt_token,
+    }),
+  );
+}

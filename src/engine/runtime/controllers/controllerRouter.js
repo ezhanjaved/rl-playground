@@ -2,6 +2,7 @@
 import { useSceneStore } from "../../../stores/useSceneStore";
 import randomController from "./randomController";
 import { qLearningAct } from "./policyController";
+import { PPOController } from "./ppoController";
 
 export default function ControllerRouter(
   observation_space,
@@ -32,7 +33,8 @@ export default function ControllerRouter(
 
   if (config.algorithm === "ppo") {
     console.log("Opting for PPO model");
-    return ppoModel(observation_space);
+    PPOController(observation_space);
+    return null;
   }
 
   // Fallback

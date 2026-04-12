@@ -1,7 +1,7 @@
 from server.database.update import update_status
 from server.pod.basis import basis
 from server.storage.uploadModel import uploadModel
-from server.utilities.callWebhook import call_webhook
+from server.utilities.callWebhook import call_webhook_for_training
 
 
 def trainingPod(uid: str):
@@ -12,4 +12,4 @@ def trainingPod(uid: str):
     local_path = trainer.save()
     s3Path = uploadModel(uid, local_path)
     update_status(uid, "saved", "models", "training_id")
-    call_webhook(uid, s3Path)
+    call_webhook_for_training(uid, s3Path)

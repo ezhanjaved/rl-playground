@@ -7,9 +7,10 @@ import discretize from "../utility/discretization.js";
 
 export default function runTimeloop(entities) {
   const { playing, training } = useRunTimeStore.getState();
-  const { currentExperimentId } = useRunTimeStore.getState();
+  const { currentExperimentId, isModelLoading, isModelReady } =
+    useRunTimeStore.getState();
 
-  if (!playing || training) return;
+  if (!playing || training || isModelLoading) return;
 
   Object.values(entities).forEach((entity) => {
     //We will go through each entity
@@ -21,10 +22,8 @@ export default function runTimeloop(entities) {
     ) {
       return;
     }
-    console.log("Rotation: " + entity.rotation);
     const observation_space = buildObsSpace(entity); //Here we will build the obs space and then give it to controller
-    console.log("Current OBS: " + observation_space);
-    const state_key = discretize(observation_space, entity);
+    // const state_key = discretize(observation_space, entity);
     const action_space = entity.action_space;
     const qTable = null;
     const action = ControllerRouter(
@@ -35,7 +34,8 @@ export default function runTimeloop(entities) {
       qTable,
       "playing",
     ); //This will give us action
-    console.log("Action: " + action);
-    applyAction(action, entity, observation_space);
+    if (action !== null && !isModelReady) {
+      applyAction(action, entity, observation_space);
+    }
   });
 }

@@ -1,12 +1,9 @@
-
-export async function ppoController(obsVector) {
-  // refine obs vector -> make it all numeric
+import { sendObsToCloud } from "../../../websocket/ccWebsocket";
+export function PPOController(obsVector) {
   const refinedObs = refineObs(obsVector);
-  //get session and jwt token from local storage
   const session_token = localStorage.getItem("session_token");
   const jwt_token = localStorage.getItem("jwt_token");
-  //will use these three to send over WS to cloud computer
-  
+  sendObsToCloud(refinedObs, session_token, jwt_token);
 }
 
 function refineObs(obsVector) {

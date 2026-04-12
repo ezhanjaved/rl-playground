@@ -41,3 +41,19 @@ def download_from_s3(uid):
         s3.download_file(bucket_name, key, local_path)
 
     print(f"Downloaded files to {folder_dir}/")
+
+
+def download_ent(uid):
+    bucket_name = "rl-models"
+    prefix = f"model_training_{uid}/entities.json"
+    local_dir = f"model_training_{uid}"
+
+    folder_dir = DATA_DIR / local_dir
+
+    os.makedirs(folder_dir, exist_ok=True)
+
+    file_path = folder_dir / "entities.json"
+
+    s3.download_file(bucket_name, prefix, str(file_path))
+
+    return file_path

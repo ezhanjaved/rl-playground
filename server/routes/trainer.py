@@ -7,8 +7,10 @@ from pydantic import BaseModel
 
 from server.celery_app.rl_trainer import rl_trainer_celery
 from server.database.insert import create_model
+from server.database.select import fetchModels
 from server.pod.jwt_token.generateJWT import create_access_token
 from server.storage.uploadModel import uploadConfig
+from server.utilities.fetchEnt import fetchEnt
 from server.utilities.loader import json_handler
 from server.utilities.validateOwner import validateOwner
 
@@ -61,15 +63,30 @@ async def run_the_model(data: RunModel):
                 {"session_id": session_id, "user_id": user_id, "model_id": model_id},
                 "simulation",
             )
+            # a function that uses model_id and feteches entities.json and return it with response.
+            entities = fetchEnt(model_id)
             # call celery
             return {
                 "message": "Ownership test passed",
                 "status": 1,
                 "session_id": session_id,
                 "jwt_token": token,
+                "entities": entities,
             }
         else:
             return {"message": "Ownership failed", "status": 0}
+    except Exception as exceptionMsg:
+        print("An error occured")
+        traceback.print_exc()
+        return {"message": exceptionMsg, "status": 0}
+
+
+@trainer.post("/fetch_models")
+async def fetch_models(data: RunModel):
+    try:
+        user_id = data.dict()["user_uid"]
+        models = fetchModels(user_id, "models", "user_id")
+        return {"message": "models for this user", "status": 1, "models": models}
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
