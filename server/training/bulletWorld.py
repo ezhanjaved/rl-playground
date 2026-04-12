@@ -13,7 +13,7 @@ class PyBulletWorld:
         self.entity_mapping = {}
 
     def load(self):
-        self.client = p.connect(p.GUI)
+        self.client = p.connect(p.DIRECT)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.loadURDF("plane.urdf")
 
@@ -53,7 +53,6 @@ class PyBulletWorld:
     def step_simulation(self, steps=100):
         for _ in range(steps):
             p.stepSimulation()
-            time.sleep(1 / 240)
 
     @staticmethod
     def spawn_agent(pos, rot):
