@@ -166,6 +166,3 @@ def build_state_space(ss_dict) -> StateSpace:
         state["previous_distance_collect"] = ss_dict["previous_distance_collect"]
 
     return state
-
-
-compiler("0fc71b65-48e9-4f05-a2ab-e5a74ae68b2f")
