@@ -46,7 +46,7 @@ class GymWrapper(gym.Env):
         refined_obs, _ = refined(obs_list)
         refined_obs = np.array(refined_obs, dtype=np.float32)
 
-        return refined_obs, {}
+        return refined_obs  # type: ignore
 
     def step(self, action):
         action_str = actionTrasnlator(action)
@@ -65,10 +65,11 @@ class GymWrapper(gym.Env):
         refined_obs, _ = refined(obs_list)
         refined_obs = np.array(refined_obs, dtype=np.float32)
 
-        reward = rew_dict[self.agent_id]
+        reward = float(rew_dict[self.agent_id])
         terminated = ter_dict[self.agent_id]
         truncated = tru_dict[self.agent_id]
         info = info_dict[self.agent_id]
+
         done = terminated or truncated
 
-        return refined_obs, reward, done, info
+        return refined_obs, reward, done, info  # type: ignore
