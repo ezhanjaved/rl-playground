@@ -16,7 +16,7 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
     visited_nodes = set()
 
     ctx = {
-        "reward": 0,
+        "reward": 0.0,
         "terminated": False,
         "truncated": False,
         "info": {},
@@ -48,6 +48,13 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
     return ctx["reward"], ctx["terminated"], ctx["truncated"], ctx["info"]
 
 
+def safe_float(x, default=0.0):
+    try:
+        return float(x)
+    except:
+        return default
+
+
 def visitNode(node_id, graph, ctx):
     if ctx["terminated"]:
         return
@@ -72,12 +79,14 @@ def visitNode(node_id, graph, ctx):
         return
 
     if node_data.type == "AddRewardNode":
-        multiplier = getattr(ctx["config"], "rewardMultiplier", 1)
+        multiplier = safe_float(getattr(ctx["config"], "rewardMultiplier", 1.0))
+
         reward_value = (
             node_data.data.get("rewardValue", 0)
             if isinstance(node_data.data, dict)
             else getattr(node_data.data, "rewardValue", 0)
         )
+        reward_value = safe_float(reward_value)
         ctx["reward"] += reward_value * multiplier
 
     elif node_data.type == "EndEpisodeNode":
