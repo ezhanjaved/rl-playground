@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import WebSocket
 
 
 class ConnectionManager:
@@ -18,20 +18,3 @@ class ConnectionManager:
                 await connection.send_json(message)
             except:
                 pass
-
-
-app = FastAPI()
-manager = ConnectionManager()
-
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-
-    try:
-        while True:
-            await websocket.receive_text()
-
-    except Exception as e:
-        print("WebSocket error:", e)
-        manager.disconnect(websocket)

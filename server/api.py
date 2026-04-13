@@ -3,12 +3,12 @@ import hmac
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
 from server.database.update import update_model, update_status
 from server.routes.trainer import trainer
-from server.websocket.broadcast import manager
+from server.websocket.broadcast import ConnectionManager
 
 origins = ["*"]
 load_dotenv()
@@ -28,6 +28,22 @@ app.include_router(trainer, prefix="/trainer")
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
+
+
+manager = ConnectionManager()
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+
+    try:
+        while True:
+            await websocket.receive_text()
+
+    except Exception as e:
+        print("WebSocket error:", e)
+        manager.disconnect(websocket)
 
 
 SECRET = str(os.getenv("WEB_SECRET"))
