@@ -18,9 +18,7 @@ def trainingPod(uid: str):
         update_status(uid, "model is saved", "models", "training_id")
         call_webhook_for_training(uid, s3Path)
         update_status(uid, "webhook is pinged", "models", "training_id")
-    except Exception as e:
-        print(f"Training for model {uid} failed: {e}")
+    except Exception:
+        print(f"Training for model {uid} failed")
         traceback.print_exc()
-        update_model(
-            uid, {"status": "failed", "error": str(e)}, "models", "training_id"
-        )
+        update_model(uid, {"status": "failed"}, "models", "training_id")
