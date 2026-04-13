@@ -6,5 +6,5 @@ def fetchModels(uid, table, id):
     if response.data:
         return response.data
     else:
-        print("Error:", response.error)
+        print("Error:", response)
         return None
