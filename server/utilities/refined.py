@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def simplify(dictType):
     listType = list(
         dictType.keys()
@@ -32,7 +35,15 @@ def actionTrasnlator(action):
         7: "drop",
         8: "collect",
     }
+
+    if isinstance(action, np.ndarray):
+        action = action.flatten()[0]
+    elif isinstance(action, (list, tuple)):
+        action = action[0]
+
+    action = int(action)
+
     if action not in actionlist:
-        raise ValueError("Action picked is not defined within the list.")
-    action_string = actionlist[action]
-    return action_string
+        raise ValueError(f"Invalid action: {action}")
+
+    return actionlist[action]

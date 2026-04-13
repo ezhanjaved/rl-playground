@@ -23,12 +23,7 @@ class ConnectionManager:
 
         action_predicted, _ = model.predict(obs)
 
-        if isinstance(action_predicted, np.ndarray):
-            action_predicted = action_predicted.item()
-
-        refined_action_predicted = actionTrasnlator(action_predicted)
-
-        return refined_action_predicted
+        return actionTrasnlator(action_predicted)
 
 
 app = FastAPI()
