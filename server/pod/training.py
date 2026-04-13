@@ -14,7 +14,7 @@ def trainingPod(uid: str):
         trainer.train()
         update_status(uid, "training is complete", "models", "training_id")
         local_path = trainer.save()
-        s3Path = uploadModel(uid, local_path)
+        s3Path = uploadModel(local_path, uid)
         update_status(uid, "model is saved", "models", "training_id")
         call_webhook_for_training(uid, s3Path)
         update_status(uid, "webhook is pinged", "models", "training_id")
