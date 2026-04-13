@@ -48,7 +48,7 @@ class PyBulletWorld:
             pass
         return id
 
-    def step_simulation(self, steps=100):
+    def step_simulation(self, steps=20):
         for _ in range(steps):
             p.stepSimulation()
 
