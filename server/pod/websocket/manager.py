@@ -34,6 +34,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             token = data["jwt_token"]
+            agent_id = data["agentId"]
             status = verify_token(token)
             if status:
                 print(f"Received: {data}", flush=True)
@@ -44,6 +45,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     {
                         "action": action,
                         "session_id": data["session_token"],
+                        "agent_id": agent_id,
                     }
                 )
             else:

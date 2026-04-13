@@ -34,7 +34,7 @@ export default function runTimeloop(entities) {
       qTable,
       "playing",
     ); //This will give us action
-    if (action !== null && !isModelReady) {
+    if (action !== null && action !== undefined) {
       applyAction(action, entity, observation_space);
     }
   });

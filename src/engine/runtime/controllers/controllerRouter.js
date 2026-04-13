@@ -33,8 +33,8 @@ export default function ControllerRouter(
 
   if (config.algorithm === "ppo") {
     console.log("Opting for PPO model");
-    PPOController(observation_space);
-    return null;
+    PPOController(observation_space, agentId);
+    return;
   }
 
   // Fallback

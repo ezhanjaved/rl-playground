@@ -7,6 +7,9 @@ import { useBackendWebSocket } from "../websocket/beWebsocket";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { connectCloudSocket } from "../websocket/ccWebsocket";
 import applyAction from "../engine/runtime/actuators/applyAction";
+import { useSceneStore } from "../stores/useSceneStore";
+import buildObsSpace from "../engine/runtime/observationBuilder";
+import { clearPending } from "../engine/runtime/controllers/ppoState";
 
 const renderDefaultCell = (key, value) => {
   const k = key.toLowerCase();
@@ -85,15 +88,20 @@ export function Table({
 }) {
   const [openMenu, setOpenMenu] = useState(null);
   const setModeltoReady = useRunTimeStore((s) => s.setModeltoReady);
+  const { entities } = useSceneStore.getState();
 
   // Stable callback — won't go stale on re-renders
   // Receives pod_url from the backend READY message
   const handleModelReady = useCallback(
     (podUrl) => {
       setModeltoReady(); //flag model to ready
-      connectCloudSocket(podUrl, (action) => {
+      connectCloudSocket(podUrl, (action, id) => {
         //connect to cloud computer
-        applyAction(action);
+        const agent = entities?.[id];
+        if (!agent) return;
+        clearPending(id);
+        const obs = buildObsSpace(agent);
+        applyAction(action, agent, obs);
       });
     },
     [setModeltoReady],

@@ -16,8 +16,8 @@ export function connectCloudSocket(podUrl, onAction) {
     console.log("Raw from pod:", event.data);
     try {
       const data = JSON.parse(event.data);
-      if (data.action && onActionCallback) {
-        onActionCallback(data.action);
+      if (data.action && data.agent_id && onActionCallback) {
+        onActionCallback(data.action, data.agent_id);
       }
     } catch (err) {
       console.error("Invalid JSON from cloud:", err);
@@ -34,11 +34,11 @@ export function connectCloudSocket(podUrl, onAction) {
   };
 }
 
-export function sendObsToCloud(obs, session_token, jwt_token) {
+export function sendObsToCloud(obs, session_token, jwt_token, agentId) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     console.warn("Socket not ready — observation dropped");
     return;
   }
   console.log("Sending obs to cloud:", obs);
-  socket.send(JSON.stringify({ obs, session_token, jwt_token }));
+  socket.send(JSON.stringify({ obs, session_token, jwt_token, agentId }));
 }
