@@ -7,8 +7,8 @@ from server.storage.r2Client import s3
 def downloadModel(id):
     file_name = f"model_training_{id}/model_{id}.zip"
     download_model_path = MODEL_DIR
-    download_model_path.mkdir(parents=True, exist_ok=True)
     full_path = download_model_path / file_name
+    full_path.parent.mkdir(parents=True, exist_ok=True)
     s3.download_file("rl-models", file_name, str(full_path))
     return f"{file_name} is downloaded from the bucket to {download_model_path}"
 
