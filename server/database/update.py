@@ -9,7 +9,7 @@ def update_status(id, status, table_name, id_name):
     if response.data:
         return response.data
     else:
-        print("Error:", response.error)
+        print("Error:", response)
         return None
 
 
