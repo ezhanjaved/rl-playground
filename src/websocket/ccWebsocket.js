@@ -6,13 +6,14 @@ export function connectCloudSocket(podUrl, onAction) {
 
   onActionCallback = onAction;
 
-  socket = new WebSocket(podUrl);
+  socket = new WebSocket(`${podUrl}/ws`);
 
   socket.onopen = () => {
     console.log("Connected to cloud computer.");
   };
 
   socket.onmessage = (event) => {
+    console.log("Raw from pod:", event.data);
     try {
       const data = JSON.parse(event.data);
       if (data.action && onActionCallback) {
@@ -38,11 +39,6 @@ export function sendObsToCloud(obs, session_token, jwt_token) {
     console.warn("Socket not ready — observation dropped");
     return;
   }
-  socket.send(
-    JSON.stringify({
-      obs,
-      session_token,
-      jwt_token,
-    }),
-  );
+  console.log("Sending obs to cloud:", obs);
+  socket.send(JSON.stringify({ obs, session_token, jwt_token }));
 }

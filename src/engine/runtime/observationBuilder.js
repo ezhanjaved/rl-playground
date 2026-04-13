@@ -175,30 +175,27 @@ export default function buildObsSpace(agent) {
 
 export function nearestDistance(position, predicate, mode) {
   const { entities } = useSceneStore.getState();
-  const MAX_DIST = 1e9;
-  let min = Infinity;
-  let d = -Infinity;
+  const MAX_DIST = 100.0;
+  let min = MAX_DIST;
   let minPos = [];
 
   for (const entity of Object.values(entities)) {
     if (!entity) continue;
     if (!predicate(entity)) continue;
     const targetObjPos = entity?.position ?? [0, 0, 0];
+    let d;
     if (mode === "both") {
       d = distance3D(position, targetObjPos);
     } else if (mode === "x") {
-      d = position?.[0] - targetObjPos?.[0];
+      d = Math.abs(position?.[0] - targetObjPos?.[0]);
     } else if (mode === "z") {
-      d = position?.[2] - targetObjPos?.[2];
+      d = Math.abs(position?.[2] - targetObjPos?.[2]);
     }
     if (Number.isFinite(d) && d < min) {
-      //minimum hai yaha - ye jabhi update minimum value hogi
       min = d;
       minPos = targetObjPos;
     }
   }
-
-  return Number.isFinite(min)
-    ? { min, minPos }
-    : { min: MAX_DIST, minPos: [0, 0, 0] };
+  const normalizedMin = min / MAX_DIST;
+  return { min: normalizedMin, minPos };
 }

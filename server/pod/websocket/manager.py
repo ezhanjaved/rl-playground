@@ -33,19 +33,22 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            token = data["token"]
+            token = data["jwt_token"]
             status = verify_token(token)
-
             if status:
+                print(f"Received: {data}", flush=True)
                 obs = data["obs"]
                 action = await manager.predict_action(obs)
+                print(f"Sent: {action}", flush=True)
                 await websocket.send_json(
-                    {"action": action, "session_id": data["session_id"]}
+                    {
+                        "action": action,
+                        "session_id": data["session_token"],
+                    }
                 )
             else:
                 await websocket.close()
                 return
-
     except Exception as e:
-        print("WebSocket error:", e)
+        print("WebSocket error:", e, flush=True)
         manager.disconnect(websocket)
