@@ -5,14 +5,15 @@ from pathlib import Path
 from stable_baselines3 import PPO
 
 from server.path_config import MODEL_DIR
+from server.training.trainer.rewardCallback import RewardLoggerCallback
 
 
 class SingleAgentTrainer:
-    def __init__(self, env, assignment):
+    def __init__(self, training_id, env, assignment):
         self.env = env
         self.model = None
         self.assignment = assignment.config
-
+        self.training_id = training_id
         self.timesteps = (
             self.assignment.episodeNumber * self.assignment.maxStepsPerEpisode
         )
@@ -62,7 +63,9 @@ class SingleAgentTrainer:
                 verbose=1,
                 target_kl=0.03,
             )
-        self.model.learn(total_timesteps=self.timesteps)
+
+        callback = RewardLoggerCallback(training_id=self.training_id, log_every_n=1)
+        self.model.learn(total_timesteps=self.timesteps, callback=callback)
 
     def save(
         self, id

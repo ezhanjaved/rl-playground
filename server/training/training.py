@@ -18,7 +18,9 @@ class TrainingLoop:
 
         self.training_id = trainingId
         if self.type == "SARL":
-            self.trainer = SingleAgentTrainer(self.env, self.pickedAssignment)
+            self.trainer = SingleAgentTrainer(
+                self.training_id, self.env, self.pickedAssignment
+            )
         else:
             pass
 

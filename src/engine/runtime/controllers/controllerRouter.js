@@ -3,6 +3,7 @@ import { useSceneStore } from "../../../stores/useSceneStore";
 import randomController from "./randomController";
 import { qLearningAct } from "./policyController";
 import { PPOController } from "./ppoController";
+import { useRunTimeStore } from "../../../stores/useRunTimeStore";
 
 export default function ControllerRouter(
   observation_space,
@@ -11,14 +12,17 @@ export default function ControllerRouter(
   experimentId,
   qTable,
   mode,
+  isModelReady,
 ) {
   const { assignments } = useSceneStore.getState();
   const config = assignments?.[agentId]?.assignedConfig ?? null;
   // No assignment/config => random policy
-  if (!config || !experimentId) return randomController(action_space);
+  console.log("Is Model Ready: " + isModelReady);
+  if (!config && !experimentId && !isModelReady)
+    return randomController(action_space);
 
   // Route by algorithm
-  if (config.algorithm === "q-learning") {
+  if (config?.algorithm === "q-learning" && !isModelReady) {
     console.log("Opting for Q-Table");
     return qLearningAct(
       observation_space,
@@ -31,7 +35,7 @@ export default function ControllerRouter(
     );
   }
 
-  if (config.algorithm === "ppo") {
+  if (isModelReady) {
     console.log("Opting for PPO model");
     PPOController(observation_space, agentId);
     return;

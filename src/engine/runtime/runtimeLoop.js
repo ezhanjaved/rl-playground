@@ -10,8 +10,8 @@ export default function runTimeloop(entities) {
   const { currentExperimentId, isModelLoading, isModelReady } =
     useRunTimeStore.getState();
 
-  if (!playing || training || isModelLoading) return;
-
+  if (!playing || training) return;
+  console.log("Runtime Loop");
   Object.values(entities).forEach((entity) => {
     //We will go through each entity
     if (
@@ -33,8 +33,11 @@ export default function runTimeloop(entities) {
       currentExperimentId,
       qTable,
       "playing",
+      isModelReady,
     ); //This will give us action
+
     if (action !== null && action !== undefined) {
+      console.log("Action are applied Locally");
       applyAction(action, entity, observation_space);
     }
   });
