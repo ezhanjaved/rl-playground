@@ -12,7 +12,6 @@ class AssignmentConfig:
     rewardMultiplier: int
     agentSpawnMode: str
     objectSpawnMode: str
-    typeOfTraining: str
     clipRange: float
     gaeLambda: float
     valLossCf: float
