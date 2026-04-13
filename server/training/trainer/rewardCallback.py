@@ -11,6 +11,7 @@ class RewardLoggerCallback(BaseCallback):
         self.log_every_n = log_every_n
 
         self._episode_count = 0
+        self._rollout_count = 0
         self._current_episode_reward = 0.0
         self._all_rewards = []
 
@@ -44,6 +45,48 @@ class RewardLoggerCallback(BaseCallback):
             self._current_episode_reward = 0.0
 
         return True
+
+    def _on_rollout_end(self) -> None:
+        self._rollout_count += 1
+        buf = self.model.rollout_buffer
+
+        advantages = buf.advantages.flatten()
+        returns = buf.returns.flatten()
+        values = buf.values.flatten()
+        rewards = buf.rewards.flatten()
+
+        kv = self.model.logger.name_to_value
+        clip_fraction = kv.get("train/clip_fraction", None)
+        entropy_loss = kv.get("train/entropy_loss", None)
+        policy_loss = kv.get("train/policy_loss", None)
+        value_loss = kv.get("train/value_loss", None)
+        approx_kl = kv.get("train/approx_kl", None)
+
+        data = {
+            "rollout_count": self._rollout_count,
+            "mean_advantage": round(float(np.mean(advantages)), 4),
+            "mean_return": round(float(np.mean(returns)), 4),
+            "mean_value": round(float(np.mean(values)), 4),
+            "mean_rollout_reward": round(float(np.mean(rewards)), 4),
+        }
+
+        if clip_fraction is not None:
+            data["clip_fraction"] = round(float(clip_fraction), 4)
+        if entropy_loss is not None:
+            data["entropy_loss"] = round(float(entropy_loss), 4)
+        if policy_loss is not None:
+            data["policy_loss"] = round(float(policy_loss), 4)
+        if value_loss is not None:
+            data["value_loss"] = round(float(value_loss), 4)
+        if approx_kl is not None:
+            data["approx_kl"] = round(float(approx_kl), 4)
+
+        update_model(
+            id=self.training_id,
+            data=data,
+            table="models",
+            id_name="training_id",
+        )
 
     def _on_training_end(self) -> None:
         final_mean = (
