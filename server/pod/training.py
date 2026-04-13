@@ -20,5 +20,7 @@ def trainingPod(uid: str):
         update_status(uid, "webhook is pinged", "models", "training_id")
     except Exception:
         print(f"Training for model {uid} failed")
-        traceback.print_exc()
-        update_model(uid, {"status": "failed"}, "models", "training_id")
+        tb = traceback.format_exc()
+        print(tb)
+        update_model(uid, {"status": "failed", "error": tb}, "models", "training_id")
+        raise
