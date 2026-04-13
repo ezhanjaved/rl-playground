@@ -7,6 +7,7 @@ import time
 import requests
 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+CLOUD_WEBSOCKET = os.getenv("CLOUD_WEBSOCKET")
 
 if WEBHOOK_URL:
     TRAINING_WEBHOOK = f"{WEBHOOK_URL}/training-finished"
@@ -43,7 +44,7 @@ def call_webhook_for_inference(uid: str):
     payload = {
         "model_id": uid,
         "timestamp": int(time.time()),
-        "url": "ws://k9co1bxgp1ct5w-8001.proxy.runpod.net",
+        "url": CLOUD_WEBSOCKET,
     }
     body = json.dumps(payload, separators=(",", ":")).encode()
     signature = hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest()

@@ -10,7 +10,7 @@ def rl_inference(self, uid: str):
         # connect to pod
         remote_cmd = f"""
         cd /workspace/rl-playground
-        nohup server/venv/bin/python -m server.pod.trigger_inference {uid} > server/trigger_inference.log 2>&1 &
+        nohup server/venv/bin/python -m server.pod.trigger_inference {uid} > server/pod/trigger_inference.log 2>&1 &
         exit
         """
         connectToPod(remote_cmd)

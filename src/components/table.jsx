@@ -256,16 +256,16 @@ export function Table({
                               className={`action-btn-eye ${item.status === "Training" ? "disabled" : ""}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (item.status !== "Training") {
+                                if (item.status !== "training") {
                                   connectSocket(item);
                                 }
                               }}
                               title={
-                                item.status === "Training"
+                                item.status === "training"
                                   ? "Model is still training"
                                   : "View Visualization"
                               }
-                              disabled={item.status === "Training"}
+                              disabled={item.status === "training"}
                             >
                               <Eye size={18} />
                             </button>

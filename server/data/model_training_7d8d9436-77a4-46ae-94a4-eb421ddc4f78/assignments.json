@@ -1,0 +1,24 @@
+{
+    "entity_ab8a0e84-869a-4dae-9402-5d5b99333561": {
+        "assignedGraphId": "graph_dda87cec-c018-426c-935f-3846300b9ef0",
+        "assignedConfig": {
+            "episodeNumber": 10,
+            "maxStepsPerEpisode": 100,
+            "rewardImportance": 0.5,
+            "algorithm": "ppo",
+            "explorationStrategy": "fixed",
+            "learningSpeed": "Medium",
+            "rewardMultiplier": 1,
+            "agentSpawnMode": "Fixed",
+            "objectSpawnMode": "Fixed",
+            "typeOfTraining": "SARL",
+            "clipRange": 0.2,
+            "gaeLambda": 0.95,
+            "valLossCf": 0.5,
+            "batch": 64,
+            "epoch": 10,
+            "n_steps": 2048
+        },
+        "createdAt": 1776066265102
+    }
+}

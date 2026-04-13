@@ -95,6 +95,6 @@ async def webhookReady(request: Request):
 
     update_status(uid, {"status": "ready"}, "simulation", "model_id")
 
-    await manager.broadcast({"type": "MODEL_READY", "model_id": uid, "pod_url": url})
+    await manager.broadcast({"status": "READY", "model_id": uid, "pod_url": url})
 
     return {"status": "ok"}

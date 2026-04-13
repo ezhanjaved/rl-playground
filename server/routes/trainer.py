@@ -22,6 +22,8 @@ class RequestModel(BaseModel):
     graphs: Dict[str, Any]
     assignments: Dict[str, Any]
     user_uid: str
+    modelName: str
+    envType: str
 
 
 class RunModel(BaseModel):
@@ -44,9 +46,15 @@ async def getData(data: RequestModel):
         model_id = str(uuid.uuid4())
         path = json_handler(model_id, data.dict())  # saves the data into machine
         user_uid = data.dict()["user_uid"]
+        model_name = data.dict()["modelName"]
         config_path = uploadConfig(path)  # upload data from machine to s3 bucket
         create_model(
-            {"training_id": model_id, "config_path": config_path, "user_id": user_uid},
+            {
+                "training_id": model_id,
+                "config_path": config_path,
+                "user_id": user_uid,
+                "name": model_name,
+            },
             "models",
         )
         rl_trainer.delay(model_id)  # call celery with uid
@@ -95,7 +103,9 @@ async def run_the_model(data: RunModel):
 async def fetch_models(data: RunModel):
     try:
         user_id = data.dict()["user_uid"]
+        print("User ID: ", user_id)
         models = fetchModels(user_id, "models", "user_id")
+        print("Models:", models)
         return {"message": "models for this user", "status": 1, "models": models}
     except Exception as exceptionMsg:
         print("An error occured")

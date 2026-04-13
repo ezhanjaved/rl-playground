@@ -191,20 +191,18 @@ const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
 
 const AdvanceSection = ({ setTwo }) => {
   const [open, setOpen] = useState(true);
-
+  const { modelName, setModelName, envType, setEnvType } = useRunTimeStore();
   const [rewardMultiplier, setRewardMultiplier] = useState(1);
   const [agentSpawnMode, setAgentSpawnMode] = useState("Random");
   const [objectSpawnMode, setObjectSpawnMode] = useState("Random");
-  const [typeOfTraining, setType] = useState("SARL");
 
   useEffect(() => {
     setTwo({
       rewardMultiplier,
       agentSpawnMode,
       objectSpawnMode,
-      typeOfTraining,
     });
-  }, [rewardMultiplier, agentSpawnMode, objectSpawnMode, typeOfTraining]);
+  }, [rewardMultiplier, agentSpawnMode, objectSpawnMode]);
 
   return (
     <div className="section">
@@ -223,6 +221,12 @@ const AdvanceSection = ({ setTwo }) => {
       </button>
       {open && (
         <div className="setting">
+          <label htmlFor="">Name of Model</label>
+          <input
+            type="text"
+            value={modelName}
+            onChange={(e) => setModelName(e.target.value)}
+          />
           <label htmlFor="">Reward Multiplier</label>
           <input
             value={rewardMultiplier}
@@ -275,8 +279,8 @@ const AdvanceSection = ({ setTwo }) => {
           <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
             <label>
               <input
-                checked={typeOfTraining === "SARL"}
-                onChange={(e) => setType(e.target.value)}
+                checked={envType === "SARL"}
+                onChange={(e) => setEnvType(e.target.value)}
                 type="radio"
                 value="SARL"
               />{" "}
@@ -284,8 +288,8 @@ const AdvanceSection = ({ setTwo }) => {
             </label>
             <label>
               <input
-                checked={typeOfTraining === "MARL"}
-                onChange={(e) => setType(e.target.value)}
+                checked={envType === "MARL"}
+                onChange={(e) => setEnvType(e.target.value)}
                 type="radio"
                 value="MARL"
               />{" "}

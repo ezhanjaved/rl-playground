@@ -6,6 +6,7 @@ from server.utilities.rotationCal import getForwardVectorFromYaw, getYaw
 def moveableActuator(action, pos, rot, speed, id, eM):
     bullet_id = eM[id]
     status = body_exist(bullet_id)
+    speed = float(speed)
 
     if not status:
         print("Body does not exist in Physics Engine")

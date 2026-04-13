@@ -2,31 +2,84 @@ import Header from "../components/Header";
 import SidebarV2 from "../components/SidebarV2";
 import { Table } from "../components/table";
 import { useNavigate } from "react-router-dom";
-import { Eye } from "lucide-react";
+import { BrainCircuit, Loader2, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
+
+const formatDate = (iso) => {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const COLUMNS = [
+  { key: "name",      label: "Model Name",   width: "22%" },
+  { key: "algorithm", label: "Algorithm",    width: "12%" },
+  { key: "status",    label: "Status",       width: "14%" },
+  {
+    key: "created_at",
+    label: "Created",
+    width: "20%",
+    render: (item) => formatDate(item.created_at),
+  },
+  {
+    key: "total_timestep",
+    label: "Timesteps",
+    width: "12%",
+    render: (item) =>
+      item.total_timestep != null
+        ? item.total_timestep.toLocaleString()
+        : "—",
+  },
+  {
+    key: "reward_final",
+    label: "Final reward",
+    width: "12%",
+    render: (item) =>
+      item.reward_final != null ? Number(item.reward_final).toFixed(2) : "—",
+  },
+  {
+    key: "error",
+    label: "Error",
+    render: (item) =>
+      item.error ? (
+        <span style={{ color: "var(--color-text-danger)", fontSize: "13px" }}>
+          {item.error}
+        </span>
+      ) : (
+        "—"
+      ),
+  },
+];
 
 const RecordPage = () => {
   const navigate = useNavigate();
-
   const [modelsData, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchModels = async () => {
-    const url = "http://127.0.0.1:8000/trainer/fetch_models";
-
+    const url =
+      "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/fetch_models";
     try {
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_uid: "125810d4-6d11-4d7d-9804-e472a261d345",
+          model_uid: "",
         }),
       });
-
       const result = await response.json();
-      const models = result.models;
-      setData(models);
+      setData(result.models ?? []);
     } catch (err) {
       console.log("Server Error:", err);
+      setData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,53 +87,9 @@ const RecordPage = () => {
     fetchModels();
   }, []);
 
-  const columns = [
-    { key: "name", label: "Model Name", width: "30%" },
-    { key: "env", label: "Environment", width: "20%" },
-    { key: "status", label: "Status", width: "20%" },
-    { key: "date", label: "Trained On", width: "20%" },
-  ];
-
-  const data = [
-    {
-      id: "m1",
-      name: "Robot Runner v1",
-      env: "Warehouse-Alpha",
-      status: "Trained",
-      date: "2026-03-15",
-    },
-    {
-      id: "m2",
-      name: "Drone Scout",
-      env: "Forest-X",
-      status: "Training",
-      date: "In Progress",
-    },
-    {
-      id: "m3",
-      name: "Car Navigator",
-      env: "City-Grid",
-      status: "Trained",
-      date: "2026-04-01",
-    },
-    {
-      id: "m4",
-      name: "Arm Manipulator",
-      env: "Factory-Floor",
-      status: "Trained",
-      date: "2026-04-03",
-    },
-  ];
-
-  const actions = {
-    onView: (item) => {
-      if (item.status === "Trained") {
-        navigate(`/visualize/${item.id}`);
-      } else {
-        alert("Model is still training. Visualization not available yet.");
-      }
-    },
-  };
+  const total    = modelsData?.length ?? 0;
+  const finished = modelsData?.filter((m) => m.status === "finished").length ?? 0;
+  const training = modelsData?.filter((m) => m.status === "training").length ?? 0;
 
   const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
     <div className="stat-card">
@@ -90,7 +99,7 @@ const RecordPage = () => {
           <Icon size={18} />
         </div>
       </div>
-      <div className="stat-card-value">{value}</div>
+      <div className="stat-card-value">{loading ? "—" : value}</div>
       <div className="stat-card-subtitle">{subtitle}</div>
     </div>
   );
@@ -114,23 +123,23 @@ const RecordPage = () => {
           <div className="stat-cards-grid">
             <StatCard
               title="Total Models"
-              value="12"
-              subtitle="4 trained successfully"
-              icon={Eye}
+              value={total}
+              subtitle={`${finished} trained successfully`}
+              icon={BrainCircuit}
               colorClass="icon-indigo"
             />
             <StatCard
               title="Active Training"
-              value="2"
-              subtitle="Running on Cloud-Compute-01"
-              icon={Eye}
+              value={training}
+              subtitle={training > 0 ? "Currently running" : "None running"}
+              icon={Loader2}
               colorClass="icon-amber"
             />
             <StatCard
-              title="Snapshots"
-              value="8"
-              subtitle="3.4 GB total storage"
-              icon={Eye}
+              title="Finished"
+              value={finished}
+              subtitle={`${total > 0 ? Math.round((finished / total) * 100) : 0}% success rate`}
+              icon={CheckCircle2}
               colorClass="icon-emerald"
             />
           </div>
@@ -138,11 +147,12 @@ const RecordPage = () => {
           <div className="registry-container">
             <Table
               title="Model Registry"
-              columns={columns}
-              data={modelsData === null ? data : modelsData}
+              columns={COLUMNS}
+              data={modelsData ?? []}
               keyField="id"
-              actions={actions}
-              totalResults={data.length}
+              loading={loading}
+              actions
+              totalResults={total}
             />
           </div>
         </div>

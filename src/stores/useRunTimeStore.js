@@ -15,6 +15,12 @@ export const useRunTimeStore = create((set, get) => ({
   isModelLoading: false,
   isModelReady: false,
 
+  modelName: "",
+  setModelName: (value) => set({ modelName: value }),
+
+  envType: "SARL",
+  setEnvType: (value) => set({ envType: value }),
+
   setModeltoLoading: () => set({ isModelLoading: !get().isModelLoading }),
   setModeltoReady: () => set({ isModelReady: !get().isModelReady }),
 

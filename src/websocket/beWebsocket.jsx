@@ -4,7 +4,6 @@ import { recreateEnv, wipeEntities } from "../engine/utility/recreate";
 export function useBackendWebSocket(onModelReady) {
   const socketRef = useRef(null);
   const intentionalClose = useRef(false);
-
   const setModeltoLoading = useRunTimeStore((s) => s.setModeltoLoading);
 
   const connectSocket = async (item) => {

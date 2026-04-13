@@ -1,0 +1,162 @@
+{
+    "graph_af0a4134-d9a4-44f4-a6df-be32ce069ba4": {
+        "nodes": [],
+        "edges": [],
+        "name": "GV2",
+        "id": "graph_af0a4134-d9a4-44f4-a6df-be32ce069ba4"
+    },
+    "graph_dda87cec-c018-426c-935f-3846300b9ef0": {
+        "nodes": [
+            {
+                "data": {
+                    "label": "OnEpisodeStart"
+                },
+                "type": "OnEpisodeStartNode",
+                "id": "node_33df9136-0492-4615-9db8-f115fbb17ba4",
+                "position": {
+                    "x": 20,
+                    "y": 136
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 50
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "OnStep"
+                },
+                "type": "OnStepNode",
+                "id": "node_ef4cb3e4-066a-4c2e-be97-935400433f39",
+                "position": {
+                    "x": 162,
+                    "y": 252
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 50
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "LastActionIs",
+                    "agentCapability": [
+                        "Moveable"
+                    ],
+                    "entityAction": "move_left",
+                    "actionStatus": "true"
+                },
+                "type": "LastActionIsNode",
+                "id": "node_f0143190-316e-45c7-a51b-d3c61b3e723c",
+                "position": {
+                    "x": 430,
+                    "y": 107
+                },
+                "measured": {
+                    "width": 300,
+                    "height": 236
+                },
+                "selected": true,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "AddReward",
+                    "agentId": null,
+                    "rewardValue": "10"
+                },
+                "type": "AddRewardNode",
+                "id": "node_fe949ea9-fded-4079-abf2-22d65ed8248f",
+                "position": {
+                    "x": 767,
+                    "y": 231
+                },
+                "measured": {
+                    "width": 300,
+                    "height": 128
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "AddReward",
+                    "agentId": null,
+                    "rewardValue": "-1"
+                },
+                "type": "AddRewardNode",
+                "id": "node_f5697e10-3f82-4577-ab3f-f6ab0d26bfc7",
+                "position": {
+                    "x": 773,
+                    "y": 67.625
+                },
+                "measured": {
+                    "width": 300,
+                    "height": 128
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "EndEpisode"
+                },
+                "type": "EndEpisodeNode",
+                "id": "node_97753145-a6ef-4835-8fe8-a172d296a227",
+                "position": {
+                    "x": 1181,
+                    "y": 201
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 50
+                },
+                "selected": false,
+                "dragging": false
+            }
+        ],
+        "edges": [
+            {
+                "source": "node_33df9136-0492-4615-9db8-f115fbb17ba4",
+                "sourceHandle": null,
+                "target": "node_ef4cb3e4-066a-4c2e-be97-935400433f39",
+                "targetHandle": null,
+                "id": "edge_df65dad9-b700-45c2-a3ed-3efadbba8893"
+            },
+            {
+                "source": "node_ef4cb3e4-066a-4c2e-be97-935400433f39",
+                "sourceHandle": null,
+                "target": "node_f0143190-316e-45c7-a51b-d3c61b3e723c",
+                "targetHandle": null,
+                "id": "edge_d3cf10fc-70f1-459d-888a-d465d33eb585"
+            },
+            {
+                "source": "node_f0143190-316e-45c7-a51b-d3c61b3e723c",
+                "sourceHandle": "true",
+                "target": "node_fe949ea9-fded-4079-abf2-22d65ed8248f",
+                "targetHandle": null,
+                "id": "edge_189b1d14-d0c7-4f71-99a1-6aec6d3e91a7"
+            },
+            {
+                "source": "node_f0143190-316e-45c7-a51b-d3c61b3e723c",
+                "sourceHandle": "false",
+                "target": "node_f5697e10-3f82-4577-ab3f-f6ab0d26bfc7",
+                "targetHandle": null,
+                "id": "edge_7448793e-693e-4928-9edd-8afa3d7f7b24"
+            },
+            {
+                "source": "node_fe949ea9-fded-4079-abf2-22d65ed8248f",
+                "sourceHandle": null,
+                "target": "node_97753145-a6ef-4835-8fe8-a172d296a227",
+                "targetHandle": null,
+                "id": "edge_8964e419-30d9-4116-94b6-b73bf5433006"
+            }
+        ],
+        "name": "GV1",
+        "id": "graph_dda87cec-c018-426c-935f-3846300b9ef0"
+    }
+}
