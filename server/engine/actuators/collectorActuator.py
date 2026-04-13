@@ -5,6 +5,8 @@ from server.utilities.nearPick import nearbyPickable
 
 def collectorActuator(action, agent, entities, eM):
     agent = entities[agent.id]
+    if "Collector" not in agent.capabilities:
+        return
     if action == "collect":
         pickRadius = 1.0  # Engine Defined - Not User
         targetObj = nearbyPickable(

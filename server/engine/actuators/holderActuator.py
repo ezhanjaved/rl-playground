@@ -11,6 +11,10 @@ def holderActuator(action, agentData, entities, eM):
     capabilities = agentData.capabilities
     agent = entities[agentData.id]
 
+    # if an agent is not Holder but system has picked action that is of holder do not do anything - ignore it
+    if "Holder" not in capabilities:
+        return
+
     if action == "pick":
         pickRadius = 2.0  # Engine Defined - Not User
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
