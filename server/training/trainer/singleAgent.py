@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 # from typing import Callable, Union, cast
 from stable_baselines3 import PPO
@@ -84,7 +85,7 @@ class SingleAgentTrainer:
         model_file_name = f"model_{id}"
 
         mode_dir = MODEL_DIR
-        path = mode_dir / model_file_name
+        path = mode_dir / f"model_training_{id}" / model_file_name
 
         if not path.with_suffix(".zip").exists():
             raise FileNotFoundError
