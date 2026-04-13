@@ -21,6 +21,9 @@ SECRET = os.getenv("WEB_SECRET")
 def call_webhook_for_training(uid: str, path: str):
     if not SECRET:
         raise ValueError("WEB_SECRET is not set in environment variables")
+    if not TRAINING_WEBHOOK:
+        print("TRAINING_WEBHOOK not set, skipping...")
+        return None
     payload = {"model_id": uid, "path": path, "timestamp": int(time.time())}
     body = json.dumps(payload, separators=(",", ":")).encode()
     signature = hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest()
@@ -34,10 +37,13 @@ def call_webhook_for_training(uid: str, path: str):
 def call_webhook_for_inference(uid: str):
     if not SECRET:
         raise ValueError("WEB_SECRET is not set in environment variables")
+    if not INFERENCE_WEBHOOK:
+        print("INFERENCE_WEBHOOK not set, skipping...")
+        return None
     payload = {
         "model_id": uid,
         "timestamp": int(time.time()),
-        "url": "ws//k9co1bxgp1ct5w-8001.proxy.runpod.net",
+        "url": "ws://k9co1bxgp1ct5w-8001.proxy.runpod.net",
     }
     body = json.dumps(payload, separators=(",", ":")).encode()
     signature = hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest()

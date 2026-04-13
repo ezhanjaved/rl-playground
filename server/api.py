@@ -41,6 +41,11 @@ async def webhookTrained(request: Request):
     if not signature:
         raise HTTPException(status_code=400, detail="Missing signature")
 
+    if not SECRET:
+        raise HTTPException(
+            status_code=500, detail="Server misconfigured: missing SECRET"
+        )
+
     expected = hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(signature, expected):
@@ -50,12 +55,16 @@ async def webhookTrained(request: Request):
 
     print("Webhook verified:", payload)
 
-    uid = payload["model_id"]
-    path = payload["path"]
+    uid = payload.get("model_id")
+    path = payload.get("path")
+
+    if not uid or not path:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+
     # DB update
     update_model(
         uid,
-        {"status": "training is completed", "model_path": path},
+        {"status": "completed", "model_path": path},
         "models",
         "training_id",
     )
