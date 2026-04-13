@@ -1,3 +1,4 @@
+import numpy as np
 from fastapi import FastAPI, WebSocket
 
 from server.pod.jwt_token.generateJWT import verify_token
@@ -18,8 +19,15 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
 
     async def predict_action(self, obs: list):
-        action_predicted = model.predict(obs)
+        obs = np.array(obs, dtype=np.float32)
+
+        action_predicted, _ = model.predict(obs)
+
+        if isinstance(action_predicted, np.ndarray):
+            action_predicted = action_predicted.item()
+
         refined_action_predicted = actionTrasnlator(action_predicted)
+
         return refined_action_predicted
 
 
