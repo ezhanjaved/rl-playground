@@ -13,4 +13,4 @@ if __name__ == "__main__":
     manager.model = model
     print("Global Model has been uploaded: ", manager.model)
 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

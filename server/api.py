@@ -109,7 +109,7 @@ async def webhookReady(request: Request):
     uid = payload["model_id"]
     url = payload["url"]
 
-    update_status(uid, {"status": "ready"}, "simulation", "model_id")
+    update_status(uid, "ready", "simulation", "model_id")
 
     await manager.broadcast({"status": "READY", "model_id": uid, "pod_url": url})
 
