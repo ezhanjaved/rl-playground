@@ -6,9 +6,15 @@ import time
 
 import requests
 
-WEBHOOK_URL = str(os.getenv("WEBHOOK_URL_TRAINING"))
-TRAINING_WEBHOOK = f"{WEBHOOK_URL}/training-finished"
-INFERENCE_WEBHOOK = f"{WEBHOOK_URL}/model-ready"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+
+if WEBHOOK_URL:
+    TRAINING_WEBHOOK = f"{WEBHOOK_URL}/training-finished"
+    INFERENCE_WEBHOOK = f"{WEBHOOK_URL}/model-ready"
+else:
+    TRAINING_WEBHOOK = None
+    INFERENCE_WEBHOOK = None
+
 SECRET = os.getenv("WEB_SECRET")
 
 
