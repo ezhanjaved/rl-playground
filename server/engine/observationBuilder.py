@@ -1,3 +1,5 @@
+import numpy as np
+
 from server.utilities.distance3D import distance3D
 from server.utilities.nearestTarget import getNearestTargetInfo
 from server.utilities.obstaclePath import obstacleAvoid
@@ -25,7 +27,6 @@ def buildObs(agent_id, agentData, runTimeSnapShot):
     position = agentData.position
     rotation = agentData.rotation
     constructed_obs = []
-
     for obs in obs_space:
         match obs:
             case "dist_x_to_obstacle":
@@ -47,7 +48,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot):
                 distanceObs, minPosOfNO = nearestDistance(
                     position, obstacle_predicate, "both", runTimeSnapShot
                 )
-                if distanceObs == 1e9:
+                if distanceObs == 100.0:
                     constructed_obs.append(False)
                 else:
                     obsInPath = obstacleAvoid(position, rotation, minPosOfNO)
@@ -77,17 +78,17 @@ def buildObs(agent_id, agentData, runTimeSnapShot):
                     targetReached = False
                 constructed_obs.append(targetReached)
             case "dist_x_to_pickable":
-                distancePickX = nearestDistance(
+                distancePickX, _ = nearestDistance(
                     position, pickable_predicate, "x", runTimeSnapShot
                 )
                 constructed_obs.append(distancePickX)
             case "dist_z_to_pickable":
-                distancePickY = nearestDistance(
+                distancePickY, _ = nearestDistance(
                     position, pickable_predicate, "y", runTimeSnapShot
                 )
                 constructed_obs.append(distancePickY)
             case "dist_to_nearest_pickable":
-                distancePick = nearestDistance(
+                distancePick, _ = nearestDistance(
                     position, pickable_predicate, "both", runTimeSnapShot
                 )
                 constructed_obs.append(distancePick)
@@ -95,30 +96,35 @@ def buildObs(agent_id, agentData, runTimeSnapShot):
                 flagStatus = state_space["holding"]
                 constructed_obs.append(flagStatus)
             case "dist_x_to_collect":
-                distanceCollectX = nearestDistance(
+                distanceCollectX, _ = nearestDistance(
                     position, collect_predicate, "x", runTimeSnapShot
                 )
                 constructed_obs.append(distanceCollectX)
             case "dist_z_to_collect":
-                distanceCollectY = nearestDistance(
+                distanceCollectY, _ = nearestDistance(
                     position, collect_predicate, "y", runTimeSnapShot
                 )
                 constructed_obs.append(distanceCollectY)
             case "dist_to_nearest_collectable":
-                distanceCollect = nearestDistance(
+                distanceCollect, _ = nearestDistance(
                     position, collect_predicate, "both", runTimeSnapShot
                 )
                 constructed_obs.append(distanceCollect)
             case "items_collected":
                 itemsCollection = state_space["items_collected"]
                 constructed_obs.append(itemsCollection)
-    return constructed_obs
+
+    obs = np.array(constructed_obs, dtype=np.float32)
+    obs = np.nan_to_num(obs, nan=0.0, posinf=1.0, neginf=-1.0)
+    return obs
 
 
 def nearestDistance(position, predicate, mode, entities):
-    min = float("inf")
-    d = float("-inf")
+    MAX_DIST = 100.0
+    min = float("100.0")
+    d = float("-100.0")
     minPos = []
+    found = False
 
     for entity in entities.values():
         if not entity:
@@ -129,12 +135,16 @@ def nearestDistance(position, predicate, mode, entities):
         if mode == "both":
             d = distance3D(position, targetObjPos)
         elif mode == "x":
-            d = position[0] - targetObjPos[0]
+            d = abs(position[0] - targetObjPos[0])
         elif mode == "y":
-            d = position[1] - targetObjPos[1]
+            d = abs(position[1] - targetObjPos[1])
 
         if d < min:
             min = d
             minPos = targetObjPos
-
-    return min, minPos
+            found = True
+    if not found:
+        return 100.0, []
+    else:
+        normalizedDist = min / MAX_DIST
+        return normalizedDist, minPos

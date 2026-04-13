@@ -6,8 +6,8 @@ def obstacleAvoid(pos, rot, obstaclePos):
     [ox, oy, _] = obstaclePos
     [_, _, rz] = rot
 
-    dx = ox - ax
-    dy = oy - ay
+    dx = abs(ox - ax)
+    dy = abs(oy - ay)
 
     lookahead = 2
     agentRad = 0.5
