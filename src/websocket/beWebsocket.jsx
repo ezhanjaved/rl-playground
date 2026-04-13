@@ -13,7 +13,10 @@ export function useBackendWebSocket(onModelReady) {
       const res = await fetch("http://127.0.0.1:8000/trainer/run-model", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model_id: item.id, user_id: "" }),
+        body: JSON.stringify({
+          model_uid: item.training_id,
+          user_uid: "125810d4-6d11-4d7d-9804-e472a261d345",
+        }),
       });
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const rep = await res.json();
@@ -30,7 +33,9 @@ export function useBackendWebSocket(onModelReady) {
       return;
     }
 
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws");
+    const socket = new WebSocket(
+      "wss://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/ws",
+    );
     socketRef.current = socket;
 
     socket.onopen = () => {
