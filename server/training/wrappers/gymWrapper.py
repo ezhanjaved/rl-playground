@@ -18,7 +18,7 @@ class GymWrapper(gym.Env):
         obs_list, agent_id = simplify(obs_dict)
         self.agent_id = agent_id
 
-        refined_obs, shape = refined(obs_list)
+        _, shape = refined(obs_list)
         self.obs_shape = shape
 
         self.observation_space = spaces.Box(
@@ -46,7 +46,7 @@ class GymWrapper(gym.Env):
         refined_obs, _ = refined(obs_list)
         refined_obs = np.array(refined_obs, dtype=np.float32)
 
-        return refined_obs  # type: ignore
+        return refined_obs, {}  # type: ignore
 
     def step(self, action):
         action_str = actionTrasnlator(action)
@@ -70,6 +70,4 @@ class GymWrapper(gym.Env):
         truncated = tru_dict[self.agent_id]
         info = info_dict[self.agent_id]
 
-        done = terminated or truncated
-
-        return refined_obs, reward, done, info  # type: ignore
+        return refined_obs, reward, terminated, truncated, info  # type: ignore

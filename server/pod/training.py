@@ -1,3 +1,5 @@
+import traceback
+
 from server.database.update import update_model, update_status
 from server.pod.basis import basis
 from server.storage.uploadModel import uploadModel
@@ -18,6 +20,7 @@ def trainingPod(uid: str):
         update_status(uid, "webhook is pinged", "models", "training_id")
     except Exception as e:
         print(f"Training for model {uid} failed: {e}")
+        traceback.print_exc()
         update_model(
             uid, {"status": "failed", "error": str(e)}, "models", "training_id"
         )
