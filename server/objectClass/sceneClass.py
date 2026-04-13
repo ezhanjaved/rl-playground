@@ -39,7 +39,7 @@ class TrainingState:
     rewards_agent: dict[str, float] = field(default_factory=dict)
     episode_reward: dict[str, float] = field(default_factory=dict)
 
-    info_by_agent: dict[str, dict] = field(default_factory=dict)
+    info: dict[str, dict] = field(default_factory=dict)
 
 
 def make_runtime_state(scenario, agents_ids, graphPerAgent):
