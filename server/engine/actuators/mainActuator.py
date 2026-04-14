@@ -5,7 +5,7 @@ from server.engine.actuators.moveableActuator import moveableActuator
 from server.utilities.capabilitiesMatch import capabilityMatcher
 
 
-def process_action(agent_id, agent_data, action, entityMapping, entities):
+def process_action(agent_id, agent_data, action, entityMapping, client, entities):
     capabilityMatched = capabilityMatcher(
         action
     )  # Capability of ACTION produced by system
@@ -19,6 +19,7 @@ def process_action(agent_id, agent_data, action, entityMapping, entities):
                 agent_data.settings["speed"],
                 agent_id,
                 entityMapping,
+                client,
             )
         case "Finder":
             if "Finder" in agentCapability:
@@ -26,7 +27,7 @@ def process_action(agent_id, agent_data, action, entityMapping, entities):
                 agent_data.state_space["targetReached"] = targetReached
         case "Holder":
             if "Holder" in agentCapability:
-                holderActuator(action, agent_data, entities, entityMapping)
+                holderActuator(action, agent_data, entities, entityMapping, client)
         case "Collector":
             if "Collector" in agentCapability:
-                collectorActuator(action, agent_data, entities, entityMapping)
+                collectorActuator(action, agent_data, entities, entityMapping, client)

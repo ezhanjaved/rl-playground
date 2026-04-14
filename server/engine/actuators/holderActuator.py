@@ -4,9 +4,7 @@ from server.objectClass.entitiesClass import Object
 from server.utilities.nearPick import nearbyPickable
 
 
-def holderActuator(action, agentData, entities, eM):
-    from server.training.bulletWorld import PyBulletWorld
-
+def holderActuator(action, agentData, entities, eM, client):
     agentPos = agentData.position
     capabilities = agentData.capabilities
     agent = entities[agentData.id]
@@ -28,7 +26,7 @@ def holderActuator(action, agentData, entities, eM):
                 return
             elif not agent.state_space["holding"]:
                 bulletId = eM[targetObj.id]
-                p.removeBody(bulletId)
+                p.removeBody(bulletId, physicsClientId=client)
                 print("Picking Item")
                 agent.last_action = action
                 agent.state_space["holding"] = True
@@ -41,14 +39,16 @@ def holderActuator(action, agentData, entities, eM):
 
     if action == "drop" and agent.state_space["holding"]:
         [wx, wy, wz] = agentData.position
-
         wx += 2
         wy += 2
-
         newPos = [wx, wy, wz]
 
-        entityId = 123
-        holderId = PyBulletWorld.spawn_holders(newPos, agentData.rotation)
+        convertedRot = p.getQuaternionFromEuler([0, 0, 0], physicsClientId=client)
+        holderId = p.loadURDF(
+            "cube.urdf", newPos, convertedRot, useFixedBase=True, physicsClientId=client
+        )
+
+        entityId = str(holderId)
         eM[entityId] = holderId
 
         droppedObj = {

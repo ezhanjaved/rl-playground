@@ -3,9 +3,9 @@ import pybullet as p
 from server.utilities.rotationCal import getForwardVectorFromYaw, getYaw
 
 
-def moveableActuator(action, pos, rot, speed, id, eM):
+def moveableActuator(action, pos, rot, speed, id, eM, client):
     bullet_id = eM[id]
-    status = body_exist(bullet_id)
+    status = body_exist(bullet_id, client)
     speed = float(speed)
 
     if not status:
@@ -13,7 +13,7 @@ def moveableActuator(action, pos, rot, speed, id, eM):
         return
 
     turnSpeed = 0.05
-    euler = p.getEulerFromQuaternion(rot)
+    euler = p.getEulerFromQuaternion(rot, physicsClientId=client)
     [rx, ry, rz] = euler
     yaw = getYaw(euler)
     Rx, Ry = getForwardVectorFromYaw(yaw)
@@ -41,18 +41,23 @@ def moveableActuator(action, pos, rot, speed, id, eM):
             vy = Ry * speed
 
     p.resetBaseVelocity(
-        bullet_id, linearVelocity=[vx, vy, 0], angularVelocity=[0, 0, 0]
+        bullet_id,
+        linearVelocity=[vx, vy, 0],
+        angularVelocity=[0, 0, 0],
+        physicsClientId=client,
     )
 
     if action in ["move_left", "move_right"]:
-        pos, _ = p.getBasePositionAndOrientation(bullet_id)
-        new_rot = p.getQuaternionFromEuler([rx, ry, rz])
-        p.resetBasePositionAndOrientation(bullet_id, pos, new_rot)
+        pos, _ = p.getBasePositionAndOrientation(bullet_id, physicsClientId=client)
+        new_rot = p.getQuaternionFromEuler([rx, ry, rz], physicsClientId=client)
+        p.resetBasePositionAndOrientation(
+            bullet_id, pos, new_rot, physicsClientId=client
+        )
 
 
-def body_exist(id):
+def body_exist(id, client):
     try:
-        p.getBodyInfo(id)
+        p.getBodyInfo(id, physicsClientId=client)
         return True
     except Exception:
         return False

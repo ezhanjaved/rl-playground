@@ -3,7 +3,7 @@ import pybullet as p
 from server.utilities.nearPick import nearbyPickable
 
 
-def collectorActuator(action, agent, entities, eM):
+def collectorActuator(action, agent, entities, eM, client):
     agent = entities[agent.id]
     if "Collector" not in agent.capabilities:
         return
@@ -26,6 +26,6 @@ def collectorActuator(action, agent, entities, eM):
             agent.state_space["lastItemCollected"] = targetObj.tag
 
             bullet_Id = eM[targetObj.id]
-            p.removeBody(bullet_Id)
+            p.removeBody(bullet_Id, physicsClientId=client)
             del entities[targetObj.id]
             return
