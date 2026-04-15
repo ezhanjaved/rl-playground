@@ -1,7 +1,8 @@
 import "../styling/style.css"
 import { LuMessageCircleMore } from "react-icons/lu";
-import { FaCode, FaPause, FaRegUserCircle, FaAddressBook, FaPlus, FaArrowRight, FaFileSignature, FaListUl } from "react-icons/fa";
+import { FaCode, FaPause, FaRegUserCircle, FaAddressBook, FaPlus, FaArrowRight, FaFileSignature, FaListUl, FaSignOutAlt } from "react-icons/fa";
 import { FaPlay, FaCross, FaBookOpen } from "react-icons/fa";
+import { useAuthStore } from "../stores/useAuthStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useCanvasSetting } from "../stores/useCanvasSetting";
 import { useGraphStore } from "../stores/useGraphStore";
@@ -10,6 +11,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const location = useLocation();
+  const { signOut, user } = useAuthStore();
   const togglePlaying = useRunTimeStore((state) => state.togglePlaying);
   const playing = useRunTimeStore((state) => state.playing);
   const training = useRunTimeStore((s) => s.training);
@@ -32,7 +34,7 @@ const Header = () => {
   useEffect(() => {
     if (location.pathname === "/") setVisibility(1);
     else if (location.pathname === "/behavior-graph") setVisibility(2);
-    else setVisibility(0); // For other pages, hide specific controls
+    else setVisibility(0);
   }, [location.pathname])
 
   return (
@@ -52,8 +54,13 @@ const Header = () => {
         <span style={{ display: visibility !== 2 ? "none" : "flex" }}>{graphs[activeGraphId]?.name || null}</span>
         <span ><LuMessageCircleMore /></span>
         <span ><FaRegUserCircle /></span>
+        {user && (
+          <span style={{ cursor: "pointer" }} onClick={signOut} title="Sign Out">
+            <FaSignOutAlt />
+          </span>
+        )}
         <Link to="/records" style={{ color: "inherit", textDecoration: "none", display: "flex", alignItems: "center" }}>
-            <span ><FaListUl /></span>
+          <span ><FaListUl /></span>
         </Link>
         <span ><FaAddressBook /></span>
         <span style={{ display: visibility !== 2 ? "none" : "flex", cursor: "pointer" }} onClick={() => setSetting(prev => !prev)}><FaFileSignature /></span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { IoMoonOutline, IoChevronDown, IoChevronUp, IoTimeOutline, IoLibraryOutline } from "react-icons/io5";
 import { FaDatabase, FaRegFolderOpen } from "react-icons/fa6";
 import "../styling/App.css";
+import { useAuthStore } from "../stores/useAuthStore";
 
 const Section = ({ title, icon, items, loading }) => {
     const [open, setOpen] = useState(true);
@@ -68,19 +69,23 @@ const statusLabel = (status) => {
 };
 
 const RecordPanel = () => {
+    const user = useAuthStore((state) => state.user);
     const [models, setModels] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!user?.id) return;
+
         const fetchModels = async () => {
             try {
                 const response = await fetch(
-                    "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/fetch_models",
+                    // "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/fetch_models",
+                    `${import.meta.env.VITE_API_BASE_URL}/trainer/fetch_models`,
                     {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            user_uid: "125810d4-6d11-4d7d-9804-e472a261d345",
+                            user_uid: user.id,
                             model_uid: "",
                         }),
                     }
@@ -96,9 +101,7 @@ const RecordPanel = () => {
         };
 
         fetchModels();
-    }, []);
-
-    // Recent training: last 5 models sorted by created_at desc
+    }, [user?.id]);
     const recentModels = [...models]
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, 5)
@@ -110,7 +113,6 @@ const RecordPanel = () => {
                 : <IoLibraryOutline size={16} />,
         }));
 
-    // Environments: unique algorithm types used
     const algorithmMap = {};
     models.forEach((m) => {
         if (m.algorithm && !algorithmMap[m.algorithm]) {

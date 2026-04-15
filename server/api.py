@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
+load_dotenv()
 from server.database.update import update_model, update_status
 from server.routes.trainer import trainer
 from server.websocket.broadcast import ConnectionManager
 
 origins = ["*"]
-load_dotenv()
 
 app = FastAPI()
 app.add_middleware(
@@ -77,14 +77,12 @@ async def webhookTrained(request: Request):
     if not uid or not path:
         raise HTTPException(status_code=400, detail="Invalid payload")
 
-    # DB update
     update_model(
         uid,
         {"status": "completed", "model_path": path},
         "models",
         "training_id",
     )
-    # Email Send
     print(f"Sending Email to User for Model Trained: {uid}")
     return {"status": "success"}
 

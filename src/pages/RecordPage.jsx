@@ -4,6 +4,7 @@ import { Table } from "../components/table";
 import { useNavigate } from "react-router-dom";
 import { BrainCircuit, Loader2, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuthStore } from "../stores/useAuthStore";
 
 const formatDate = (iso) => {
   if (!iso) return "—";
@@ -58,18 +59,20 @@ const COLUMNS = [
 
 const RecordPage = () => {
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const [modelsData, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchModels = async () => {
-    const url =
-      "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/fetch_models";
+    if (!user?.id) return;
+
+    const url = `${import.meta.env.VITE_API_BASE_URL}/trainer/fetch_models`;
     try {
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_uid: "125810d4-6d11-4d7d-9804-e472a261d345",
+          user_uid: user.id,
           model_uid: "",
         }),
       });
@@ -84,8 +87,10 @@ const RecordPage = () => {
   };
 
   useEffect(() => {
-    fetchModels();
-  }, []);
+    if (user?.id) {
+      fetchModels();
+    }
+  }, [user?.id]);
 
   const total    = modelsData?.length ?? 0;
   const finished = modelsData?.filter((m) => m.status === "finished").length ?? 0;
