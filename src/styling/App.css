@@ -8,7 +8,7 @@
     color: white;
 }
 
-.lib-components-x{
+.lib-components-x {
     flex-direction: column;
     gap: 20px;
 }
@@ -45,12 +45,14 @@
     margin-bottom: 20px;
 }
 
-.conditional-data-form, .effect-data-form {
+.conditional-data-form,
+.effect-data-form {
     display: flex;
     flex-direction: column;
 }
 
-.conditional-data-form select, .effect-data-form select {
+.conditional-data-form select,
+.effect-data-form select {
     background: white;
     border-radius: 20px;
     border: 2px dotted #000;
@@ -59,7 +61,8 @@
     margin-top: 5px;
 }
 
-.conditional-data-form input, .effect-data-form input {
+.conditional-data-form input,
+.effect-data-form input {
     background: white;
     border-radius: 20px;
     border: 2px dotted #000;
@@ -69,17 +72,21 @@
     margin-top: 5px;
 }
 
-.conditional-data-form input[type="checkbox"], .effect-data-form input[type="checkbox"] {
+.conditional-data-form input[type="checkbox"],
+.effect-data-form input[type="checkbox"] {
     appearance: none;
     width: 15px;
     height: 15px;
     cursor: pointer;
     border: 2px solid black;
     border-radius: 0%;
-    transition: background 120ms ease, border-color 120ms ease;
+    transition:
+        background 120ms ease,
+        border-color 120ms ease;
 }
 
-.conditional-data-form input[type="checkbox"]:checked, .effect-data-form input[type="checkbox"]:checked {
+.conditional-data-form input[type="checkbox"]:checked,
+.effect-data-form input[type="checkbox"]:checked {
     background: black;
 }
 
@@ -129,7 +136,9 @@
     cursor: pointer;
     border: 2px solid black;
     border-radius: 100%;
-    transition: background 120ms ease, border-color 120ms ease;
+    transition:
+        background 120ms ease,
+        border-color 120ms ease;
 }
 
 .setting input[type="radio"]:checked {
@@ -267,6 +276,6 @@ hr {
 }
 
 .activeAgent {
-    background: #000 !important;
+    border: 2px solid #000;
     color: #fff;
 }

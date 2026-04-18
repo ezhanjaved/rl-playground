@@ -14,7 +14,7 @@ def holderActuator(action, agentData, entities, eM, client):
         return
 
     if action == "pick":
-        pickRadius = 2.0  # Engine Defined - Not User
+        pickRadius = 1.0  # Engine Defined - Not User
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
         if not targetObj:
             agent.last_action = action
@@ -27,7 +27,6 @@ def holderActuator(action, agentData, entities, eM, client):
             elif not agent.state_space["holding"]:
                 bulletId = eM[targetObj.id]
                 p.removeBody(bulletId, physicsClientId=client)
-                print("Picking Item")
                 agent.last_action = action
                 agent.state_space["holding"] = True
                 agent.state_space["lastPickSuccess"] = True
@@ -39,25 +38,31 @@ def holderActuator(action, agentData, entities, eM, client):
 
     if action == "drop" and agent.state_space["holding"]:
         [wx, wy, wz] = agentData.position
-        wx += 2
-        wy += 2
-        newPos = [wx, wy, wz]
+        wx += 1
+        wy += 1
+        newPos = [wx, wy, 0]
 
         convertedRot = p.getQuaternionFromEuler([0, 0, 0], physicsClientId=client)
         holderId = p.loadURDF(
-            "cube.urdf", newPos, convertedRot, useFixedBase=True, physicsClientId=client
+            "cube.urdf",
+            newPos,
+            convertedRot,
+            useFixedBase=True,
+            globalScaling=0.2,
+            physicsClientId=client,
         )
 
         entityId = str(holderId)
         eM[entityId] = holderId
 
         droppedObj = {
-            "tag": "Pickable",
+            "tag": "Pickable Object",
             "name": "X Pickable",
             "collider": {"shape": "capsule", "h": 1, "r": 0.4},
             "position": newPos,
             "rotation": agentData.rotation,
-            "isDecor": "true",
+            "quatRotation": convertedRot,
+            "isDecor": "false",
             "isPickable": "true",
             "isCollectable": "false",
             "isTarget": "false",
@@ -69,6 +74,7 @@ def holderActuator(action, agentData, entities, eM, client):
             name=droppedObj["name"],
             position=droppedObj["position"],
             rotation=droppedObj["rotation"],
+            quatRotation=droppedObj["quatRotation"],
             isDecor=droppedObj["isDecor"],
             isPickable=droppedObj["isPickable"],
             isCollectable=droppedObj["isCollectable"],

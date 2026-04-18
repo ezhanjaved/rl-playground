@@ -16,7 +16,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.DIRECT)
+        self.client = p.connect(p.DIRECT)  # GUI breaks in subprocesses
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -33,11 +33,11 @@ class PyBulletWorld:
         pos, rot = p.getBasePositionAndOrientation(
             bullet_id, physicsClientId=self.client
         )
-        return pos, rot
+        euler = p.getEulerFromQuaternion(rot, physicsClientId=self.client)
+        return pos, euler
 
     def apply_actions(self, actions, entities):
         for agent_id, action in actions.items():
-            print("Action Picked: ", action)
             agentData = entities[agent_id]
             process_action(
                 agent_id, agentData, action, self.entity_mapping, self.client, entities
@@ -45,28 +45,30 @@ class PyBulletWorld:
 
     def spawn(self, entity):
         positionEntity = positionSwap(entity.position)
-        rotationEntity = rotationSwap(entity.rotation, self.client)
-        convertedRot = p.getQuaternionFromEuler(
-            rotationEntity, physicsClientId=self.client
-        )
+        rotationEntity = rotationSwap(entity.quatRotation)
         id = None
         if entity.tag == "agent":
-            id = self.spawn_agent(positionEntity, convertedRot)
+            id = self.spawn_agent(positionEntity, rotationEntity)
         elif entity.tag == "non_state":
-            id = self.spawn_non_state(positionEntity, convertedRot)
+            id = self.spawn_non_state(positionEntity, rotationEntity)
         elif entity.tag == "target":
-            id = self.spawn_target(positionEntity, convertedRot)
-        elif entity.tag == "Pickable Object":
-            id = self.spawn_holders(positionEntity, convertedRot)
+            id = self.spawn_target(positionEntity, rotationEntity)
+        elif entity.tag == "Pickable Object" or entity.tag == "Collectible Object":
+            id = self.spawn_holders(positionEntity, rotationEntity)
         return id
 
-    def step_simulation(self, steps=20):
+    def step_simulation(self, steps=10):
+        # No time.sleep — that's for GUI rendering only and kills training speed
+        for _ in range(steps):
+            p.stepSimulation(physicsClientId=self.client)
+
+    def settle(self, steps=120):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
 
     def spawn_agent(self, pos, rot):
         return p.loadURDF(
-            "r2d2.urdf", pos, rot, useFixedBase=False, physicsClientId=self.client
+            "r2d2.urdf", pos, rot, useFixedBase=True, physicsClientId=self.client
         )
 
     def spawn_non_state(self, pos, rot):
@@ -80,6 +82,22 @@ class PyBulletWorld:
         )
 
     def spawn_holders(self, pos, rot):
+        x, y, z = pos
+        z = z - 0.5
+        pos = [x, y, z]
         return p.loadURDF(
-            "cube.urdf", pos, rot, useFixedBase=True, physicsClientId=self.client
+            "cube.urdf",
+            pos,
+            rot,
+            useFixedBase=True,
+            globalScaling=0.2,
+            physicsClientId=self.client,
         )
+
+    def disconnect(self):
+        if self.client is not None:
+            try:
+                p.disconnect(self.client)
+            except Exception:
+                pass
+            self.client = None

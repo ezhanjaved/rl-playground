@@ -8,16 +8,14 @@ def collectorActuator(action, agent, entities, eM, client):
     if "Collector" not in agent.capabilities:
         return
     if action == "collect":
-        pickRadius = 1.0  # Engine Defined - Not User
+        pickRadius = 1.5  # Engine Defined - Not User
         targetObj = nearbyPickable(
             entities, agent.position, pickRadius, agent.capabilities
         )
-        print("Target Object: ", targetObj)
         if not targetObj:
             agent.last_action = action
             return
         if targetObj:
-            print("Collecting")
             numberItemsCollected = agent.state_space["items_collected"]
             updatedNum = numberItemsCollected + 1
             agent.last_action = action

@@ -18,9 +18,9 @@ const formatDate = (iso) => {
 };
 
 const COLUMNS = [
-  { key: "name",      label: "Model Name",   width: "22%" },
-  { key: "algorithm", label: "Algorithm",    width: "12%" },
-  { key: "status",    label: "Status",       width: "14%" },
+  { key: "name", label: "Model Name", width: "22%" },
+  { key: "algorithm", label: "Algorithm", width: "12%" },
+  { key: "status", label: "Status", width: "14%" },
   {
     key: "created_at",
     label: "Created",
@@ -32,9 +32,7 @@ const COLUMNS = [
     label: "Timesteps",
     width: "12%",
     render: (item) =>
-      item.total_timestep != null
-        ? item.total_timestep.toLocaleString()
-        : "—",
+      item.total_timestep != null ? item.total_timestep.toLocaleString() : "—",
   },
   {
     key: "reward_final",
@@ -66,7 +64,7 @@ const RecordPage = () => {
   const fetchModels = async () => {
     if (!user?.id) return;
 
-    const url = `${import.meta.env.VITE_API_BASE_URL}/trainer/fetch_models`;
+    const url = `https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/fetch_models`;
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -92,9 +90,11 @@ const RecordPage = () => {
     }
   }, [user?.id]);
 
-  const total    = modelsData?.length ?? 0;
-  const finished = modelsData?.filter((m) => m.status === "finished").length ?? 0;
-  const training = modelsData?.filter((m) => m.status === "training").length ?? 0;
+  const total = modelsData?.length ?? 0;
+  const finished =
+    modelsData?.filter((m) => m.status === "finished").length ?? 0;
+  const training =
+    modelsData?.filter((m) => m.status === "training").length ?? 0;
 
   const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
     <div className="stat-card">

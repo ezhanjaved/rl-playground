@@ -1,7 +1,8 @@
 import { sendObsToCloud } from "../../../websocket/ccWebsocket";
 import { isPending, markPending } from "./ppoState";
+
 export function PPOController(obsVector, agentId) {
-  if (isPending(agentId)) return;
+  if (isPending(agentId)) return; // don't flood the pod
   const refinedObs = refineObs(obsVector);
   const session_token = localStorage.getItem("session_token");
   const jwt_token = localStorage.getItem("jwt_token");

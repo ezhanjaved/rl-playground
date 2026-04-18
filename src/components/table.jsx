@@ -87,21 +87,26 @@ export function Table({
   headerExtra,
 }) {
   const [openMenu, setOpenMenu] = useState(null);
-  const setModeltoReady = useRunTimeStore((s) => s.setModeltoReady);
-  const { entities } = useSceneStore.getState();
+  const {
+    setShowLoadingModal,
+    setModalStage,
+    setModeltoLoading,
+    setModeltoReady,
+  } = useRunTimeStore.getState();
 
   // Stable callback — won't go stale on re-renders
   // Receives pod_url from the backend READY message
   const handleModelReady = useCallback(
     (podUrl) => {
-      setModeltoReady(); //flag model to ready
+      setModeltoReady(true); //model is ready now
+      setModeltoLoading(false); //model has stopped loading
       connectCloudSocket(podUrl, (action, id) => {
-        //connect to cloud computer
+        const { entities } = useSceneStore.getState(); // live read, not stale
         const agent = entities?.[id];
+        clearPending(id); // always clear so next obs can be sent
         if (!agent) return;
-        clearPending(id);
         const obs = buildObsSpace(agent);
-        applyAction(action, agent, obs);
+        applyAction(action, agent, obs); // ← only place PPO actions are applied
       });
     },
     [setModeltoReady],
@@ -266,6 +271,8 @@ export function Table({
                                 e.stopPropagation();
                                 if (item.status !== "training") {
                                   connectSocket(item);
+                                  setShowLoadingModal(true);
+                                  setModalStage("connecting_to_backend");
                                 }
                               }}
                               title={

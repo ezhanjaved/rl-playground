@@ -2,17 +2,18 @@
 import { useSceneStore } from "../stores/useSceneStore";
 import { useGraphStore } from "../stores/useGraphStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
+import { useAuthStore } from "../stores/useAuthStore";
 
 export async function sendServer() {
   const { entities, assignments } = useSceneStore.getState();
   const { graphs } = useGraphStore.getState();
   const { modelName, envType } = useRunTimeStore.getState();
-
+  const { user } = useAuthStore.getState();
   const data = {
     entities,
     graphs,
     assignments,
-    user_uid: "125810d4-6d11-4d7d-9804-e472a261d345",
+    user_uid: user?.id,
     modelName,
     envType,
   };

@@ -2,7 +2,6 @@ HOW TO RUN RL Playground:
 
 1) Client: npm run dev
 2) FastAPI: uvicorn server.api:app --reload --host 0.0.0.0 --port 8000
-3) Celery: celery -A server.celery_app.celery_worker.celery_app worker --pool=solo --loglevel=info -Q trainer inference
-4) Turn on GPU on Runpod
+3) Celery: celery -A server.celery_app.celery_worker.celery_app worker --pool=solo --loglevel=info
+4) Turn on GPU on Runpod (ss -tulpn | grep :8001 -> kill <pid>)
 5) Expose FastAPI to Internet: ngrok http 8000
-6) Aye Allah Chala Day Isko...

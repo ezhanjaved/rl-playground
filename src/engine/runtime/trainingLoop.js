@@ -4,8 +4,9 @@ import { useRunTimeStore } from "../../stores/useRunTimeStore";
 import buildObsSpace from "./observationBuilder";
 import { envSet } from "./envStep";
 import ControllerRouter from "./controllers/controllerRouter";
-import { qLearningLearner } from "../runtime/controllers/policyController"
+import { qLearningLearner } from "../runtime/controllers/policyController";
 import { addCapabilitySchemas } from "../capabilities/registry";
+import { convertRot } from "../utility/rotationCal";
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
@@ -39,12 +40,19 @@ export async function trainingLoop(experimentId) {
   const agentIds = candidateIds.filter((id) => {
     const a = assignments0?.[id];
     const e = entities0?.[id];
-    return !!(a?.assignedConfig && a?.assignedGraphId && e && Array.isArray(e.action_space));
+    return !!(
+      a?.assignedConfig &&
+      a?.assignedGraphId &&
+      e &&
+      Array.isArray(e.action_space)
+    );
   });
 
   const fixedPositions = {};
   for (const agentId of agentIds) {
-    fixedPositions[agentId] = structuredClone(exp0?.agents?.[agentId]?.fixedPosition ?? [0, 0, 0]);
+    fixedPositions[agentId] = structuredClone(
+      exp0?.agents?.[agentId]?.fixedPosition ?? [0, 0, 0],
+    );
   }
 
   const min = 0.05;
@@ -65,7 +73,9 @@ export async function trainingLoop(experimentId) {
     const maxSteps = config.maxStepsPerEpisode ?? 200;
 
     const expNow = useRunTimeStore.getState().experiments?.[experimentId];
-    let qTable = structuredClone(expNow?.agents?.[agentId]?.learningState?.qTable ?? {});
+    let qTable = structuredClone(
+      expNow?.agents?.[agentId]?.learningState?.qTable ?? {},
+    );
 
     for (let ep = 0; ep < maxEpisodes; ep++) {
       if (!useRunTimeStore.getState().training) {
@@ -73,7 +83,11 @@ export async function trainingLoop(experimentId) {
         return;
       }
 
-      const resetOk = resetAgentForEpisode(agentId, fixedPositions[agentId], "training");
+      const resetOk = resetAgentForEpisode(
+        agentId,
+        fixedPositions[agentId],
+        "training",
+      );
       if (!resetOk) {
         await pauseAndExit();
         return;
@@ -109,36 +123,94 @@ export async function trainingLoop(experimentId) {
         const obsVector = buildObsSpace(agent);
         console.log("OBS Vector created during step: " + obsVector);
         const actionSpace = agent.action_space;
-        const actionPicked = ControllerRouter(obsVector, agentId, actionSpace, experimentId, qTable ,"training");
+        const actionPicked = ControllerRouter(
+          obsVector,
+          agentId,
+          actionSpace,
+          experimentId,
+          qTable,
+          "training",
+        );
         console.log("Action Picked by Controller during step: " + actionPicked);
-        const { reward, done: stepDone, nextObs } = envSet(actionPicked, agent, obsVector);
-        console.log("Reward Computed In This Step: " + reward + " Done Status: " + stepDone);
-        qTable = qLearningLearner(qTable, actionPicked, obsVector, nextObs, reward, stepDone, config, agentId);
+        const {
+          reward,
+          done: stepDone,
+          nextObs,
+        } = envSet(actionPicked, agent, obsVector);
+        console.log(
+          "Reward Computed In This Step: " +
+            reward +
+            " Done Status: " +
+            stepDone,
+        );
+        qTable = qLearningLearner(
+          qTable,
+          actionPicked,
+          obsVector,
+          nextObs,
+          reward,
+          stepDone,
+          config,
+          agentId,
+        );
 
         rewardSum += reward;
         stepTaken += 1;
         done = stepDone;
 
         console.log("Reward Sum Value: " + rewardSum);
-        if (done) {console.log("Episode was terminated because Agent picked right action"); break;}
-        if (step % 50 === 0) {console.log("Episode was terminated because Agent was out of steps"); await tick();}
+        if (done) {
+          console.log(
+            "Episode was terminated because Agent picked right action",
+          );
+          break;
+        }
+        if (step % 50 === 0) {
+          console.log("Episode was terminated because Agent was out of steps");
+          await tick();
+        }
       }
 
-      const finalResetAgent = resetAgentForEpisode(agentId, fixedPositions[agentId], "done");
+      const finalResetAgent = resetAgentForEpisode(
+        agentId,
+        fixedPositions[agentId],
+        "done",
+      );
       if (finalResetAgent) {
-        console.log("Agent was reset at the end of training back to starting position!");
+        console.log(
+          "Agent was reset at the end of training back to starting position!",
+        );
       }
       const finalResetEnv = resetEpisodeEnv(experimentId);
       if (finalResetEnv) {
-        console.log("Env was reset at the end of training back to starting position!");
+        console.log(
+          "Env was reset at the end of training back to starting position!",
+        );
       }
-      const epsPrev = useRunTimeStore.getState().experiments?.[experimentId]?.agents?.[agentId]?.learningState?.epsilon ?? 1.0;
+      const epsPrev =
+        useRunTimeStore.getState().experiments?.[experimentId]?.agents?.[
+          agentId
+        ]?.learningState?.epsilon ?? 1.0;
       const epsilon = Math.max(min, epsPrev * decay);
-      const episodeInfo = { episodeIndex: ep, stepTaken, rewardSum, done, epsilon }; //add it into episode info - we can chart it against episode
+      const episodeInfo = {
+        episodeIndex: ep,
+        stepTaken,
+        rewardSum,
+        done,
+        epsilon,
+      }; //add it into episode info - we can chart it against episode
 
       useRunTimeStore
         .getState()
-        .syncEpisodeResult(experimentId, agentId, qTable, ep, episodeInfo, rewardSum, epsilon); //call syncEpisode function
+        .syncEpisodeResult(
+          experimentId,
+          agentId,
+          qTable,
+          ep,
+          episodeInfo,
+          rewardSum,
+          epsilon,
+        ); //call syncEpisode function
 
       await tick();
       console.log();
@@ -179,7 +251,7 @@ function resetAgentForEpisode(agentId, fixedPosition, mode) {
   if (body) {
     body.setTranslation(
       { x: updatedPosition[0], y: updatedPosition[1], z: updatedPosition[2] },
-      true
+      true,
     );
     body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     body.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -194,9 +266,11 @@ function resetAgentForEpisode(agentId, fixedPosition, mode) {
     stateSpace = {};
   }
 
+  const quat = convertRot(updatedRotation);
   useSceneStore.getState().updateEntity(agentId, {
     position: updatedPosition,
     rotation: updatedRotation,
+    quatRotation: quat ? [quat.x, quat.y, quat.z, quat.w] : [0, 0, 0, 1],
     state_space: stateSpace,
     last_action: null,
   });
@@ -211,7 +285,8 @@ function resetEpisodeEnv(experimentId) {
   if (!snapshot) return false;
 
   for (const [id, e] of Object.entries(scene.entities)) {
-    const resettable = e.tag !== "agent" && (e.isPickable || e.isCollectable || e.isTarget);
+    const resettable =
+      e.tag !== "agent" && (e.isPickable || e.isCollectable || e.isTarget);
     if (!resettable) continue;
     scene.deleteEntity(id);
   }

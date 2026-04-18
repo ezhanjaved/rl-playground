@@ -9,13 +9,11 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
     speed = float(speed)
 
     if not status:
-        print("Body does not exist in Physics Engine")
         return
 
     turnSpeed = 0.05
-    euler = p.getEulerFromQuaternion(rot, physicsClientId=client)
-    [rx, ry, rz] = euler
-    yaw = getYaw(euler)
+    [rx, ry, rz] = rot
+    yaw = getYaw(rot)
     Rx, Ry = getForwardVectorFromYaw(yaw)
 
     vx = 0

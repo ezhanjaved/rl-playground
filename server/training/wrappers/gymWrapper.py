@@ -2,11 +2,11 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
-from server.utilities.refined import actionTrasnlator, refined, simplify
+from server.utilities.refined import actionMasking, actionTranslator, refined, simplify
 
 
 class GymWrapper(gym.Env):
-    def __init__(self, engine):
+    def __init__(self, engine, runTimeSnap):
         super().__init__()
 
         self.engine = engine
@@ -17,6 +17,8 @@ class GymWrapper(gym.Env):
 
         obs_list, agent_id = simplify(obs_dict)
         self.agent_id = agent_id
+        self.agent_capabilities = runTimeSnap.entities[self.agent_id].capabilities
+        self.action_list, actionNumber = actionMasking(self.agent_capabilities)
 
         _, shape = refined(obs_list)
         self.obs_shape = shape
@@ -28,7 +30,7 @@ class GymWrapper(gym.Env):
             dtype=np.float32,
         )
 
-        self.action_space = spaces.Discrete(9)
+        self.action_space = spaces.Discrete(actionNumber)
 
     def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
@@ -49,7 +51,7 @@ class GymWrapper(gym.Env):
         return refined_obs, {}  # type: ignore
 
     def step(self, action):
-        action_str = actionTrasnlator(action)
+        action_str = actionTranslator(action, self.action_list)
         actionDict = {self.agent_id: action_str}
 
         obs_dict, rew_dict, ter_dict, tru_dict, info_dict = self.engine.step(actionDict)
@@ -71,3 +73,13 @@ class GymWrapper(gym.Env):
         info = info_dict[self.agent_id]
 
         return refined_obs, reward, terminated, truncated, info  # type: ignore
+
+    def action_masks(self):
+        """Return a boolean mask of valid actions for MaskablePPO."""
+        return [True] * self.action_space.n
+
+    def render(self):
+        pass
+
+    def close(self):
+        self.engine.world.disconnect()

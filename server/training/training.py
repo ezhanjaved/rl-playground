@@ -3,23 +3,25 @@ from server.training.wrappers.mainWrapper import wrapperSelector
 
 
 class TrainingLoop:
-    def __init__(
-        self, sc, runtime, trainingId
-    ):  # trainingId is UID send to client side
-        self.ws = wrapperSelector(sc, runtime)
-        self.env = self.ws.get_env()
+    def __init__(self, sc, runtime, trainingId):
+        # self.ws = wrapperSelector(sc, runtime)
+        # self.env = self.ws.get_env()
         self.type = runtime.env_type
 
         self.assignments = runtime.assignment_by_agent
         self.agentsIds = runtime.agents_ids
 
-        self.pickedAgent = self.agentsIds[0]  # picking first agent
+        self.pickedAgent = self.agentsIds[0]
         self.pickedAssignment = self.assignments[self.pickedAgent]
 
         self.training_id = trainingId
         if self.type == "SARL":
             self.trainer = SingleAgentTrainer(
-                self.training_id, self.env, self.pickedAssignment
+                self.training_id,
+                env=None,
+                assignment=self.pickedAssignment,
+                scenario=sc,
+                runtime=runtime,
             )
         else:
             pass

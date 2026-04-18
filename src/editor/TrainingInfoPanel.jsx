@@ -19,7 +19,6 @@ const AssignedAgents = () => {
   const experiments = useRunTimeStore((s) => s.experiments);
   const setAgent = useRunTimeStore((s) => s.setAgent);
   const selectedAgent = useRunTimeStore((s) => s.selectedAgent);
-
   const entities = useSceneStore((s) => s.entities);
 
   const expAgents = experiments?.[currentExperimentId]?.agents ?? {};
@@ -43,7 +42,15 @@ const AssignedAgents = () => {
       </button>
 
       {open && (
-        <div className="gridWrapper">
+        <div
+          className="gridWrapper"
+          style={{
+            padding: "6px 8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+          }}
+        >
           {agentIds.length === 0 ? (
             <div className="emptyText">No agents assigned</div>
           ) : (
@@ -55,11 +62,47 @@ const AssignedAgents = () => {
                 <button
                   key={agentId}
                   type="button"
-                  className={`agentRow ${isSelected ? "activeAgent" : ""}`}
                   onClick={() => setAgent(agentId)}
                   title={name}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    width: "100%",
+                    padding: "7px 10px",
+                    borderRadius: 8,
+                    border: isSelected
+                      ? "1px solid #c4b5fd"
+                      : "1px solid transparent",
+                    background: isSelected ? "#ede9fe" : "transparent",
+                    color: isSelected ? "#7c3aed" : "#374151",
+                    fontSize: 13,
+                    fontWeight: isSelected ? 600 : 400,
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.12s",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  className={`agentRow ${isSelected ? "activeAgent" : ""}`}
                 >
-                  {name}
+                  <div
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      background: isSelected ? "#7c3aed" : "#d1d5db",
+                      transition: "background 0.12s",
+                    }}
+                  />
+                  <span
+                    style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                  >
+                    {name}
+                  </span>
                 </button>
               );
             })

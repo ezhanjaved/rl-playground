@@ -8,18 +8,18 @@ def nearbyPickable(entities, position, pickRadius, cap):
     minDist = float("inf")
     if "Holder" in cap:
         agentIsHolder = True
-        print("Agent is Holder")
     for ent_value in entities.values():
         pickStatus = getattr(ent_value, "isPickable", False)
         if not pickStatus:
-            return False
+            continue
         if not agentIsHolder:
-            print("Agent is Collector")
-            collectStatus = getattr(ent_value, "isCollector", False)
+            collectStatus = getattr(ent_value, "isCollectable", False)
             if not collectStatus or collectStatus == "false":
-                print("Item was not collectable")
                 return False
-        dist = distance3D(position, ent_value.position)
+        # I had to swap y & z value of entitiy, because while it was swapped at the time of spawning - it was never written back to runTimeState - so runTime State ent.pos value is unswapped (same as Three.js)
+        x, y, z = ent_value.position
+        new_ent = [x, z, y]
+        dist = distance3D(position, new_ent)
         if dist < minDist:
             itemVal = ent_value
             minDist = dist

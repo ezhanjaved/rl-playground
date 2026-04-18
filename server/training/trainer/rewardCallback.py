@@ -5,6 +5,15 @@ from server.database.update import update_model
 
 
 class RewardLoggerCallback(BaseCallback):
+    """
+    Logs episode rewards and PPO rollout metrics to Supabase.
+
+    Threading removed — SubprocVecEnv runs this callback in the main process
+    so there's no pickling issue, but threading.Lock is not pickle-safe if
+    the callback were ever moved into a subprocess. Writes are batched per
+    rollout (every n_steps) which is frequent enough without a flush thread.
+    """
+
     def __init__(self, training_id: str, log_every_n: int = 1, verbose: int = 0):
         super().__init__(verbose)
         self.training_id = training_id
@@ -19,16 +28,17 @@ class RewardLoggerCallback(BaseCallback):
         rewards = self.locals.get("rewards", [])
         dones = self.locals.get("dones", [])
 
-        if len(rewards) > 0:
+        if rewards is not None and len(rewards) > 0:
             self._current_episode_reward += float(np.mean(rewards))
 
-        if len(dones) > 0 and any(dones):
-            self._episode_count += 1
+        if dones is not None and len(dones) > 0 and any(dones):
+            # With SubprocVecEnv multiple envs can finish simultaneously
+            n_done = int(np.sum(dones))
+            self._episode_count += n_done
             self._all_rewards.append(self._current_episode_reward)
 
             if self._episode_count % self.log_every_n == 0:
                 smoothed = float(np.mean(self._all_rewards[-10:]))
-
                 update_model(
                     id=self.training_id,
                     data={
@@ -56,12 +66,6 @@ class RewardLoggerCallback(BaseCallback):
         rewards = buf.rewards.flatten()
 
         kv = self.model.logger.name_to_value
-        clip_fraction = kv.get("train/clip_fraction", None)
-        entropy_loss = kv.get("train/entropy_loss", None)
-        policy_loss = kv.get("train/policy_loss", None)
-        value_loss = kv.get("train/value_loss", None)
-        approx_kl = kv.get("train/approx_kl", None)
-
         data = {
             "rollout_count": self._rollout_count,
             "mean_advantage": round(float(np.mean(advantages)), 4),
@@ -70,16 +74,16 @@ class RewardLoggerCallback(BaseCallback):
             "mean_rollout_reward": round(float(np.mean(rewards)), 4),
         }
 
-        if clip_fraction is not None:
-            data["clip_fraction"] = round(float(clip_fraction), 4)
-        if entropy_loss is not None:
-            data["entropy_loss"] = round(float(entropy_loss), 4)
-        if policy_loss is not None:
-            data["policy_loss"] = round(float(policy_loss), 4)
-        if value_loss is not None:
-            data["value_loss"] = round(float(value_loss), 4)
-        if approx_kl is not None:
-            data["approx_kl"] = round(float(approx_kl), 4)
+        for key, col in [
+            ("train/clip_fraction", "clip_fraction"),
+            ("train/entropy_loss", "entropy_loss"),
+            ("train/policy_loss", "policy_loss"),
+            ("train/value_loss", "value_loss"),
+            ("train/approx_kl", "approx_kl"),
+        ]:
+            val = kv.get(key)
+            if val is not None:
+                data[col] = round(float(val), 4)
 
         update_model(
             id=self.training_id,
@@ -92,7 +96,6 @@ class RewardLoggerCallback(BaseCallback):
         final_mean = (
             float(np.mean(self._all_rewards[-10:])) if self._all_rewards else 0.0
         )
-
         update_model(
             id=self.training_id,
             data={

@@ -1,5 +1,6 @@
 import { useSceneStore } from "../../stores/useSceneStore";
 import { getIndexOfObs } from "./getIndex";
+import { convertRot } from "./rotationCal";
 export default function previousDistanceCorrection(
   obs_space,
   agent,
@@ -47,10 +48,12 @@ export default function previousDistanceCorrection(
     }
   });
 
+  const quat = convertRot(rotation);
   updateEntity(agent.id, {
     last_action,
     position,
     rotation,
+    quatRotation: quat ? [quat.x, quat.y, quat.z, quat.w] : [0, 0, 0, 1],
     state_space: newStateSpace,
   });
 }

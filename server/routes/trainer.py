@@ -10,6 +10,7 @@ from server.celery_app.rl_test import rl_test
 from server.celery_app.rl_trainer import rl_trainer
 from server.database.insert import create_model
 from server.database.select import fetchModels
+from server.pod.debugRunner import debugRunner
 from server.pod.jwt_token.generateJWT import create_access_token
 from server.storage.uploadModel import uploadConfig
 from server.utilities.fetchEnt import fetchEnt
@@ -54,10 +55,37 @@ async def getData(data: RequestModel):
                 "config_path": config_path,
                 "user_id": user_uid,
                 "name": model_name,
+                "algorithm": "PPO",
             },
             "models",
         )
         rl_trainer.delay(model_id)  # call celery with uid
+        return {"message": "server has the data", "status": 1, "id": model_id}
+    except Exception as exceptionMsg:
+        print("An Error Occured")
+        traceback.print_exc()
+        return {"message": exceptionMsg, "status": 0}
+
+
+@trainer.post("/export-data-debug")
+async def getDataDebug(data: RequestModel):
+    try:
+        model_id = str(uuid.uuid4())
+        path = json_handler(model_id, data.dict())  # saves the data into machine
+        user_uid = data.dict()["user_uid"]
+        model_name = data.dict()["modelName"]
+        config_path = uploadConfig(path)  # upload data from machine to s3 bucket
+        create_model(
+            {
+                "training_id": model_id,
+                "config_path": config_path,
+                "user_id": user_uid,
+                "name": model_name,
+                "debugMode": True,
+            },
+            "models",
+        )
+        debugRunner(model_id)
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
         print("An Error Occured")

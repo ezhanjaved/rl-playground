@@ -22,6 +22,7 @@ class Entities:
     name: str
     position: list[float]
     rotation: list[float]
+    quatRotation: list[float]
 
     isDecor: bool
     isPickable: bool

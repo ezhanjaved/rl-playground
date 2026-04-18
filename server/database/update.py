@@ -15,4 +15,3 @@ def update_status(id, status, table_name, id_name):
 
 def update_model(id, data, table, id_name):
     response = supabase.table(table).update(data).eq(id_name, id).execute()
-    print(response)

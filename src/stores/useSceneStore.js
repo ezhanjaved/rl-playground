@@ -1,6 +1,7 @@
 // We will maintain state of Entities, Assignments, Physics Config here
 import { create } from "zustand";
 import { addCapabilitySchemas } from "../engine/capabilities/registry";
+import * as THREE from "three";
 
 export const useSceneStore = create((set, get) => ({
   entities: {},
@@ -127,6 +128,8 @@ const buildEntitiyFromPartial = (partial, id) => {
   const type = partial.capabilities || [];
   const { actionSpace, observationsSpace, stateSpace, settingSpace } =
     addCapabilitySchemas(type);
+  const euler = new THREE.Euler(...(partial.rotation || [0, 0, 0]));
+  const quat = new THREE.Quaternion().setFromEuler(euler);
 
   let entity = {
     id: id,
@@ -135,6 +138,7 @@ const buildEntitiyFromPartial = (partial, id) => {
     capabilities: type,
     position: partial.position || [0, 0, 0],
     rotation: partial.rotation || [0, 0, 0],
+    quatRotation: quat ? [quat.x, quat.y, quat.z, quat.w] : [0, 0, 0, 1],
     assetRef: partial.assetRef,
     animationRef: partial.animationRef || null,
     collider: partial.collider || null,

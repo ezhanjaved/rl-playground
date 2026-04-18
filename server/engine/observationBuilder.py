@@ -3,6 +3,7 @@ import numpy as np
 from server.utilities.distance3D import distance3D
 from server.utilities.nearestTarget import getNearestTargetInfo
 from server.utilities.obstaclePath import obstacleAvoid
+from server.utilities.positionSwap import positionSwap
 
 
 def target_predicate(e):
@@ -120,20 +121,20 @@ def buildObs(agent_id, agentData, runTimeSnapShot):
 
 
 def nearestDistance(position, predicate, mode, entities):
-    MAX_DIST = 100.0
+    MAX_DIST = 1.0
     min = float("100.0")
     d = float("-100.0")
     minPos = []
     found = False
-
     for entity in entities.values():
         if not entity:
             continue
         if not predicate(entity):
             continue
         targetObjPos = entity.position
+        tbj = positionSwap(targetObjPos)
         if mode == "both":
-            d = distance3D(position, targetObjPos)
+            d = distance3D(position, tbj)
         elif mode == "x":
             d = abs(position[0] - targetObjPos[0])
         elif mode == "y":

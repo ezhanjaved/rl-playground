@@ -2,39 +2,42 @@ import numpy as np
 
 
 def simplify(dictType):
-    listType = list(
-        dictType.keys()
-    )  # Using dict and turning to array containing agents id
-    if len(listType) != 1:
-        raise ValueError("GymWrapper only supports single-agent environments.")
-    selected_agent = listType[0]  # selecting the first agent
-    listData = dictType[
-        selected_agent
-    ]  # extracting the data of first agent - in obs it would be list - in action it would be a string
-    return listData, selected_agent  # returning data with agent id
+    listType = list(dictType.keys())
+    selected_agent = listType[0]
+    listData = dictType[selected_agent]
+    return listData, selected_agent
 
 
 def refined(obs):
     shape = len(obs)
-    newObs = obs
+    newObs = list(obs)  # copy to avoid mutating original
     for i in range(len(newObs)):
         if isinstance(newObs[i], bool):
             newObs[i] = int(newObs[i])
     return newObs, shape
 
 
-def actionTrasnlator(action):
-    actionlist = {
-        0: "move_up",
-        1: "move_down",
-        2: "move_left",
-        3: "move_right",
-        4: "idle",
-        5: "interact",
-        6: "pick",
-        7: "drop",
-        8: "collect",
+def actionMasking(capabilities):
+
+    CAPABILITY_MAP = {
+        "MOVEABLE": ["move_up", "move_down", "move_left", "move_right", "idle"],
+        "COLLECTOR": ["collect"],
+        "HOLDER": ["pick", "drop"],
+        "FINDER": ["interact"],
     }
+
+    ORDER = ["MOVEABLE", "COLLECTOR", "HOLDER", "FINDER"]
+
+    actions = []
+
+    for cap in ORDER:
+        if cap in capabilities:
+            actions.extend(CAPABILITY_MAP[cap])
+
+    return actions, len(actions)
+
+
+def actionTranslator(action, action_list):
 
     if isinstance(action, np.ndarray):
         action = action.flatten()[0]
@@ -43,7 +46,7 @@ def actionTrasnlator(action):
 
     action = int(action)
 
-    if action not in actionlist:
-        raise ValueError(f"Invalid action: {action}")
+    if action < 0 or action >= len(action_list):
+        raise ValueError(f"Invalid action index: {action}")
 
-    return actionlist[action]
+    return action_list[action]

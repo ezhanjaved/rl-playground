@@ -1,0 +1,211 @@
+.page {
+    background: #f0f0ee;
+    padding: 24px;
+    width: 100%;
+    grid-area: main;
+}
+
+.loading {
+    padding: 24px;
+    font-size: 14px;
+    color: #888;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.meta {
+    font-size: 12px;
+    color: #888;
+    margin: 3px 0 0;
+}
+
+.livePill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #085041;
+    background: #e1f5ee;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 0.5px solid #5dcaa5;
+}
+
+.liveDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1d9e75;
+    animation: pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Metric cards */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.card {
+    background: #ebebea;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.cardLabel {
+    font-size: 12px;
+    color: #888;
+    margin: 0 0 6px;
+}
+
+.cardValue {
+    font-size: 22px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1;
+    margin: 0;
+}
+
+.cardValue.positive {
+    color: #0f6e56;
+}
+
+.cardSub {
+    font-size: 11px;
+    color: #aaa;
+    margin: 4px 0 0;
+}
+
+/* Panels */
+.panel {
+    background: #ffffff;
+    border: 0.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.panelTitle {
+    font-size: 11px;
+    font-weight: 500;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 14px;
+}
+
+/* Chart */
+.chart {
+    width: 100%;
+    display: block;
+}
+
+.legendRow {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legendLine {
+    width: 20px;
+    height: 0;
+    border-top: 2px solid #378add;
+}
+
+.legendDashed {
+    border-top: 2px dashed #1d9e75;
+}
+
+.legendLabel {
+    font-size: 11px;
+    color: #aaa;
+}
+
+/* Two-column grid */
+.grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* Stat rows */
+.statRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.statRow:last-child {
+    border-bottom: none;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: #888;
+}
+
+.statVal {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+/* Progress bar */
+.progressHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.progressTrack {
+    height: 6px;
+    background: #ebebea;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: #378add;
+    border-radius: 3px;
+    transition: width 0.7s ease;
+}
+
+.progressLabel {
+    font-size: 11px;
+    color: #aaa;
+    margin: 6px 0 0;
+}

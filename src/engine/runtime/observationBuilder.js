@@ -79,6 +79,7 @@ export default function buildObsSpace(agent) {
 
       case "dist_to_nearest_target": {
         const { min } = nearestDistance(position, targetPredicate, "both");
+        console.log("Normalized Dist: " + min * 100.0);
         constructedObs.push(min);
         break;
       }

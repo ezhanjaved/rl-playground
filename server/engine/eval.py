@@ -153,7 +153,7 @@ def visitNode(node_id, graph, ctx):
         return
 
     elif node_data.type == "InRadiusNode":
-        RADIUS_CHECK = 1  # Engine-defined constant
+        RADIUS_CHECK = 1.5  # Engine-defined constant
 
         entity_one = node_data.data.get("entityOne")
         entity_two = node_data.data.get("entityTwo")
@@ -178,10 +178,12 @@ def visitNode(node_id, graph, ctx):
                 return None
 
         in_radius = False
+        MAX_DIST = 100.0
 
         if entity_two == "Target Object":
             dist = get_obs("dist_to_nearest_target")
-            if dist is not None and dist <= RADIUS_CHECK:
+            normalizedDist = dist * MAX_DIST
+            if dist is not None and normalizedDist <= RADIUS_CHECK:
                 in_radius = True
 
         elif entity_two == "Pickable Object":
@@ -221,7 +223,9 @@ def visitNode(node_id, graph, ctx):
             nonlocal distance_less
             agent_pos = ctx["facts"]["position"]
             previous_distance = ctx["facts"]["state_space"].get(state_key)
-            current_distance = nearestDistance(agent_pos, predicate, "both", entities)
+            current_distance, _ = nearestDistance(
+                agent_pos, predicate, "both", entities
+            )
             if current_distance is not None and previous_distance is not None:
                 if current_distance < previous_distance:
                     distance_less = True

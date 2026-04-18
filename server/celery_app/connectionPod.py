@@ -8,6 +8,7 @@ load_dotenv()
 
 def connectToPod(remote_cmd: str, uid: str | None = None):
     ROOT = os.getenv("SSH_ROOT")
+    print(ROOT)
     KEY_PATH = os.getenv("SSH_KEY_PATH")
 
     if not ROOT:

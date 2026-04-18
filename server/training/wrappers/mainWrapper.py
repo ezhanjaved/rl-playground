@@ -8,7 +8,7 @@ class wrapperSelector:
         self.type = runTime.env_type
         self.engine = SimulationEnv(sceanrio, runTime)
         if self.type == "SARL":
-            self.wrapper = GymWrapper(self.engine)
+            self.wrapper = GymWrapper(self.engine, runTime)
         else:
             self.wrapper = PettingZooWrapper(self.engine)
 

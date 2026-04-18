@@ -1,3 +1,5 @@
+import copy
+
 from server.engine.eval import evaluator
 from server.engine.observationBuilder import buildObs
 from server.utilities.previousDist import previousDistanceCorrection
@@ -9,6 +11,9 @@ class EnvironmentCore:
         self.runtime = runtime_state
 
     def reset(self):  # will call it to reset the env - after episode ends
+        self.runtime.entities = copy.deepcopy(
+            self.scenario.entities
+        )  # to make sure entities value are reset in runTime as orignal
         self.runtime.step_count = 0
         self.runtime.episode_count += 1
         for aid in self.runtime.agents_ids:
