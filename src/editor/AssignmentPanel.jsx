@@ -7,6 +7,111 @@ import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { trainingLoop } from "../engine/runtime/trainingLoop";
 import { sendServer } from "../export/sendToServer";
 
+const modalOverlayStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.45)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
+};
+
+const modalBoxStyle = {
+  background: "#fff",
+  borderRadius: "10px",
+  padding: "28px 32px",
+  maxWidth: "380px",
+  width: "90%",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+};
+
+const modalTitleStyle = {
+  margin: 0,
+  fontSize: "16px",
+  fontWeight: 700,
+  color: "#1a1a1a",
+};
+
+const modalBodyStyle = {
+  margin: 0,
+  fontSize: "14px",
+  color: "#444",
+  lineHeight: 1.55,
+};
+
+const modalActionsStyle = {
+  display: "flex",
+  flexDirection: "row",
+  gap: "10px",
+  justifyContent: "flex-end",
+};
+
+const btnSecondaryStyle = {
+  padding: "7px 18px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  background: "#f5f5f5",
+  cursor: "pointer",
+  fontSize: "13px",
+  fontWeight: 600,
+};
+
+const btnPrimaryStyle = {
+  padding: "7px 18px",
+  borderRadius: "6px",
+  border: "none",
+  background: "#2563eb",
+  color: "#fff",
+  cursor: "pointer",
+  fontSize: "13px",
+  fontWeight: 600,
+};
+
+const ConfirmModal = ({ onConfirm, onCancel }) => (
+  <div style={modalOverlayStyle}>
+    <div style={modalBoxStyle}>
+      <p style={modalTitleStyle}>Start Training Job?</p>
+      <p style={modalBodyStyle}>
+        You are about to export this environment and queue a training job on the
+        server. Training can take <strong>several hours</strong> to complete
+        depending on your configuration.
+      </p>
+      <div style={modalActionsStyle}>
+        <button style={btnSecondaryStyle} onClick={onCancel}>
+          No
+        </button>
+        <button style={btnPrimaryStyle} onClick={onConfirm}>
+          Yes, Export
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const SuccessModal = ({ onClose }) => (
+  <div style={modalOverlayStyle}>
+    <div style={modalBoxStyle}>
+      <p style={modalTitleStyle}>Job Queued 🎉</p>
+      <p style={modalBodyStyle}>
+        Your training job has been successfully queued. Head to the{" "}
+        <strong>Records</strong> page to monitor its status and view results
+        once it completes.
+      </p>
+      <div style={modalActionsStyle}>
+        <button style={btnPrimaryStyle} onClick={onClose}>
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// ─── Control Panel ────────────────────────────────────────────────────────────
+
 export default function ControlPanel() {
   const [trainingConfig, setTrainingConfig] = useState({});
   const addDraftConfig = useSceneStore((s) => s.addDraftConfig);
@@ -16,6 +121,10 @@ export default function ControlPanel() {
   const [partTwo, setTwo] = useState({});
   const [partThree, setThree] = useState({});
   const [algorithm, setAlgorithm] = useState("q-learning");
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     setTrainingConfig({ ...partOne, ...partTwo, ...partThree });
@@ -45,8 +154,27 @@ export default function ControlPanel() {
     await trainingLoop(expId);
   };
 
+  const handleExportConfirm = async () => {
+    setShowConfirm(false);
+    setExporting(true);
+    try {
+      await sendServer();
+      setShowSuccess(true);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <>
+      {showConfirm && (
+        <ConfirmModal
+          onConfirm={handleExportConfirm}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+      {showSuccess && <SuccessModal onClose={() => setShowSuccess(false)} />}
+
       <div className="library_main">
         <TrainingSection
           setOne={setOne}
@@ -59,7 +187,9 @@ export default function ControlPanel() {
           className="training-btn"
           style={{ display: "flex", flexDirection: "row", gap: "5px" }}
         >
-          <button onClick={sendServer}>Export Env</button>
+          <button onClick={() => setShowConfirm(true)} disabled={exporting}>
+            {exporting ? "Exporting…" : "Export Env"}
+          </button>
           <button onClick={() => addDraftConfig(trainingConfig)}>
             Update Config
           </button>

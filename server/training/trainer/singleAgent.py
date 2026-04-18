@@ -62,11 +62,17 @@ class SingleAgentTrainer:
             self.batch = max(
                 b for b in range(1, self.batch + 1) if effective_buffer % b == 0
             )
+            # Test one env directly before launching SubprocVecEnv
+        test_env = make_env(self.scenario, self.runtime)()
+        print(
+            "Single env test passed:", test_env.observation_space, test_env.action_space
+        )
+        test_env.close()
 
         # Build N_ENVS parallel environments
         vec_env = SubprocVecEnv(
             [make_env(self.scenario, self.runtime) for _ in range(N_ENVS)],
-            start_method="fork",  # faster on Linux; use "spawn" if you hit issues
+            start_method="spawn",  # faster on Linux; use "spawn" if you hit issues
         )
 
         if self.model is None:
