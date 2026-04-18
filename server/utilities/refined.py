@@ -20,13 +20,13 @@ def refined(obs):
 def actionMasking(capabilities):
 
     CAPABILITY_MAP = {
-        "MOVEABLE": ["move_up", "move_down", "move_left", "move_right", "idle"],
-        "COLLECTOR": ["collect"],
-        "HOLDER": ["pick", "drop"],
-        "FINDER": ["interact"],
+        "Moveable": ["move_up", "move_down", "move_left", "move_right", "idle"],
+        "Collector": ["collect"],
+        "Holder": ["pick", "drop"],
+        "Finder": ["interact"],
     }
 
-    ORDER = ["MOVEABLE", "COLLECTOR", "HOLDER", "FINDER"]
+    ORDER = ["Moveable", "Collector", "Holder", "Finder"]
 
     actions = []
 
