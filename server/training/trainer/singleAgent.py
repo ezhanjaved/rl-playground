@@ -103,9 +103,10 @@ class SingleAgentTrainer:
                 clip_range=self.clip_range,
                 vf_coef=self.vf_coef,
                 gamma=self.gamma,
-                ent_coef=0.01,
+                ent_coef=0.005,
                 verbose=1,
                 target_kl=0.03,
+                normalize_advantage=True,
             )
 
         remaining_timesteps = max(self.timesteps - resumed_timesteps, 0)
