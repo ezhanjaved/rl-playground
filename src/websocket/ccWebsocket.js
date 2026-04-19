@@ -30,10 +30,10 @@ export function connectCloudSocket(podUrl, onAction) {
   socket.onerror = (err) => console.error("Cloud WS Error:", err);
 }
 
-export function sendObsToCloud(obs, session_token, jwt_token, agentId) {
+export function sendObsToCloud(obs, session_token, jwt_token, agentId, cap) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     console.warn("Socket not ready — observation dropped");
     return;
   }
-  socket.send(JSON.stringify({ obs, session_token, jwt_token, agentId }));
+  socket.send(JSON.stringify({ obs, session_token, jwt_token, agentId, cap }));
 }

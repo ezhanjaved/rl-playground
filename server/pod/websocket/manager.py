@@ -2,7 +2,7 @@ import numpy as np
 from fastapi import FastAPI, WebSocket
 
 from server.pod.jwt_token.generateJWT import verify_token
-from server.utilities.refined import actionTrasnlator
+from server.utilities.refined import actionMasking, actionTranslator
 
 model = None
 
@@ -18,12 +18,11 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def predict_action(self, obs: list):
+    async def predict_action(self, obs: list, capability: list):
         obs = np.array(obs, dtype=np.float32)
-
+        actions, _ = actionMasking(capability)
         action_predicted, _ = model.predict(obs)
-
-        return actionTrasnlator(action_predicted)
+        return actionTranslator(action_predicted, actions)
 
 
 app = FastAPI()
@@ -38,11 +37,12 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_json()
             token = data["jwt_token"]
             agent_id = data["agentId"]
+            capability = data["cap"]
             status = verify_token(token)
             if status:
                 print(f"Received: {data}", flush=True)
                 obs = data["obs"]
-                action = await manager.predict_action(obs)
+                action = await manager.predict_action(obs, capability)
                 print(f"Sent: {action}", flush=True)
                 await websocket.send_json(
                     {

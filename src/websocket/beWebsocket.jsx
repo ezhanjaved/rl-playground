@@ -17,7 +17,6 @@ export function useBackendWebSocket(onModelReady) {
         body: JSON.stringify({
           model_uid: item.training_id,
           user_uid: user?.id,
-          c,
         }),
       });
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
