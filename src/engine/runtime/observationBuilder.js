@@ -4,6 +4,74 @@ import getNearestTargetInfo from "../utility/nearByObjects";
 import distance3D from "../utility/3dDistance";
 import { obstacleAvoid } from "../utility/obstacleAvoidance";
 
+const MAX_DIST = 40.0;
+
+const targetPredicate = (e) =>
+  e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
+
+const pickablePredicate = (e) =>
+  e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+
+const collectPredicate = (e) =>
+  e.isCollectable === true ||
+  e.isCollectable === "true" ||
+  e.isCollectable === 1;
+
+const obstaclePredicate = (e) =>
+  e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
+
+const depositPredicate = (e) =>
+  e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+
+export function nearestDistance(position, predicate, mode, entities) {
+  let minDist = Infinity;
+  let minPos = [];
+  let found = false;
+
+  for (const entity of Object.values(entities)) {
+    if (!entity) continue;
+    if (!predicate(entity)) continue;
+
+    const targetObjPos = entity?.position ?? [0, 0, 0];
+    let d;
+
+    if (mode === "both") {
+      d = distance3D(position, targetObjPos);
+    } else if (mode === "x") {
+      d = Math.abs(position?.[0] - targetObjPos?.[0]);
+    } else if (mode === "z") {
+      d = Math.abs(position?.[2] - targetObjPos?.[2]);
+    }
+
+    if (Number.isFinite(d) && d < minDist) {
+      minDist = d;
+      minPos = targetObjPos;
+      found = true;
+    }
+  }
+
+  if (!found) {
+    return { min: 1.0, minPos: [] };
+  }
+
+  return {
+    min: Math.min(minDist / MAX_DIST, 1.0),
+    minPos,
+  };
+}
+
+function makeCache(position, entities) {
+  const _cache = new Map();
+
+  return function getCached(predicate, mode) {
+    const key = `${predicate.name}_${mode}`;
+    if (!_cache.has(key)) {
+      _cache.set(key, nearestDistance(position, predicate, mode, entities));
+    }
+    return _cache.get(key);
+  };
+}
+
 export default function buildObsSpace(agent) {
   const { entities } = useSceneStore.getState();
 
@@ -13,51 +81,48 @@ export default function buildObsSpace(agent) {
   const stateSpace = agent?.state_space;
 
   const constructedObs = [];
-
-  const targetPredicate = (e) =>
-    e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
-
-  const pickablePredicate = (e) =>
-    e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
-
-  const collectPredicate = (e) =>
-    e.isCollectable === true ||
-    e.isCollectable === "true" ||
-    e.isCollectable === 1;
-
-  const obstaclePredicate = (e) =>
-    e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
+  const cached = makeCache(position, entities);
 
   for (const obsVar of obs) {
     switch (obsVar) {
+      case "agent_pos_x": {
+        constructedObs.push((position?.[0] ?? 0) / MAX_DIST);
+        break;
+      }
+
+      case "agent_pos_z": {
+        constructedObs.push((position?.[2] ?? 0) / MAX_DIST);
+        break;
+      }
+
+      case "agent_rotation_y": {
+        const ry = rotation?.[1] ?? 0; // Three.js Y rotation
+        constructedObs.push(ry / Math.PI);
+        break;
+      }
+
       case "dist_x_to_obstacle": {
-        const { min } = nearestDistance(position, obstaclePredicate, "x");
+        const { min } = cached(obstaclePredicate, "x");
         constructedObs.push(min);
         break;
       }
 
       case "dist_z_to_obstacle": {
-        const { min } = nearestDistance(position, obstaclePredicate, "z");
+        const { min } = cached(obstaclePredicate, "z");
         constructedObs.push(min);
         break;
       }
 
       case "dist_to_nearest_obstacle": {
-        const { min } = nearestDistance(position, obstaclePredicate, "both");
+        const { min } = cached(obstaclePredicate, "both");
         constructedObs.push(min);
         break;
       }
 
       case "obstacle_in_path": {
-        const { min, minPos } = nearestDistance(
-          position,
-          obstaclePredicate,
-          "both",
-        );
-
-        if (min === 1.0) {
-          // server uses 100.0 → normalized to 1.0
-          constructedObs.push(0); // False → 0
+        const { min, minPos } = cached(obstaclePredicate, "both");
+        if (min >= 1.0) {
+          constructedObs.push(0);
         } else {
           const obsInPath = obstacleAvoid(position, rotation, minPos);
           constructedObs.push(obsInPath ? 1 : 0);
@@ -66,20 +131,19 @@ export default function buildObsSpace(agent) {
       }
 
       case "dist_x_to_target": {
-        const { min } = nearestDistance(position, targetPredicate, "x");
+        const { min } = cached(targetPredicate, "x");
         constructedObs.push(min);
         break;
       }
 
       case "dist_z_to_target": {
-        const { min } = nearestDistance(position, targetPredicate, "z");
+        const { min } = cached(targetPredicate, "z");
         constructedObs.push(min);
         break;
       }
 
       case "dist_to_nearest_target": {
-        const { min } = nearestDistance(position, targetPredicate, "both");
-        console.log("Normalized Dist: " + min * 100.0);
+        const { min } = cached(targetPredicate, "both");
         constructedObs.push(min);
         break;
       }
@@ -92,19 +156,19 @@ export default function buildObsSpace(agent) {
       }
 
       case "dist_x_to_pickable": {
-        const { min } = nearestDistance(position, pickablePredicate, "x");
+        const { min } = cached(pickablePredicate, "x");
         constructedObs.push(min);
         break;
       }
 
       case "dist_z_to_pickable": {
-        const { min } = nearestDistance(position, pickablePredicate, "z");
+        const { min } = cached(pickablePredicate, "z");
         constructedObs.push(min);
         break;
       }
 
       case "dist_to_nearest_pickable": {
-        const { min } = nearestDistance(position, pickablePredicate, "both");
+        const { min } = cached(pickablePredicate, "both");
         constructedObs.push(min);
         break;
       }
@@ -115,25 +179,48 @@ export default function buildObsSpace(agent) {
       }
 
       case "dist_x_to_collect": {
-        const { min } = nearestDistance(position, collectPredicate, "x");
+        const { min } = cached(collectPredicate, "x");
         constructedObs.push(min);
         break;
       }
 
       case "dist_z_to_collect": {
-        const { min } = nearestDistance(position, collectPredicate, "z");
+        const { min } = cached(collectPredicate, "z");
         constructedObs.push(min);
         break;
       }
 
       case "dist_to_nearest_collectable": {
-        const { min } = nearestDistance(position, collectPredicate, "both");
+        const { min } = cached(collectPredicate, "both");
         constructedObs.push(min);
         break;
       }
 
       case "items_collected": {
         constructedObs.push(stateSpace?.items_collected ?? 0);
+        break;
+      }
+
+      case "dist_x_to_deposit": {
+        const { min } = cached(depositPredicate, "x");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "dist_z_to_deposit": {
+        const { min } = cached(depositPredicate, "z");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "dist_to_nearest_deposit": {
+        const { min } = cached(depositPredicate, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "items_deposit": {
+        constructedObs.push(stateSpace?.items_deposited ?? 0);
         break;
       }
 
@@ -153,44 +240,4 @@ function sanitizeObs(obs) {
     if (v === -Infinity) return -1.0;
     return v;
   });
-}
-
-export function nearestDistance(position, predicate, mode) {
-  const { entities } = useSceneStore.getState();
-
-  const MAX_DIST = 100.0;
-  let min = MAX_DIST;
-  let minPos = [];
-  let found = false;
-
-  for (const entity of Object.values(entities)) {
-    if (!entity) continue;
-    if (!predicate(entity)) continue;
-
-    const targetObjPos = entity?.position ?? [0, 0, 0];
-    let d;
-
-    if (mode === "both") {
-      d = distance3D(position, targetObjPos);
-    } else if (mode === "x") {
-      d = Math.abs(position?.[0] - targetObjPos?.[0]);
-    } else if (mode === "z") {
-      d = Math.abs(position?.[2] - targetObjPos?.[2]); // keep as requested
-    }
-
-    if (Number.isFinite(d) && d < min) {
-      min = d;
-      minPos = targetObjPos;
-      found = true;
-    }
-  }
-
-  if (!found) {
-    return { min: 1.0, minPos: [] }; // match server normalized (100 / 100)
-  }
-
-  return {
-    min: min / MAX_DIST,
-    minPos,
-  };
 }

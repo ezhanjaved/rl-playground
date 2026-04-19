@@ -9,5 +9,6 @@ def capabilityMatcher(action):
         "move_left": "Moveable",
         "idle": "Moveable",
         "interact": "Finder",
+        "deposit": "Depositor",
     }
     return actionLib[action]

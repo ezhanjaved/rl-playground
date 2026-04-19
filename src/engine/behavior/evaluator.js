@@ -1,4 +1,3 @@
-// Walks the graph, evaluates nodes per tick
 import { useSceneStore } from "../../stores/useSceneStore";
 import { useGraphStore } from "../../stores/useGraphStore";
 import { nearestDistance } from "../runtime/observationBuilder";
@@ -19,6 +18,7 @@ export default function BehaviorGraphEval(agentId, obsVector) {
   let ctxObj = {
     reward: 0,
     done: false,
+    truncated: false,
     facts: {
       position: agent.position,
       capabilities: agent.capabilities,
@@ -36,7 +36,7 @@ export default function BehaviorGraphEval(agentId, obsVector) {
   const start = graph.nodes.find((e) => e.type === "OnStepNode");
   if (!start) return { reward: 0, done: false };
   visitNode(start.id, graph, ctxObj);
-  return { reward: ctxObj.reward, done: ctxObj.done };
+  return { reward: ctxObj.reward, done: ctxObj.done, truncated: ctxObj.truncated };
 }
 
 function visitNode(NodeId, graph, ctxObj) {
@@ -49,12 +49,9 @@ function visitNode(NodeId, graph, ctxObj) {
   const currentNodeData = graph.nodes.find((e) => e.id === NodeId);
   if (!currentNodeData) return;
 
-  // if (currentNodeData.type === "OnEpisodeStartNode" || currentNodeData.type === "OnStepNode") {
-  // }
-
   if (currentNodeData.type === "AddRewardNode") {
     const multiplier = ctxObj?.config?.rewardMultiplier ?? 1;
-    ctxObj.reward += (currentNodeData?.data?.rewardValue ?? 0) * multiplier; //Will do proper calculation with assignmentConfig but for now this works!
+    ctxObj.reward += (currentNodeData?.data?.rewardValue ?? 0) * multiplier;
   }
 
   if (currentNodeData.type === "EndEpisodeNode") {
@@ -63,8 +60,8 @@ function visitNode(NodeId, graph, ctxObj) {
   }
 
   if (currentNodeData.type === "StateEqualsToNode") {
-    const key = currentNodeData.data?.entityState; //holding
-    const expected = currentNodeData.data?.StateStatus; //true or false
+    const key = currentNodeData.data?.entityState;
+    const expected = currentNodeData.data?.StateStatus;
     const expectedBool = expected === true || expected === "true";
     const value = ctxObj.facts.state_space?.[key];
     const result = value === expectedBool;
@@ -75,9 +72,7 @@ function visitNode(NodeId, graph, ctxObj) {
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) {
-      visitNode(chosenEdge.target, graph, ctxObj);
-    }
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
     return;
   }
 
@@ -95,9 +90,7 @@ function visitNode(NodeId, graph, ctxObj) {
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) {
-      visitNode(chosenEdge.target, graph, ctxObj);
-    }
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
     return;
   }
 
@@ -109,16 +102,15 @@ function visitNode(NodeId, graph, ctxObj) {
       "Higher Than Equal To": (a, b) => a >= b,
     };
 
-    const key = currentNodeData?.data?.entityState; //This is state in question
+    const key = currentNodeData?.data?.entityState;
     const numericValue = Number(currentNodeData?.data?.StateValue);
     if (!Number.isFinite(numericValue)) return;
-    if (typeof numericValue !== "number") return;
 
     const currentStateRaw = ctxObj.facts.state_space?.[key];
     const currentState = Number(currentStateRaw);
     if (!Number.isFinite(currentState)) return;
 
-    const operator = currentNodeData?.data?.Operator; //This is operator
+    const operator = currentNodeData?.data?.Operator;
     const opFunction = operations[operator];
     if (!opFunction) return;
     const result = opFunction(currentState, numericValue);
@@ -129,28 +121,25 @@ function visitNode(NodeId, graph, ctxObj) {
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) {
-      visitNode(chosenEdge.target, graph, ctxObj);
-    }
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
     return;
   }
 
   if (currentNodeData.type === "InRadiusNode") {
-    const radiusCheck = 1; //Engine Defined - we are not taking input from user
+    const MAX_DIST = 40.0;
+    const radiusCheck = 1.5 / MAX_DIST;
     let inRadius = false;
-    const entityOne = currentNodeData.data.entityOne; //Will make sure EntityOne is always Agent - at least for POC
-    const entityTwo = currentNodeData.data.entityTwo;
 
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
     const isAgent1 = entityOne === "Agent";
     const isAgent2 = entityTwo === "Agent";
 
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
     const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
     const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) {
-      return; //For distance to be calculated at least ONE entity has to be an agent!
-      //Also both can not be Agent as well - at least for POC!
-    }
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
 
     const getObs = (key) => {
       const idx = ctxObj?.facts?.obs_space.indexOf(key);
@@ -158,33 +147,26 @@ function visitNode(NodeId, graph, ctxObj) {
     };
 
     if (entityTwo === "Target Object") {
-      //proceed further
-      const actualDistanceToTarget = getObs("dist_to_nearest_target");
-      if (
-        actualDistanceToTarget !== null &&
-        actualDistanceToTarget <= radiusCheck
-      ) {
-        inRadius = true;
-      }
+      const dist = getObs("dist_to_nearest_target");
+      if (dist !== null && dist <= radiusCheck) inRadius = true;
     }
 
     if (entityTwo === "Pickable Object") {
       if (hasHolder) {
-        const actualDistanceToPickable = getObs("dist_to_nearest_pickable");
-        if (
-          actualDistanceToPickable !== null &&
-          actualDistanceToPickable <= radiusCheck
-        ) {
-          inRadius = true;
-        }
+        const dist = getObs("dist_to_nearest_pickable");
+        if (dist !== null && dist <= radiusCheck) inRadius = true;
       } else if (hasCollector) {
-        const actualDistanceToCollector = getObs("dist_to_nearest_collectable");
-        if (
-          actualDistanceToCollector !== null &&
-          actualDistanceToCollector <= radiusCheck
-        ) {
-          inRadius = true;
-        }
+        const dist = getObs("dist_to_nearest_collectable");
+        if (dist !== null && dist <= radiusCheck) inRadius = true;
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        const dist = getObs("dist_to_nearest_deposit");
+        if (dist !== null && dist <= radiusCheck) inRadius = true;
       } else {
         return;
       }
@@ -196,22 +178,23 @@ function visitNode(NodeId, graph, ctxObj) {
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) {
-      visitNode(chosenEdge.target, graph, ctxObj);
-    }
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
     return;
   }
 
   if (currentNodeData.type === "IsDistanceLessNode") {
     let distanceLess = false;
-    const entityOne = currentNodeData.data.entityOne; //Will make sure EntityOne is always Agent - at least for POC
-    const entityTwo = currentNodeData.data.entityTwo;
 
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
     const isAgent1 = entityOne === "Agent";
     const isAgent2 = entityTwo === "Agent";
 
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
     const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
     const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
 
     const targetPredicate = (e) =>
       e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
@@ -221,23 +204,22 @@ function visitNode(NodeId, graph, ctxObj) {
       e.isCollectable === true ||
       e.isCollectable === "true" ||
       e.isCollectable === 1;
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) {
-      return; //For distance to be calculated at least ONE entity has to be an agent!
-      //Also both can not be Agent as well - at least for POC!
-    }
+    const depositPredicate = (e) =>
+      e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
 
     const diffCal = (predicate, key) => {
       const agentCurrentPos = ctxObj?.facts?.position;
-      const previousDistance = ctxObj?.facts?.state_space?.[key];
-      const currentDistance = nearestDistance(
+      const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
+      const { entities } = useSceneStore.getState();
+      const { min: currentDistance } = nearestDistance(
         agentCurrentPos,
         predicate,
         "both",
+        entities,
       );
+
       if (currentDistance !== null && currentDistance < previousDistance) {
         distanceLess = true;
-        console.log("Distance was decreased");
       }
     };
 
@@ -255,19 +237,64 @@ function visitNode(NodeId, graph, ctxObj) {
       }
     }
 
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        diffCal(depositPredicate, "previous_distance_deposit");
+      } else {
+        return;
+      }
+    }
+
     const edges = findEdges(NodeId, graph);
     const chosenEdge = edges.find((e) =>
       distanceLess
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) {
-      visitNode(chosenEdge.target, graph, ctxObj);
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    return;
+  }
+
+  if (currentNodeData.type === "TruncateEpisodeNode") {
+    ctxObj.done = true;
+    ctxObj.truncated = true;
+    return;
+  }
+
+  if (currentNodeData.type === "ObsValueNode") {
+    const operations = {
+      "Less Than":            (a, b) => a < b,
+      "Higher Than":          (a, b) => a > b,
+      "Less Than Equal To":   (a, b) => a <= b,
+      "Higher Than Equal To": (a, b) => a >= b,
+      "Equal To":             (a, b) => a === b,
+    };
+    const obsKey   = currentNodeData.data?.obsKey;
+    const obsValue = Number(currentNodeData.data?.ObsValue);
+    const operator = currentNodeData.data?.Operator;
+    if (obsKey && Number.isFinite(obsValue) && operator) {
+      const idx = (ctxObj.facts?.obs_space ?? []).indexOf(obsKey);
+      if (idx !== -1) {
+        const currentVal = ctxObj.obsVector?.[idx];
+        if (currentVal != null && Number.isFinite(currentVal)) {
+          const opFn = operations[operator];
+          if (opFn) {
+            const result = opFn(currentVal, obsValue);
+            const edges = findEdges(NodeId, graph);
+            const chosenEdge = edges.find((e) =>
+              result
+                ? e.sourceHandle?.toLowerCase().includes("true")
+                : e.sourceHandle?.toLowerCase().includes("false"),
+            );
+            if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+          }
+        }
+      }
     }
     return;
   }
 
-  const edges = findEdges(NodeId, graph); // We will get edges that are going out from the node to another nodes - we will use it traverse other nodes
+  const edges = findEdges(NodeId, graph);
   for (const edge of edges) {
     visitNode(edge.target, graph, ctxObj);
     if (ctxObj.done) return;
@@ -275,7 +302,6 @@ function visitNode(NodeId, graph, ctxObj) {
 }
 
 function findEdges(NodeId, graph) {
-  const edges = graph.edges;
-  const edgesofNode = edges.filter((e) => e.source === NodeId);
-  return edgesofNode;
+  return graph.edges.filter((e) => e.source === NodeId);
 }
+

@@ -24,6 +24,9 @@ export const useRunTimeStore = create((set, get) => ({
   envType: "SARL",
   setEnvType: (value) => set({ envType: value }),
 
+  timesteps: 0,
+  setTimesteps: (value) => set({ timesteps: value }),
+
   isModelLoading: false,
   isModelReady: false,
 

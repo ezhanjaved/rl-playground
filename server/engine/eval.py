@@ -1,7 +1,9 @@
 from server.engine.observationBuilder import (
     collect_predicate,
+    deposit_predicate,
     nearestDistance,
     obstacle_predicate,
+    partition_entities,
     pickable_predicate,
     target_predicate,
 )
@@ -15,10 +17,16 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
     agent = entities[aid]
     visited_nodes = set()
 
+    # FIX: pre-partition entities once here so IsDistanceLessNode can use
+    # buckets rather than calling nearestDistance with a predicate + raw dict
+    # (the old call signature that no longer matches observationBuilder.py)
+    entity_buckets = partition_entities(entities)
+
     ctx = {
         "reward": 0.0,
         "terminated": False,
         "truncated": False,
+        "_stop": False,  # FIX: internal traversal-stop flag, separate from terminated
         "info": {},
         "facts": {
             "position": agent.position,
@@ -27,12 +35,13 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
             "state_space": agent.state_space,
             "obs_space": agent.observation_space,
         },
-        "maxSteps": 50,
+        "maxSteps": 300,
         "stepCount": 0,
         "visitedNodes": visited_nodes,
         "config": config,
         "obsVector": agentObs,
         "ent": entities,
+        "buckets": entity_buckets,
     }
 
     start = None
@@ -51,15 +60,18 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
 def safe_float(x, default=0.0):
     try:
         return float(x)
-    except:
+    except Exception:
         return default
 
 
 def visitNode(node_id, graph, ctx):
-    if ctx["terminated"]:
+    # FIX: use _stop for traversal control so TruncateEpisodeNode doesn't
+    # incorrectly set terminated=True just to halt the graph walk
+    if ctx["_stop"]:
         return
     if ctx["stepCount"] > ctx["maxSteps"]:
         ctx["truncated"] = True
+        ctx["_stop"] = True
         return
     if node_id in ctx["visitedNodes"]:
         return
@@ -80,7 +92,6 @@ def visitNode(node_id, graph, ctx):
 
     if node_data.type == "AddRewardNode":
         multiplier = safe_float(getattr(ctx["config"], "rewardMultiplier", 1.0))
-
         reward_value = (
             node_data.data.get("rewardValue", 0)
             if isinstance(node_data.data, dict)
@@ -91,6 +102,7 @@ def visitNode(node_id, graph, ctx):
 
     elif node_data.type == "EndEpisodeNode":
         ctx["terminated"] = True
+        ctx["_stop"] = True
         return
 
     elif node_data.type == "StateEqualsToNode":
@@ -146,14 +158,14 @@ def visitNode(node_id, graph, ctx):
             return
 
         result = op_fn(current_state, numeric_value)
-
         chosen_edge = _find_bool_edge(node_id, graph, result)
         if chosen_edge:
             visitNode(chosen_edge.target, graph, ctx)
         return
 
     elif node_data.type == "InRadiusNode":
-        RADIUS_CHECK = 1.5  # Engine-defined constant
+        MAX_DIST = 40.0
+        RADIUS_CHECK = 1.5 / MAX_DIST
 
         entity_one = node_data.data.get("entityOne")
         entity_two = node_data.data.get("entityTwo")
@@ -167,6 +179,7 @@ def visitNode(node_id, graph, ctx):
         capabilities = ctx["facts"].get("capabilities", [])
         has_holder = "Holder" in capabilities
         has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
 
         def get_obs(key):
             obs_space = ctx["facts"].get("obs_space", [])
@@ -178,12 +191,10 @@ def visitNode(node_id, graph, ctx):
                 return None
 
         in_radius = False
-        MAX_DIST = 100.0
 
         if entity_two == "Target Object":
             dist = get_obs("dist_to_nearest_target")
-            normalizedDist = dist * MAX_DIST
-            if dist is not None and normalizedDist <= RADIUS_CHECK:
+            if dist is not None and dist <= RADIUS_CHECK:
                 in_radius = True
 
         elif entity_two == "Pickable Object":
@@ -193,6 +204,14 @@ def visitNode(node_id, graph, ctx):
                     in_radius = True
             elif has_collector:
                 dist = get_obs("dist_to_nearest_collectable")
+                if dist is not None and dist <= RADIUS_CHECK:
+                    in_radius = True
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                dist = get_obs("dist_to_nearest_deposit")
                 if dist is not None and dist <= RADIUS_CHECK:
                     in_radius = True
             else:
@@ -216,28 +235,39 @@ def visitNode(node_id, graph, ctx):
         capabilities = ctx["facts"].get("capabilities", [])
         has_holder = "Holder" in capabilities
         has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
 
         distance_less = False
+        buckets = ctx["buckets"]
 
-        def diff_cal(predicate, state_key):
+        # FIX: nearestDistance now takes a pre-filtered bucket (list), not a
+        # predicate + raw entities dict. Build the bucket from ctx["buckets"]
+        # which was partitioned once at the start of evaluator().
+        def diff_cal(bucket_key, state_key):
             nonlocal distance_less
             agent_pos = ctx["facts"]["position"]
             previous_distance = ctx["facts"]["state_space"].get(state_key)
             current_distance, _ = nearestDistance(
-                agent_pos, predicate, "both", entities
+                agent_pos, buckets[bucket_key], "both"
             )
             if current_distance is not None and previous_distance is not None:
                 if current_distance < previous_distance:
                     distance_less = True
 
         if entity_two == "Target Object":
-            diff_cal(target_predicate, "previous_distance_target")
+            diff_cal("target", "previous_distance_target")
 
         elif entity_two == "Pickable Object":
             if has_holder:
-                diff_cal(pickable_predicate, "previous_distance_pickable")
+                diff_cal("pickable", "previous_distance_pickable")
             elif has_collector:
-                diff_cal(collect_predicate, "previous_distance_collect")
+                diff_cal("collectable", "previous_distance_collect")
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                diff_cal("deposit", "previous_distance_deposit")
             else:
                 return
 
@@ -246,9 +276,48 @@ def visitNode(node_id, graph, ctx):
             visitNode(chosen_edge.target, graph, ctx)
         return
 
+    elif node_data.type == "TruncateEpisodeNode":
+        # FIX: set truncated=True but NOT terminated=True — these have
+        # different bootstrap semantics in Gymnasium/PPO. Use _stop to
+        # halt traversal without poisoning the terminated flag.
+        ctx["truncated"] = True
+        ctx["_stop"] = True
+        return
+
+    elif node_data.type == "ObsValueNode":
+        operations = {
+            "Less Than": lambda a, b: a < b,
+            "Higher Than": lambda a, b: a > b,
+            "Less Than Equal To": lambda a, b: a <= b,
+            "Higher Than Equal To": lambda a, b: a >= b,
+            "Equal To": lambda a, b: a == b,
+        }
+        obs_key = node_data.data.get("obsKey")
+        obs_value = node_data.data.get("ObsValue")
+        operator = node_data.data.get("Operator")
+        try:
+            obs_value = float(obs_value)
+        except (TypeError, ValueError):
+            return
+        obs_space = ctx["facts"].get("obs_space", [])
+        obs_vector = ctx.get("obsVector", [])
+        try:
+            idx = obs_space.index(obs_key)
+            current_val = float(obs_vector[idx])
+        except (ValueError, IndexError, TypeError):
+            return
+        op_fn = operations.get(operator)
+        if not op_fn:
+            return
+        result = op_fn(current_val, obs_value)
+        chosen_edge = _find_bool_edge(node_id, graph, result)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
     for edge in _find_edges(node_id, graph):
         visitNode(edge.target, graph, ctx)
-        if ctx["terminated"]:
+        if ctx["_stop"]:
             return
 
 

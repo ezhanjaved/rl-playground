@@ -1,35 +1,33 @@
 // Adds Entities from store to the scene
 import { useSceneStore } from "../stores/useSceneStore";
-import EntityMeshes from './EntityMeshes.jsx';
+import EntityMeshes from "./EntityMeshes.jsx";
 import ColliderBuilder from "./ColliderBuild.jsx";
 import ColliderDebug from "./CollidersDebug.jsx";
 import { Physics, RigidBody, CuboidCollider } from "@react-three/rapier";
 import { useEffect } from "react";
 
 export default function World() {
-    const entities = useSceneStore((state) => state.entities); 
+  const entities = useSceneStore((state) => state.entities);
 
-    useEffect(() => {
-        useSceneStore.getState().setWorldMounted(true);
-        return () => useSceneStore.getState().setWorldMounted(false);
-    }, []);
+  useEffect(() => {
+    useSceneStore.getState().setWorldMounted(true);
+    return () => useSceneStore.getState().setWorldMounted(false);
+  }, []);
 
-    return (
-        <>
-            <Physics gravity={[0, -9.81, 0]}>
-
-                <RigidBody type="fixed" colliders={false}>
-                    <CuboidCollider args={[500, 0.1, 500]} position={[0, -0.1, 0]} />
-                </RigidBody> //Ground
-
-                {Object.values(entities).map(entity => (
-                    <ColliderBuilder key={entity.id} entity={entity}>
-                        <EntityMeshes entity={entity} />
-                        <ColliderDebug entity={entity} />
-                    </ColliderBuilder>
-                ))}
-
-            </Physics>
-        </>
-    )
+  return (
+    <>
+      <Physics gravity={[0, -9.81, 0]}>
+        <RigidBody type="fixed" colliders={false}>
+          <CuboidCollider args={[50, 0.1, 50]} position={[0, -0.1, 0]} />
+        </RigidBody>{" "}
+        //Ground
+        {Object.values(entities).map((entity) => (
+          <ColliderBuilder key={entity.id} entity={entity}>
+            <EntityMeshes entity={entity} />
+            <ColliderDebug entity={entity} />
+          </ColliderBuilder>
+        ))}
+      </Physics>
+    </>
+  );
 }

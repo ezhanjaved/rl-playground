@@ -30,4 +30,5 @@ __pycache__/
 
 public/
 server/venv/
+server/data/
 .env

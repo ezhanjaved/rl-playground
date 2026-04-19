@@ -1,6 +1,3 @@
-import pybullet as p
-
-
 def positionSwap(position):
     x, y, z = position
     return [x, z, y + 0.5]

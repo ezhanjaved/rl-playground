@@ -12,15 +12,28 @@ export default function runTimeloop(entities) {
   if (!playing || training) return;
 
   Object.values(entities).forEach((entity) => {
-    if (
-      entity.isDecor ||
-      !entity.action_space ||
-      entity.isPickable ||
-      entity.isTarget
-    )
+    const isDecor =
+      entity.isDecor === true ||
+      entity.isDecor === "true" ||
+      entity.isDecor === 1;
+    const isPickable =
+      entity.isPickable === true ||
+      entity.isPickable === "true" ||
+      entity.isPickable === 1;
+    const isTarget =
+      entity.isTarget === true ||
+      entity.isTarget === "true" ||
+      entity.isTarget === 1;
+    const isDeposit =
+      entity.isDeposit === true ||
+      entity.isDeposit === "true" ||
+      entity.isDeposit === 1;
+
+    if (isDecor || !entity.action_space || isPickable || isTarget || isDeposit)
       return;
 
     const observation_space = buildObsSpace(entity);
+    console.log("OBS VECTOR: " + observation_space);
     const action_space = entity.action_space;
 
     const action = ControllerRouter(
@@ -33,7 +46,6 @@ export default function runTimeloop(entities) {
       isModelReady,
     );
 
-    // PPO returns null — action will be applied by ccWebsocket callback, not here
     if (action !== null && action !== undefined) {
       console.log("Actions are applied locally");
       applyAction(action, entity, observation_space);

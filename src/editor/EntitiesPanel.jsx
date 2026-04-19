@@ -20,7 +20,10 @@ import agent1 from "../assets/agent1.png";
 import agent2 from "../assets/agent2.png";
 import agent3 from "../assets/agent3.png";
 import agent4 from "../assets/agent4.png";
+import agent5 from "../assets/agent5.png";
+import agent6 from "../assets/agent6.png";
 import target1 from "../assets/target_1.png";
+import target2 from "../assets/target_2.png";
 
 function DraggableItem({ id, payload, imageSrc, ...rest }) {
   const { listeners, setNodeRef, attributes, transform } = useDraggable({
@@ -107,7 +110,7 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Finder"],
-        isDeor: "false",
+        isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
     },
@@ -124,7 +127,7 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Collector"],
-        isDeor: "false",
+        isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
     },
@@ -141,7 +144,7 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Holder"],
-        isDeor: "false",
+        isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
     },
@@ -158,7 +161,41 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Navigator"],
-        isDeor: "false",
+        isDecor: false,
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_5",
+      label: "Ranger",
+      image: agent5,
+      payload: {
+        tag: "agent",
+        name: "Ranger",
+        assetRef: "agents/heroes/Ranger.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Holder", "Depositor"],
+        isDecor: false,
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_6",
+      label: "Knight",
+      image: agent6,
+      payload: {
+        tag: "agent",
+        name: "Knight",
+        assetRef: "agents/heroes/Knight.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Collector", "Depositor"],
+        isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
     },
@@ -306,12 +343,28 @@ export default function EntitiesPanel() {
         name: "Chest",
         tag: "target",
         isDecor: "false",
-        isPickable: "false",
-        isCollectable: "false",
+        isPickable: false,
+        isCollectable: false,
         isTarget: "true",
         assetRef: "resources/chest_gold.gltf",
         collider: { shape: "sphere", h: 2.5, r: 0.5 },
         targetStat: { radius: 2 },
+      },
+    },
+    {
+      id: "lib_target_obj_2",
+      image: target2,
+      payload: {
+        name: "Floor",
+        tag: "deposit",
+        isDecor: "false",
+        isPickable: false,
+        isCollectable: false,
+        isDeposit: "true",
+        isTarget: "false",
+        assetRef: "resources/floor_wood_large_dark.gltf",
+        collider: { shape: "sphere", h: 2.5, r: 0.5 },
+        targetStat: { radius: 0 },
       },
     },
   ];

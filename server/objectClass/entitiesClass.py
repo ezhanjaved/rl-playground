@@ -28,6 +28,7 @@ class Entities:
     isPickable: bool
     isCollectable: bool
     isTarget: bool
+    isDeposit: bool
 
     collider: dict = field(default_factory=dict)
 

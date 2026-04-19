@@ -2,22 +2,23 @@ import copy
 import os
 
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from server.path_config import MODEL_DIR
+from server.storage.uploadModel import downloadLatestCheckpoint
 from server.training.trainer.rewardCallback import RewardLoggerCallback
 
-N_ENVS = 4  # number of parallel physics envs — tune based on your scenario
+N_ENVS = 8
 
 
 def make_env(scenario, runtime):
-
-    runtime_copy = copy.deepcopy(runtime)
 
     def _init():
         from server.training.simulationBase import SimulationEnv
         from server.training.wrappers.gymWrapper import GymWrapper
 
+        runtime_copy = copy.deepcopy(runtime)
         return GymWrapper(SimulationEnv(scenario, runtime_copy), runtime_copy)
 
     return _init
@@ -25,9 +26,9 @@ def make_env(scenario, runtime):
 
 class SingleAgentTrainer:
     def __init__(self, training_id, env, assignment, scenario=None, runtime=None):
-        self.env = env  # single env — kept for load() compatibility
-        self.scenario = scenario  # needed to build SubprocVecEnv
-        self.runtime = runtime  # needed to build SubprocVecEnv
+        self.env = env
+        self.scenario = scenario
+        self.runtime = runtime
         self.model = None
         self.assignment = assignment.config
         self.training_id = training_id
@@ -58,24 +59,39 @@ class SingleAgentTrainer:
         effective_buffer = self.n_steps * N_ENVS
         self.batch = min(self.batch, effective_buffer)
         if effective_buffer % self.batch != 0:
-            # round down to nearest divisor
             self.batch = max(
                 b for b in range(1, self.batch + 1) if effective_buffer % b == 0
             )
-            # Test one env directly before launching SubprocVecEnv
+
         test_env = make_env(self.scenario, self.runtime)()
         print(
             "Single env test passed:", test_env.observation_space, test_env.action_space
         )
         test_env.close()
 
-        # Build N_ENVS parallel environments
         vec_env = SubprocVecEnv(
             [make_env(self.scenario, self.runtime) for _ in range(N_ENVS)],
-            start_method="spawn",  # faster on Linux; use "spawn" if you hit issues
+            start_method="spawn",
         )
 
-        if self.model is None:
+        checkpoint_dir = (
+            MODEL_DIR / f"model_training_{self.training_id}" / "checkpoints"
+        )
+        os.makedirs(checkpoint_dir, exist_ok=True)
+
+        resumed_timesteps = 0
+        checkpoint_path = downloadLatestCheckpoint(self.training_id, checkpoint_dir)
+        if checkpoint_path is not None:
+            print(f"Resuming from checkpoint: {checkpoint_path}")
+            self.model = PPO.load(str(checkpoint_path), env=vec_env)
+            try:
+                stem = checkpoint_path.stem
+                resumed_timesteps = int(stem.split("_steps")[0].split("_")[-1])
+                print(f"Resuming at timestep {resumed_timesteps}")
+            except Exception:
+                resumed_timesteps = 0
+        else:
+            print("No checkpoint found, starting fresh.")
             self.model = PPO(
                 "MlpPolicy",
                 vec_env,
@@ -92,23 +108,48 @@ class SingleAgentTrainer:
                 target_kl=0.03,
             )
 
-        callback = RewardLoggerCallback(training_id=self.training_id, log_every_n=1)
-        self.model.learn(total_timesteps=self.timesteps, callback=callback)
-        vec_env.close()  # clean up all subprocess connections after training
+        remaining_timesteps = max(self.timesteps - resumed_timesteps, 0)
+        if remaining_timesteps == 0:
+            print("Training already complete based on checkpoint timestep.")
+            vec_env.close()
+            return
+
+        checkpoint_callback = CheckpointCallback(
+            save_freq=max(10_000 // N_ENVS, self.n_steps),
+            save_path=str(checkpoint_dir),
+            name_prefix=f"checkpoint_{self.training_id}",
+            save_replay_buffer=False,
+            save_vecnormalize=False,
+        )
+
+        reward_callback = RewardLoggerCallback(
+            training_id=self.training_id,
+            checkpoint_dir=str(checkpoint_dir),
+            log_every_n=1,
+        )
+
+        callback = CallbackList([checkpoint_callback, reward_callback])
+
+        self.model.learn(
+            total_timesteps=remaining_timesteps,
+            callback=callback,
+            reset_num_timesteps=resumed_timesteps == 0,
+        )
+        vec_env.close()
 
     def save(self, id):
         self.model_file_name = f"model_{id}"
-        self.mode_dir = MODEL_DIR
-        os.makedirs(self.mode_dir, exist_ok=True)
-        save_path = self.mode_dir / self.model_file_name
+        self.model_dir = MODEL_DIR / f"model_training_{id}"
+        os.makedirs(self.model_dir, exist_ok=True)
+        save_path = self.model_dir / self.model_file_name
         self.model.save(save_path)
         return str(save_path) + ".zip"
 
     def load(self, id):
         model_file_name = f"model_{id}"
-        mode_dir = MODEL_DIR
-        path = mode_dir / f"model_training_{id}" / model_file_name
+        model_dir = MODEL_DIR
+        path = model_dir / f"model_training_{id}" / model_file_name
         if not path.with_suffix(".zip").exists():
-            raise FileNotFoundError
+            raise FileNotFoundError(f"No saved model found at {path}.zip")
         self.model = PPO.load(str(path) + ".zip", env=self.env)
         return self.model

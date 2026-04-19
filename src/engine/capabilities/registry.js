@@ -2,7 +2,7 @@
 export const CAPABILITY_SCHEMAS = {
   Moveable: {
     actions: ["move_up", "move_down", "move_left", "move_right", "idle"],
-    observations: [],
+    observations: ["agent_pos_x", "agent_pos_z", "agent_rotation_y"],
     state: {},
     settings: { speed: 2 },
   },
@@ -58,6 +58,23 @@ export const CAPABILITY_SCHEMAS = {
       items_collected: 0,
       lastPickSuccess: null,
       previous_distance_collect: 0,
+    },
+  },
+
+  Depositor: {
+    actions: ["deposit"], //An agent with deposit ability should always be paired with either collector/holder
+    observations: [
+      "dist_x_to_deposit",
+      "dist_z_to_deposit",
+      "dist_to_nearest_deposit",
+      "items_deposit",
+    ],
+    state: {
+      lastItemCollected: null,
+      items_deposited: 0,
+      nearDeposit: false,
+      lastPickSuccess: null,
+      previous_distance_deposit: 0,
     },
   },
 };

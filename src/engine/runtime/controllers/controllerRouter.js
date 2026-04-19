@@ -16,10 +16,12 @@ export default function ControllerRouter(
   const { assignments } = useSceneStore.getState();
   const config = assignments?.[agentId]?.assignedConfig ?? null;
 
-  if (!config && !experimentId && !isModelReady)
-    return randomController(action_space);
+  const hasQLearning = config?.algorithm === "q-learning";
+  const hasPPO = isModelReady;
 
-  if (config?.algorithm === "q-learning" && !isModelReady) {
+  if (!hasQLearning && !hasPPO) return randomController(action_space);
+
+  if (hasQLearning && !hasPPO) {
     return qLearningAct(
       observation_space,
       action_space,
@@ -30,10 +32,10 @@ export default function ControllerRouter(
       mode,
     );
   }
-  console.log(isModelReady);
-  if (isModelReady) {
-    PPOController(observation_space, agentId); // sends obs, returns nothing
-    return null; // ← loop does nothing; ccWebsocket callback applies the action
+
+  if (hasPPO) {
+    PPOController(observation_space, agentId);
+    return null;
   }
 
   return randomController(action_space);

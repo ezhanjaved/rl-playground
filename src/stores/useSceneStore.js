@@ -146,6 +146,7 @@ const buildEntitiyFromPartial = (partial, id) => {
 
     targetVisual: partial.targetStat || null,
     isDecor: partial.isDecor || false,
+    isDeposit: partial.isDeposit || false,
     isPickable: partial.isPickable || false,
     isCollectable: partial.isCollectable || false, //This flag can help us to make sure that agent with Collector capability is picking only isCollectable item
     isTarget: partial.isTarget || false,

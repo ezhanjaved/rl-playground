@@ -8,6 +8,7 @@ const baseAnimations = {
   collect: "PickUp",
   drop: "Throw",
   interact: "Interact",
+  deposit: "Interact",
 };
 
 const animationMap = {
@@ -15,6 +16,8 @@ const animationMap = {
   Warrior: { ...baseAnimations },
   Minion: { ...baseAnimations },
   Rogue: { ...baseAnimations },
+  Ranger: { ...baseAnimations },
+  Knight: { ...baseAnimations },
 };
 
 export default animationMap;

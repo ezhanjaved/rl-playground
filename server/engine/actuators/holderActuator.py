@@ -66,6 +66,7 @@ def holderActuator(action, agentData, entities, eM, client):
             "isPickable": "true",
             "isCollectable": "false",
             "isTarget": "false",
+            "isDeposit": "false",
         }
 
         entities[entityId] = Object(
@@ -76,6 +77,7 @@ def holderActuator(action, agentData, entities, eM, client):
             rotation=droppedObj["rotation"],
             quatRotation=droppedObj["quatRotation"],
             isDecor=droppedObj["isDecor"],
+            isDeposit=droppedObj["isDeposit"],
             isPickable=droppedObj["isPickable"],
             isCollectable=droppedObj["isCollectable"],
             isTarget=droppedObj["isTarget"],

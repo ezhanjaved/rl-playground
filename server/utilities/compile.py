@@ -115,6 +115,7 @@ def build_agents(agent_obj):
         rotation=agent_obj.get("rotation", []),
         quatRotation=agent_obj.get("quatRotation", [0, 0, 0, 1]),
         isDecor=agent_obj.get("isDecor", False),
+        isDeposit=agent_obj.get("isDeposit", False),
         isPickable=agent_obj.get("isPickable", False),
         isCollectable=agent_obj.get("isCollectable", False),
         isAssigned=agent_obj.get("isAssigned", False),
@@ -139,6 +140,7 @@ def build_objects(obj):
         isPickable=obj.get("isPickable", False),
         isCollectable=obj.get("isCollectable", False),
         isTarget=obj.get("isTarget", False),
+        isDeposit=obj.get("isDeposit", False),
     )
 
 

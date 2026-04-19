@@ -43,6 +43,15 @@ export default function previousDistanceCorrection(
         newStateSpace.previous_distance_collect = value;
         break;
 
+      case "Depositor":
+        index = getIndexOfObs(
+          agent?.observation_space,
+          "dist_to_nearest_deposit",
+        );
+        value = obs_space[index];
+        newStateSpace.previous_distance_deposit = value;
+        break;
+
       case "Navigator":
         break;
     }

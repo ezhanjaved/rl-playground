@@ -25,6 +25,7 @@ class RequestModel(BaseModel):
     user_uid: str
     modelName: str
     envType: str
+    timesteps: int
 
 
 class RunModel(BaseModel):
@@ -45,10 +46,11 @@ def trainerTest():
 async def getData(data: RequestModel):
     try:
         model_id = str(uuid.uuid4())
-        path = json_handler(model_id, data.dict())  # saves the data into machine
+        path = json_handler(model_id, data.dict())
         user_uid = data.dict()["user_uid"]
+        timesteps = data.dict()["timesteps"]
         model_name = data.dict()["modelName"]
-        config_path = uploadConfig(path)  # upload data from machine to s3 bucket
+        config_path = uploadConfig(path)
         create_model(
             {
                 "training_id": model_id,
@@ -56,25 +58,29 @@ async def getData(data: RequestModel):
                 "user_id": user_uid,
                 "name": model_name,
                 "algorithm": "PPO",
+                "total_timestep": timesteps,
             },
             "models",
         )
-        rl_trainer.delay(model_id)  # call celery with uid
+        rl_trainer.delay(model_id)
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
         print("An Error Occured")
         traceback.print_exc()
-        return {"message": exceptionMsg, "status": 0}
+        # FIX: was returning raw Exception object which FastAPI cannot
+        # serialize and leaks internal details. Cast to str.
+        return {"message": str(exceptionMsg), "status": 0}
 
 
 @trainer.post("/export-data-debug")
 async def getDataDebug(data: RequestModel):
     try:
         model_id = str(uuid.uuid4())
-        path = json_handler(model_id, data.dict())  # saves the data into machine
+        path = json_handler(model_id, data.dict())
         user_uid = data.dict()["user_uid"]
         model_name = data.dict()["modelName"]
-        config_path = uploadConfig(path)  # upload data from machine to s3 bucket
+        timesteps = data.dict()["timesteps"]
+        config_path = uploadConfig(path)
         create_model(
             {
                 "training_id": model_id,
@@ -82,6 +88,7 @@ async def getDataDebug(data: RequestModel):
                 "user_id": user_uid,
                 "name": model_name,
                 "debugMode": True,
+                "total_timestep": timesteps,
             },
             "models",
         )
@@ -90,7 +97,8 @@ async def getDataDebug(data: RequestModel):
     except Exception as exceptionMsg:
         print("An Error Occured")
         traceback.print_exc()
-        return {"message": exceptionMsg, "status": 0}
+        # FIX: same as above
+        return {"message": str(exceptionMsg), "status": 0}
 
 
 @trainer.post("/run-model")
@@ -107,9 +115,7 @@ async def run_the_model(data: RunModel):
                 {"session_id": session_id, "user_id": user_id, "model_id": model_id},
                 "simulation",
             )
-            # a function that uses model_id and feteches entities.json and return it with response.
             entities = fetchEnt(model_id)
-            # call celery
             rl_inference.delay(model_id)
             return {
                 "message": "Ownership test passed",
@@ -124,7 +130,8 @@ async def run_the_model(data: RunModel):
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
-        return {"message": exceptionMsg, "status": 0}
+        # FIX: same as above
+        return {"message": str(exceptionMsg), "status": 0}
 
 
 @trainer.post("/fetch_models")
@@ -138,4 +145,5 @@ async def fetch_models(data: RunModel):
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
-        return {"message": exceptionMsg, "status": 0}
+        # FIX: same as above
+        return {"message": str(exceptionMsg), "status": 0}

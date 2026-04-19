@@ -1,7 +1,7 @@
 import copy
 
 from server.engine.eval import evaluator
-from server.engine.observationBuilder import buildObs
+from server.engine.observationBuilder import buildObs, partition_entities
 from server.utilities.previousDist import previousDistanceCorrection
 
 
@@ -33,9 +33,12 @@ class EnvironmentCore:
     def get_observation(self):  # will call it to build observation of agents
         obs = {}
         runtimeSnapShot = self.runtime.entities
+        entity_buckets = partition_entities(runtimeSnapShot)
         for agent_id in self.runtime.agents_ids:
             agentData = self.runtime.entities[agent_id]  # Single Agent Data
-            obs[agent_id] = buildObs(agent_id, agentData, runtimeSnapShot)
+            obs[agent_id] = buildObs(
+                agent_id, agentData, runtimeSnapShot, entity_buckets
+            )
         return obs
 
     def update_previous_distances(self, obs, actions, runTime):

@@ -21,6 +21,11 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
                 index = getIndexOfObs(obs_space, "dist_to_nearest_collectable")
                 if index is not None and index < len(obs):
                     new_state_space["previous_distance_collect"] = obs[index]
+
+            case "Depositor":
+                index = getIndexOfObs(obs_space, "dist_to_nearest_deposit")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_deposit"] = obs[index]
             case "Navigator":
                 pass
 

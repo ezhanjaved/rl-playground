@@ -7,7 +7,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 export async function sendServer() {
   const { entities, assignments } = useSceneStore.getState();
   const { graphs } = useGraphStore.getState();
-  const { modelName, envType } = useRunTimeStore.getState();
+  const { modelName, envType, timesteps } = useRunTimeStore.getState();
   const { user } = useAuthStore.getState();
   const data = {
     entities,
@@ -16,15 +16,15 @@ export async function sendServer() {
     user_uid: user?.id,
     modelName,
     envType,
+    timesteps,
   };
-
-  const empty = emptyRoutine(data);
-  if (empty) return;
+  console.log("Body: " + JSON.stringify(data, null, 2));
+  // const empty = emptyRoutine(data);
+  // if (empty) return;
 
   try {
-    console.log("Body: " + JSON.stringify(data, null, 2));
     const response = await fetch(
-      "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/export-data",
+      "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/export-data-debug",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

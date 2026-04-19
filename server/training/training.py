@@ -1,11 +1,8 @@
 from server.training.trainer.singleAgent import SingleAgentTrainer
-from server.training.wrappers.mainWrapper import wrapperSelector
 
 
 class TrainingLoop:
     def __init__(self, sc, runtime, trainingId):
-        # self.ws = wrapperSelector(sc, runtime)
-        # self.env = self.ws.get_env()
         self.type = runtime.env_type
 
         self.assignments = runtime.assignment_by_agent
@@ -15,6 +12,7 @@ class TrainingLoop:
         self.pickedAssignment = self.assignments[self.pickedAgent]
 
         self.training_id = trainingId
+
         if self.type == "SARL":
             self.trainer = SingleAgentTrainer(
                 self.training_id,
@@ -24,7 +22,12 @@ class TrainingLoop:
                 runtime=runtime,
             )
         else:
-            pass
+            # FIX: previously `pass` left self.trainer unset, so calling
+            # train()/save()/load() would raise AttributeError. Raise
+            # immediately with a clear message instead.
+            raise NotImplementedError(
+                f"Training loop for env_type '{self.type}' is not yet implemented."
+            )
 
     def train(self):
         self.trainer.train()

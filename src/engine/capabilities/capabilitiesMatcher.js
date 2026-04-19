@@ -9,6 +9,7 @@ export function CapabilityMatcher(action) {
     move_left: "Moveable",
     idle: "Moveable",
     interact: "Finder",
+    deposit: "Depositor",
   };
   return actionLibrary[action]; //If action is pick Holder should be returned!
 }

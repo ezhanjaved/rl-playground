@@ -208,8 +208,11 @@ const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
   const [rewardImportance, setRewardImportance] = useState(0.5);
   const [explorationStrategy, setExplorationStrategy] = useState("fixed");
   const [learningSpeed, setLearningSpeed] = useState("Medium");
+  const setTimesteps = useRunTimeStore((state) => state.setTimesteps);
 
   useEffect(() => {
+    setTimesteps(episodeNumber * maxStepsPerEpisode);
+
     setOne({
       episodeNumber,
       maxStepsPerEpisode,

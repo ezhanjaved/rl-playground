@@ -58,7 +58,6 @@ export default function holderAdapter(action, entity) {
       tag: "pickable",
       assetRef: entity.state_space.heldItemAssetRef,
       collider: { shape: "capsule", h: 1, r: 0.4 },
-      isDecor: "true",
       position: [wx, wy, wz],
       isPickable: "true",
       isCollectable: "false",

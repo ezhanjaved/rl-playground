@@ -83,6 +83,7 @@ export function InRadiusNode({ data, id }) {
           <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
         </select>
 
         <br />
@@ -98,6 +99,7 @@ export function InRadiusNode({ data, id }) {
           <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
         </select>
       </div>
     </div>
@@ -121,6 +123,8 @@ export function LastActionIsNode({ data, id }) {
   ];
   const holderAction = ["pick", "drop"];
   const collectorAction = ["collect"];
+  const depositAction = ["deposit"];
+  const finderAction = ["interact"];
 
   const handleCheckbox = (e) => {
     const value = e.target.value;
@@ -135,6 +139,8 @@ export function LastActionIsNode({ data, id }) {
     Moveable: moveableAction,
     Holder: holderAction,
     Collector: collectorAction,
+    Depositor: depositAction,
+    Finder: finderAction,
   };
 
   useEffect(() => {
@@ -166,6 +172,7 @@ export function LastActionIsNode({ data, id }) {
     <div
       onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
       className="conditional-node"
+      style={{ width: "450px" }}
     >
       <span className="node-heading">{data?.label}</span>
 
@@ -225,6 +232,18 @@ export function LastActionIsNode({ data, id }) {
             />{" "}
             Collector
           </label>
+          <label>
+            <input type="checkbox" value="Finder" onChange={handleCheckbox} />{" "}
+            Finder{" "}
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              value="Depositor"
+              onChange={handleCheckbox}
+            />{" "}
+            Depositor{" "}
+          </label>
         </div>
 
         <br />
@@ -262,11 +281,13 @@ export function StateEqualsToNode({ data, id }) {
   const finderState = ["targetReached"];
   const holderState = ["holding", "lastPickSuccess"];
   const collectorState = ["lastPickSuccess"];
+  const depositorState = ["nearDeposit"];
 
   const stateMap = {
     Finder: finderState,
     Holder: holderState,
     Collector: collectorState,
+    Depositor: depositorState,
   };
 
   const handleCheckbox = (e) => {
@@ -364,6 +385,14 @@ export function StateEqualsToNode({ data, id }) {
             />{" "}
             Collector
           </label>
+          <label>
+            <input
+              type="checkbox"
+              value="Depositor"
+              onChange={handleCheckbox}
+            />{" "}
+            Depositor
+          </label>
         </div>
 
         <br />
@@ -401,11 +430,13 @@ export function CompareStateNode({ data, id }) {
   const finderState = ["previous_distance_target"];
   const holderState = ["previous_distance_pickable"];
   const collectorState = ["previous_distance_collect", "items_collected"];
+  const depositorState = ["items_deposited", "previous_distance_deposit"];
 
   const stateMap = {
     Finder: finderState,
     Holder: holderState,
     Collector: collectorState,
+    Depositor: depositorState,
   };
 
   const handleCheckbox = (e) => {
@@ -512,6 +543,14 @@ export function CompareStateNode({ data, id }) {
               onChange={handleCheckbox}
             />{" "}
             Collector
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              value="Depositor"
+              onChange={handleCheckbox}
+            />{" "}
+            Depositor
           </label>
         </div>
 
@@ -625,6 +664,7 @@ export function IsDistanceLessNode({ data, id }) {
           <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
         </select>
 
         <br />
@@ -640,7 +680,143 @@ export function IsDistanceLessNode({ data, id }) {
           <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
         </select>
+      </div>
+    </div>
+  );
+}
+
+export function ObsValueNode({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+
+  const allObsKeys = [
+    "agent_pos_x",
+    "agent_pos_z",
+    "agent_rotation_y",
+    "dist_x_to_obstacle",
+    "dist_z_to_obstacle",
+    "dist_to_nearest_obstacle",
+    "obstacle_in_path",
+    "dist_x_to_target",
+    "dist_z_to_target",
+    "dist_to_nearest_target",
+    "in_target_radius",
+    "dist_x_to_pickable",
+    "dist_z_to_pickable",
+    "dist_to_nearest_pickable",
+    "holding",
+    "dist_x_to_collect",
+    "dist_z_to_collect",
+    "dist_to_nearest_collectable",
+    "items_collected",
+    "dist_x_to_deposit",
+    "dist_z_to_deposit",
+    "dist_to_nearest_deposit",
+    "items_deposit",
+  ];
+
+  const operators = [
+    "Less Than",
+    "Higher Than",
+    "Less Than Equal To",
+    "Higher Than Equal To",
+    "Equal To",
+  ];
+
+  function updateObsKey(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, obsKey: e.target.value },
+    });
+  }
+  function updateOperator(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, Operator: e.target.value },
+    });
+  }
+  function updateValue(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, ObsValue: Number(e.target.value) },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, id)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label ?? "Obs Value"}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>Obs Key</span>
+        <select
+          onChange={updateObsKey}
+          value={data?.obsKey ?? "obstacle_in_path"}
+        >
+          {allObsKeys.map((k) => (
+            <option key={k} value={k}>
+              {k}
+            </option>
+          ))}
+        </select>
+
+        <br />
+
+        <span>Operator</span>
+        <select onChange={updateOperator} value={data?.Operator ?? "Less Than"}>
+          {operators.map((op) => (
+            <option key={op} value={op}>
+              {op}
+            </option>
+          ))}
+        </select>
+
+        <br />
+
+        <span>Value</span>
+        <input
+          type="number"
+          step="0.01"
+          value={data?.ObsValue ?? 0}
+          onChange={updateValue}
+        />
       </div>
     </div>
   );

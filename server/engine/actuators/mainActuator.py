@@ -1,4 +1,5 @@
 from server.engine.actuators.collectorActuator import collectorActuator
+from server.engine.actuators.depositActuator import depositActuator
 from server.engine.actuators.finderActuator import finderActuator
 from server.engine.actuators.holderActuator import holderActuator
 from server.engine.actuators.moveableActuator import moveableActuator
@@ -31,3 +32,6 @@ def process_action(agent_id, agent_data, action, entityMapping, client, entities
         case "Collector":
             if "Collector" in agentCapability:
                 collectorActuator(action, agent_data, entities, entityMapping, client)
+        case "Depositor":
+            if "Depositor" in agentCapability:
+                depositActuator(action, agent_data, entities)

@@ -1,3 +1,5 @@
+import time
+
 import pybullet as p
 import pybullet_data
 
@@ -16,7 +18,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.DIRECT)  # GUI breaks in subprocesses
+        self.client = p.connect(p.DIRECT)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -46,23 +48,31 @@ class PyBulletWorld:
     def spawn(self, entity):
         positionEntity = positionSwap(entity.position)
         rotationEntity = rotationSwap(entity.quatRotation)
-        id = None
+        bullet_id = None
         if entity.tag == "agent":
-            id = self.spawn_agent(positionEntity, rotationEntity)
+            bullet_id = self.spawn_agent(positionEntity, rotationEntity)
         elif entity.tag == "non_state":
-            id = self.spawn_non_state(positionEntity, rotationEntity)
+            bullet_id = self.spawn_non_state(positionEntity, rotationEntity)
         elif entity.tag == "target":
-            id = self.spawn_target(positionEntity, rotationEntity)
-        elif entity.tag == "Pickable Object" or entity.tag == "Collectible Object":
-            id = self.spawn_holders(positionEntity, rotationEntity)
-        return id
+            bullet_id = self.spawn_target(positionEntity, rotationEntity)
+        elif entity.tag in ("Pickable Object", "Collectible Object"):
+            bullet_id = self.spawn_holders(positionEntity, rotationEntity)
+        elif entity.tag == "deposit":
+            bullet_id = self.spawn_deposit(positionEntity, rotationEntity)
+        else:
+            raise ValueError(
+                f"spawn() received unknown entity tag '{entity.tag}' "
+                f"(id={entity.id}). Add a spawn branch for this tag."
+            )
 
-    def step_simulation(self, steps=10):
-        # No time.sleep — that's for GUI rendering only and kills training speed
+        return bullet_id
+
+    def step_simulation(self, steps=2):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
+            time.sleep(1 / 240)
 
-    def settle(self, steps=120):
+    def settle(self, steps=5):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
 
@@ -82,6 +92,19 @@ class PyBulletWorld:
         )
 
     def spawn_holders(self, pos, rot):
+        x, y, z = pos
+        z = z - 0.5
+        pos = [x, y, z]
+        return p.loadURDF(
+            "cube.urdf",
+            pos,
+            rot,
+            useFixedBase=True,
+            globalScaling=0.2,
+            physicsClientId=self.client,
+        )
+
+    def spawn_deposit(self, pos, rot):
         x, y, z = pos
         z = z - 0.5
         pos = [x, y, z]

@@ -30,6 +30,8 @@ function EntityRenderer({ entity }) {
     [animationRefs],
   );
 
+  // console.log("All Animations: " + JSON.stringify(allAnimations, null, 1));
+
   const { clonedScene, size, handBone } = useMemo(() => {
     const clone = SkeletonUtils.clone(modelLoaded.scene);
 
