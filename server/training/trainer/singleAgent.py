@@ -105,7 +105,7 @@ class SingleAgentTrainer:
                 gamma=self.gamma,
                 ent_coef=0.005,
                 verbose=1,
-                target_kl=0.03,
+                target_kl=0.1,
                 normalize_advantage=True,
             )
 
