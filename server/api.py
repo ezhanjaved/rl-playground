@@ -67,19 +67,19 @@ async def webhookTrained(request: Request):
     if not hmac.compare_digest(signature, expected):
         raise HTTPException(status_code=401, detail="Invalid signature")
 
-    payload = await request.json()
+    data = await request.json()
 
-    print("Webhook verified:", payload)
+    print("Webhook verified:", data)
 
-    uid = payload.get("model_id")
-    path = payload.get("path")
+    uid = data.get("model_id")
+    path = data.get("path")
 
     if not uid or not path:
         raise HTTPException(status_code=400, detail="Invalid payload")
 
     update_model(
         uid,
-        {"status": "completed", "model_path": path},
+        {"status": "finished", "model_path": path},
         "models",
         "training_id",
     )
