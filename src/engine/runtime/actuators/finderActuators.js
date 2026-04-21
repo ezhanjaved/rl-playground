@@ -19,7 +19,7 @@ export default function finderAdapter(action, agent, obs, obsSpace) {
   const position = agent.position;
   const info = getNearestTargetInfo(position, entities, "isTarget");
   const targetReached = info?.found && info?.distance <= info?.radius;
-
+  console.log("Target Reached: " + targetReached);
   return {
     targetReached,
     previousDistance: getObs("dist_to_nearest_target"),

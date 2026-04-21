@@ -11,6 +11,12 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
                 index = getIndexOfObs(obs_space, "dist_to_nearest_target")
                 if index is not None and index < len(obs):
                     new_state_space["previous_distance_target"] = obs[index]
+                index = getIndexOfObs(obs_space, "dist_x_to_target")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_target_x"] = obs[index]
+                index = getIndexOfObs(obs_space, "dist_z_to_target")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_target_z"] = obs[index]
 
             case "Holder":
                 index = getIndexOfObs(obs_space, "dist_to_nearest_pickable")

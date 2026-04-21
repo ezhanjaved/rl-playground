@@ -36,7 +36,11 @@ export default function BehaviorGraphEval(agentId, obsVector) {
   const start = graph.nodes.find((e) => e.type === "OnStepNode");
   if (!start) return { reward: 0, done: false };
   visitNode(start.id, graph, ctxObj);
-  return { reward: ctxObj.reward, done: ctxObj.done, truncated: ctxObj.truncated };
+  return {
+    reward: ctxObj.reward,
+    done: ctxObj.done,
+    truncated: ctxObj.truncated,
+  };
 }
 
 function visitNode(NodeId, graph, ctxObj) {
@@ -255,6 +259,152 @@ function visitNode(NodeId, graph, ctxObj) {
     return;
   }
 
+  if (currentNodeData.type === "IsDistanceXLessNode") {
+    let distanceXLess = false;
+
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
+    const isAgent1 = entityOne === "Agent";
+    const isAgent2 = entityTwo === "Agent";
+
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
+    // const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    // const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    // const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+
+    const targetPredicate = (e) =>
+      e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
+    // const pickablePredicate = (e) =>
+    //   e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+    // const collectPredicate = (e) =>
+    //   e.isCollectable === true ||
+    //   e.isCollectable === "true" ||
+    //   e.isCollectable === 1;
+    // const depositPredicate = (e) =>
+    //   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+
+    const diffCal = (predicate, key) => {
+      const agentCurrentPos = ctxObj?.facts?.position;
+      const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
+      const { entities } = useSceneStore.getState();
+      const { min: currentDistance } = nearestDistance(
+        agentCurrentPos,
+        predicate,
+        "x",
+        entities,
+      );
+
+      if (currentDistance !== null && currentDistance < previousDistance) {
+        distanceXLess = true;
+      }
+    };
+
+    if (entityTwo === "Target Object") {
+      diffCal(targetPredicate, "previous_distance_target_x");
+    }
+
+    // if (entityTwo === "Pickable Object") {
+    //   if (hasHolder) {
+    //     diffCal(pickablePredicate, "previous_distance_pickable");
+    //   } else if (hasCollector) {
+    //     diffCal(collectPredicate, "previous_distance_collect");
+    //   } else {
+    //     return;
+    //   }
+    // }
+
+    // if (entityTwo === "Deposit Object") {
+    //   if (hasDepositor) {
+    //     diffCal(depositPredicate, "previous_distance_deposit");
+    //   } else {
+    //     return;
+    //   }
+    // }
+
+    const edges = findEdges(NodeId, graph);
+    const chosenEdge = edges.find((e) =>
+      distanceXLess
+        ? e.sourceHandle?.toLowerCase().includes("true")
+        : e.sourceHandle?.toLowerCase().includes("false"),
+    );
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    return;
+  }
+
+  if (currentNodeData.type === "IsDistanceZLessNode") {
+    let distanceZLess = false;
+
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
+    const isAgent1 = entityOne === "Agent";
+    const isAgent2 = entityTwo === "Agent";
+
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
+    // const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    // const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    // const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+
+    const targetPredicate = (e) =>
+      e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
+    // const pickablePredicate = (e) =>
+    //   e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+    // const collectPredicate = (e) =>
+    //   e.isCollectable === true ||
+    //   e.isCollectable === "true" ||
+    //   e.isCollectable === 1;
+    // const depositPredicate = (e) =>
+    //   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+
+    const diffCal = (predicate, key) => {
+      const agentCurrentPos = ctxObj?.facts?.position;
+      const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
+      const { entities } = useSceneStore.getState();
+      const { min: currentDistance } = nearestDistance(
+        agentCurrentPos,
+        predicate,
+        "z",
+        entities,
+      );
+
+      if (currentDistance !== null && currentDistance < previousDistance) {
+        distanceZLess = true;
+      }
+    };
+
+    if (entityTwo === "Target Object") {
+      diffCal(targetPredicate, "previous_distance_target_z");
+    }
+
+    // if (entityTwo === "Pickable Object") {
+    //   if (hasHolder) {
+    //     diffCal(pickablePredicate, "previous_distance_pickable");
+    //   } else if (hasCollector) {
+    //     diffCal(collectPredicate, "previous_distance_collect");
+    //   } else {
+    //     return;
+    //   }
+    // }
+
+    // if (entityTwo === "Deposit Object") {
+    //   if (hasDepositor) {
+    //     diffCal(depositPredicate, "previous_distance_deposit");
+    //   } else {
+    //     return;
+    //   }
+    // }
+
+    const edges = findEdges(NodeId, graph);
+    const chosenEdge = edges.find((e) =>
+      distanceZLess
+        ? e.sourceHandle?.toLowerCase().includes("true")
+        : e.sourceHandle?.toLowerCase().includes("false"),
+    );
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    return;
+  }
+
   if (currentNodeData.type === "TruncateEpisodeNode") {
     ctxObj.done = true;
     ctxObj.truncated = true;
@@ -263,13 +413,13 @@ function visitNode(NodeId, graph, ctxObj) {
 
   if (currentNodeData.type === "ObsValueNode") {
     const operations = {
-      "Less Than":            (a, b) => a < b,
-      "Higher Than":          (a, b) => a > b,
-      "Less Than Equal To":   (a, b) => a <= b,
+      "Less Than": (a, b) => a < b,
+      "Higher Than": (a, b) => a > b,
+      "Less Than Equal To": (a, b) => a <= b,
       "Higher Than Equal To": (a, b) => a >= b,
-      "Equal To":             (a, b) => a === b,
+      "Equal To": (a, b) => a === b,
     };
-    const obsKey   = currentNodeData.data?.obsKey;
+    const obsKey = currentNodeData.data?.obsKey;
     const obsValue = Number(currentNodeData.data?.ObsValue);
     const operator = currentNodeData.data?.Operator;
     if (obsKey && Number.isFinite(obsValue) && operator) {
@@ -304,4 +454,3 @@ function visitNode(NodeId, graph, ctxObj) {
 function findEdges(NodeId, graph) {
   return graph.edges.filter((e) => e.source === NodeId);
 }
-

@@ -1,15 +1,23 @@
 // OBS -> controller -> actuator -> physics -> BG
-import discretize from "../utility/discretization.js";
 import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
 import buildObsSpace from "./observationBuilder.js";
 import ControllerRouter from "./controllers/controllerRouter.js";
 import applyAction from "./actuators/applyAction.js";
+import { flushActions } from "./actionQueue.js";
 
 export default function runTimeloop(entities) {
   const { playing, training } = useRunTimeStore.getState();
   const { currentExperimentId, isModelReady } = useRunTimeStore.getState();
 
   if (!playing || training) return;
+
+  const incoming = flushActions();
+  incoming.forEach((action, agentId) => {
+    const entity = entities[agentId];
+    if (entity) {
+      applyAction(action, entity, []);
+    }
+  });
 
   Object.values(entities).forEach((entity) => {
     const isDecor =
@@ -33,7 +41,6 @@ export default function runTimeloop(entities) {
       return;
 
     const observation_space = buildObsSpace(entity);
-    console.log("OBS VECTOR: " + observation_space);
     const action_space = entity.action_space;
 
     const action = ControllerRouter(

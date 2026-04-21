@@ -26,7 +26,12 @@ export const CAPABILITY_SCHEMAS = {
       "dist_to_nearest_target",
       "in_target_radius",
     ],
-    state: { targetReached: false, previous_distance_target: Infinity }, //memory
+    state: {
+      targetReached: false,
+      previous_distance_target: Infinity,
+      previous_distance_target_x: Infinity,
+      previous_distance_target_z: Infinity,
+    }, //memory
   },
 
   Holder: {

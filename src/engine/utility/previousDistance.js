@@ -23,6 +23,15 @@ export default function previousDistanceCorrection(
         );
         value = obs_space[index];
         newStateSpace.previous_distance_target = value;
+
+        index = getIndexOfObs(agent?.observation_space, "dist_x_to_target");
+        value = obs_space[index];
+        newStateSpace.previous_distance_target_x = value;
+
+        index = getIndexOfObs(agent?.observation_space, "dist_z_to_target");
+        value = obs_space[index];
+        newStateSpace.previous_distance_target_z = value;
+
         break;
 
       case "Holder":

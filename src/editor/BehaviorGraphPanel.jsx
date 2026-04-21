@@ -36,6 +36,20 @@ export function BehaviorGraphPanel() {
       },
     },
     {
+      id: "is-distance-x-less-node",
+      payload: {
+        data: { label: "IsDistanceXLess", entityOne: null, entityTwo: null },
+        type: "IsDistanceXLessNode",
+      },
+    },
+    {
+      id: "is-distance-z-less-node",
+      payload: {
+        data: { label: "IsDistanceZLess", entityOne: null, entityTwo: null },
+        type: "IsDistanceZLessNode",
+      },
+    },
+    {
       id: "last-action-is-node",
       payload: {
         data: {

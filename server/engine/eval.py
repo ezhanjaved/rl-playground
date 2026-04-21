@@ -17,9 +17,6 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
     agent = entities[aid]
     visited_nodes = set()
 
-    # FIX: pre-partition entities once here so IsDistanceLessNode can use
-    # buckets rather than calling nearestDistance with a predicate + raw dict
-    # (the old call signature that no longer matches observationBuilder.py)
     entity_buckets = partition_entities(entities)
 
     ctx = {
@@ -65,8 +62,6 @@ def safe_float(x, default=0.0):
 
 
 def visitNode(node_id, graph, ctx):
-    # FIX: use _stop for traversal control so TruncateEpisodeNode doesn't
-    # incorrectly set terminated=True just to halt the graph walk
     if ctx["_stop"]:
         return
     if ctx["stepCount"] > ctx["maxSteps"]:
@@ -194,6 +189,8 @@ def visitNode(node_id, graph, ctx):
 
         if entity_two == "Target Object":
             dist = get_obs("dist_to_nearest_target")
+            print("Dist To Nearest Target: ", dist)
+            print("Radius: ", RADIUS_CHECK)
             if dist is not None and dist <= RADIUS_CHECK:
                 in_radius = True
 
@@ -240,9 +237,6 @@ def visitNode(node_id, graph, ctx):
         distance_less = False
         buckets = ctx["buckets"]
 
-        # FIX: nearestDistance now takes a pre-filtered bucket (list), not a
-        # predicate + raw entities dict. Build the bucket from ctx["buckets"]
-        # which was partitioned once at the start of evaluator().
         def diff_cal(bucket_key, state_key):
             nonlocal distance_less
             agent_pos = ctx["facts"]["position"]
@@ -251,6 +245,8 @@ def visitNode(node_id, graph, ctx):
                 agent_pos, buckets[bucket_key], "both"
             )
             if current_distance is not None and previous_distance is not None:
+                print("Current Dist: ", current_distance)
+                print("Previous Dist: ", previous_distance)
                 if current_distance < previous_distance:
                     distance_less = True
 
@@ -276,10 +272,109 @@ def visitNode(node_id, graph, ctx):
             visitNode(chosen_edge.target, graph, ctx)
         return
 
+    elif node_data.type == "IsDistanceXLessNode":
+        entity_one = node_data.data.get("entityOne")
+        entity_two = node_data.data.get("entityTwo")
+
+        is_agent_1 = entity_one == "Agent"
+        is_agent_2 = entity_two == "Agent"
+
+        if is_agent_1 == is_agent_2:
+            return
+
+        capabilities = ctx["facts"].get("capabilities", [])
+        has_holder = "Holder" in capabilities
+        has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
+
+        distance_less_x = False
+        buckets = ctx["buckets"]
+
+        def diff_cal(bucket_key, state_key):
+            nonlocal distance_less_x
+            agent_pos = ctx["facts"]["position"]
+            previous_distance = ctx["facts"]["state_space"].get(state_key)
+            current_distance, _ = nearestDistance(agent_pos, buckets[bucket_key], "x")
+            if current_distance is not None and previous_distance is not None:
+                print("Current Dist X: ", current_distance)
+                print("Previous Dist X: ", previous_distance)
+                if current_distance < previous_distance:
+                    distance_less_x = True
+
+        if entity_two == "Target Object":
+            diff_cal("target", "previous_distance_target_x")
+
+        # elif entity_two == "Pickable Object":
+        #     if has_holder:
+        #         diff_cal("pickable", "previous_distance_pickable")
+        #     elif has_collector:
+        #         diff_cal("collectable", "previous_distance_collect")
+        #     else:
+        #         return
+
+        # elif entity_two == "Deposit Object":
+        #     if has_depositor:
+        #         diff_cal("deposit", "previous_distance_deposit")
+        #     else:
+        #         return
+
+        chosen_edge = _find_bool_edge(node_id, graph, distance_less_x)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
+    elif node_data.type == "IsDistanceZLessNode":
+        entity_one = node_data.data.get("entityOne")
+        entity_two = node_data.data.get("entityTwo")
+
+        is_agent_1 = entity_one == "Agent"
+        is_agent_2 = entity_two == "Agent"
+
+        if is_agent_1 == is_agent_2:
+            return
+
+        capabilities = ctx["facts"].get("capabilities", [])
+        has_holder = "Holder" in capabilities
+        has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
+
+        distance_less_y = False
+        buckets = ctx["buckets"]
+
+        def diff_cal(bucket_key, state_key):
+            nonlocal distance_less_y
+            agent_pos = ctx["facts"]["position"]
+            previous_distance = ctx["facts"]["state_space"].get(state_key)
+            current_distance, _ = nearestDistance(agent_pos, buckets[bucket_key], "y")
+            if current_distance is not None and previous_distance is not None:
+                print("Current Dist Y: ", current_distance)
+                print("Previous Dist Y: ", previous_distance)
+                if current_distance < previous_distance:
+                    distance_less_y = True
+
+        if entity_two == "Target Object":
+            diff_cal("target", "previous_distance_target_z")
+
+        # elif entity_two == "Pickable Object":
+        #     if has_holder:
+        #         diff_cal("pickable", "previous_distance_pickable")
+        #     elif has_collector:
+        #         diff_cal("collectable", "previous_distance_collect")
+        #     else:
+        #         return
+
+        # elif entity_two == "Deposit Object":
+        #     if has_depositor:
+        #         diff_cal("deposit", "previous_distance_deposit")
+        #     else:
+        #         return
+
+        chosen_edge = _find_bool_edge(node_id, graph, distance_less_y)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
     elif node_data.type == "TruncateEpisodeNode":
-        # FIX: set truncated=True but NOT terminated=True — these have
-        # different bootstrap semantics in Gymnasium/PPO. Use _stop to
-        # halt traversal without poisoning the terminated flag.
         ctx["truncated"] = True
         ctx["_stop"] = True
         return

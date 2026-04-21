@@ -3,7 +3,7 @@ import { isPending, markPending } from "./ppoState";
 import { useSceneStore } from "../../../stores/useSceneStore";
 export function PPOController(obsVector, agentId) {
   const { entities } = useSceneStore.getState();
-  const cap = entities[agentId];
+  const cap = entities[agentId].capabilities;
   if (isPending(agentId)) return;
   const refinedObs = refineObs(obsVector);
   let session_token = null;

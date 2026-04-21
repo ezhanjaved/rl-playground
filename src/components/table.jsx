@@ -6,10 +6,11 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { useBackendWebSocket } from "../websocket/beWebsocket";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { connectCloudSocket } from "../websocket/ccWebsocket";
-import applyAction from "../engine/runtime/actuators/applyAction";
-import { useSceneStore } from "../stores/useSceneStore";
-import buildObsSpace from "../engine/runtime/observationBuilder";
+// import applyAction from "../engine/runtime/actuators/applyAction";
+// import { useSceneStore } from "../stores/useSceneStore";
+// import buildObsSpace from "../engine/runtime/observationBuilder";
 import { clearPending } from "../engine/runtime/controllers/ppoState";
+import { queueAction } from "../engine/runtime/actionQueue";
 
 const renderDefaultCell = (key, value) => {
   const k = key.toLowerCase();
@@ -101,12 +102,13 @@ export function Table({
       setModeltoReady(true); //model is ready now
       setModeltoLoading(false); //model has stopped loading
       connectCloudSocket(podUrl, (action, id) => {
-        const { entities } = useSceneStore.getState(); // live read, not stale
-        const agent = entities?.[id];
+        // const { entities } = useSceneStore.getState(); // live read, not stale
+        // const agent = entities?.[id];
+        queueAction(action, id); // ← just buffer it, nothing else
         clearPending(id); // always clear so next obs can be sent
-        if (!agent) return;
-        const obs = buildObsSpace(agent);
-        applyAction(action, agent, obs); // ← only place PPO actions are applied
+        // if (!agent) return;
+        // const obs = buildObsSpace(agent);
+        // applyAction(action, agent, obs); // ← only place PPO actions are applied
       });
     },
     [setModeltoReady],
@@ -250,7 +252,7 @@ export function Table({
                                 col.render(item)
                               ) : col.key === "status" ? (
                                 <div
-                                  className={`status-pill status-${item.status.toLowerCase()}`}
+                                  className={`status-pill status-${item.status}`}
                                 >
                                   <span className="status-dot"></span>
                                   {item.status}
