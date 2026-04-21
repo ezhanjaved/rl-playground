@@ -1,5 +1,3 @@
-import time
-
 from server.training.bulletWorld import PyBulletWorld
 from server.training.enviornmentBase import EnvironmentCore
 
@@ -29,8 +27,8 @@ class SimulationEnv:
         self.core.sync_state_from_world(self.world)
         obs = self.core.get_observation()
         # t3 = time.time()
-        self.core.update_previous_distances(obs, actions, self.core.runtime)
         reward, terminated, truncated, info = self.core.compute_reward(obs)
+        self.core.update_previous_distances(obs, actions, self.core.runtime)
         # t4 = time.time()
         # print(
         #     f"actions={t1 - t0:.4f} physics={t2 - t1:.4f} obs={t3 - t2:.4f} reward={t4 - t3:.4f}"
