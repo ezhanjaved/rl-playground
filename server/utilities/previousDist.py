@@ -23,17 +23,52 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
                 if index is not None and index < len(obs):
                     new_state_space["previous_distance_pickable"] = obs[index]
 
+                index = getIndexOfObs(obs_space, "dist_x_to_pickable")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_pickable_x"] = obs[index]
+
+                index = getIndexOfObs(obs_space, "dist_z_to_pickable")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_pickable_z"] = obs[index]
+
             case "Collector":
                 index = getIndexOfObs(obs_space, "dist_to_nearest_collectable")
                 if index is not None and index < len(obs):
                     new_state_space["previous_distance_collect"] = obs[index]
 
+                index = getIndexOfObs(obs_space, "dist_x_to_collect")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_collect_x"] = obs[index]
+
+                index = getIndexOfObs(obs_space, "dist_z_to_collect")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_collect_z"] = obs[index]
+
             case "Depositor":
                 index = getIndexOfObs(obs_space, "dist_to_nearest_deposit")
                 if index is not None and index < len(obs):
                     new_state_space["previous_distance_deposit"] = obs[index]
+
+                index = getIndexOfObs(obs_space, "dist_x_to_deposit")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_deposit_x"] = obs[index]
+
+                index = getIndexOfObs(obs_space, "dist_z_to_deposit")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_deposit_z"] = obs[index]
+
             case "Navigator":
-                pass
+                index = getIndexOfObs(obs_space, "dist_to_nearest_obstacle")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_obstacle"] = obs[index]
+
+                index = getIndexOfObs(obs_space, "dist_x_to_obstacle")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_obstacle_x"] = obs[index]
+
+                index = getIndexOfObs(obs_space, "dist_z_to_obstacle")
+                if index is not None and index < len(obs):
+                    new_state_space["previous_distance_obstacle_z"] = obs[index]
 
     agent = entities[agent_id]
     agent.last_action = last_action

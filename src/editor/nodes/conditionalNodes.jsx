@@ -427,10 +427,28 @@ export function CompareStateNode({ data, id }) {
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
 
-  const finderState = ["previous_distance_target"];
-  const holderState = ["previous_distance_pickable"];
-  const collectorState = ["previous_distance_collect", "items_collected"];
-  const depositorState = ["items_deposited", "previous_distance_deposit"];
+  const finderState = [
+    "previous_distance_target",
+    "previous_distance_target_x",
+    "previous_distance_target_z",
+  ];
+  const holderState = [
+    "previous_distance_pickable",
+    "previous_distance_pickable_x",
+    "previous_distance_pickable_z",
+  ];
+  const collectorState = [
+    "previous_distance_collect",
+    "previous_distance_collect_x",
+    "previous_distance_collect_z",
+    "items_collected",
+  ];
+  const depositorState = [
+    "items_deposited",
+    "previous_distance_deposit",
+    "previous_distance_deposit_x",
+    "previous_distance_deposit_z",
+  ];
 
   const stateMap = {
     Finder: finderState,

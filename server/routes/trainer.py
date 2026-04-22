@@ -77,22 +77,7 @@ async def getDataDebug(data: RequestModel):
     try:
         model_id = str(uuid.uuid4())
         path = json_handler(model_id, data.dict())
-        user_uid = data.dict()["user_uid"]
-        model_name = data.dict()["modelName"]
-        timesteps = data.dict()["timesteps"]
         config_path = uploadConfig(path)
-        create_model(
-            {
-                "training_id": model_id,
-                "config_path": config_path,
-                "user_id": user_uid,
-                "name": model_name,
-                "debugMode": True,
-                "total_timestep": timesteps,
-            },
-            "models",
-        )
-        debugRunner(model_id)
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
         print("An Error Occured")

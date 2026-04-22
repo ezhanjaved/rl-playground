@@ -189,8 +189,6 @@ def visitNode(node_id, graph, ctx):
 
         if entity_two == "Target Object":
             dist = get_obs("dist_to_nearest_target")
-            print("Dist To Nearest Target: ", dist)
-            print("Radius: ", RADIUS_CHECK)
             if dist is not None and dist <= RADIUS_CHECK:
                 in_radius = True
 
@@ -245,13 +243,14 @@ def visitNode(node_id, graph, ctx):
                 agent_pos, buckets[bucket_key], "both"
             )
             if current_distance is not None and previous_distance is not None:
-                print("Current Dist: ", current_distance)
-                print("Previous Dist: ", previous_distance)
                 if current_distance < previous_distance:
                     distance_less = True
 
         if entity_two == "Target Object":
             diff_cal("target", "previous_distance_target")
+
+        if entity_two == "Non-State Object":
+            diff_cal("obstacle", "previous_distance_obstacle")
 
         elif entity_two == "Pickable Object":
             if has_holder:
@@ -296,27 +295,28 @@ def visitNode(node_id, graph, ctx):
             previous_distance = ctx["facts"]["state_space"].get(state_key)
             current_distance, _ = nearestDistance(agent_pos, buckets[bucket_key], "x")
             if current_distance is not None and previous_distance is not None:
-                print("Current Dist X: ", current_distance)
-                print("Previous Dist X: ", previous_distance)
                 if current_distance < previous_distance:
                     distance_less_x = True
 
         if entity_two == "Target Object":
             diff_cal("target", "previous_distance_target_x")
 
-        # elif entity_two == "Pickable Object":
-        #     if has_holder:
-        #         diff_cal("pickable", "previous_distance_pickable")
-        #     elif has_collector:
-        #         diff_cal("collectable", "previous_distance_collect")
-        #     else:
-        #         return
+        if entity_two == "Non-State Object":
+            diff_cal("obstacle", "previous_distance_obstacle_x")
 
-        # elif entity_two == "Deposit Object":
-        #     if has_depositor:
-        #         diff_cal("deposit", "previous_distance_deposit")
-        #     else:
-        #         return
+        elif entity_two == "Pickable Object":
+            if has_holder:
+                diff_cal("pickable", "previous_distance_pickable_x")
+            elif has_collector:
+                diff_cal("collectable", "previous_distance_collect_x")
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                diff_cal("deposit", "previous_distance_deposit_x")
+            else:
+                return
 
         chosen_edge = _find_bool_edge(node_id, graph, distance_less_x)
         if chosen_edge:
@@ -347,27 +347,28 @@ def visitNode(node_id, graph, ctx):
             previous_distance = ctx["facts"]["state_space"].get(state_key)
             current_distance, _ = nearestDistance(agent_pos, buckets[bucket_key], "y")
             if current_distance is not None and previous_distance is not None:
-                print("Current Dist Y: ", current_distance)
-                print("Previous Dist Y: ", previous_distance)
                 if current_distance < previous_distance:
                     distance_less_y = True
 
         if entity_two == "Target Object":
             diff_cal("target", "previous_distance_target_z")
 
-        # elif entity_two == "Pickable Object":
-        #     if has_holder:
-        #         diff_cal("pickable", "previous_distance_pickable")
-        #     elif has_collector:
-        #         diff_cal("collectable", "previous_distance_collect")
-        #     else:
-        #         return
+        if entity_two == "Non-State Object":
+            diff_cal("obstacle", "previous_distance_obstacle_z")
 
-        # elif entity_two == "Deposit Object":
-        #     if has_depositor:
-        #         diff_cal("deposit", "previous_distance_deposit")
-        #     else:
-        #         return
+        elif entity_two == "Pickable Object":
+            if has_holder:
+                diff_cal("pickable", "previous_distance_pickable_z")
+            elif has_collector:
+                diff_cal("collectable", "previous_distance_collect_z")
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                diff_cal("deposit", "previous_distance_deposit_z")
+            else:
+                return
 
         chosen_edge = _find_bool_edge(node_id, graph, distance_less_y)
         if chosen_edge:

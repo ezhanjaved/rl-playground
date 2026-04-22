@@ -94,11 +94,13 @@ class RewardLoggerCallback(BaseCallback):
 
         if dones is not None and len(dones) > 0 and any(dones):
             n_done = int(np.sum(dones))
+            prev_count = self._episode_count
             self._episode_count += n_done
+
             for _ in range(n_done):
                 self._all_rewards.append(self._current_episode_reward)
 
-            if self._episode_count % self.log_every_n == 0:
+            if self._episode_count // self.log_every_n > prev_count // self.log_every_n:
                 smoothed = float(np.mean(self._all_rewards[-10:]))
                 self._buffer(
                     {
@@ -110,7 +112,10 @@ class RewardLoggerCallback(BaseCallback):
                     }
                 )
 
-            if self._episode_count % self.flush_every_n_episodes == 0:
+            if (
+                self._episode_count // self.flush_every_n_episodes
+                > prev_count // self.flush_every_n_episodes
+            ):
                 self._flush()
 
             self._current_episode_reward = 0.0
@@ -148,8 +153,7 @@ class RewardLoggerCallback(BaseCallback):
 
         self._buffer(data)
 
-        if self._rollout_count % self.flush_every_n_rollouts == 0:
-            self._flush()
+        self._flush()
 
         self._upload_latest_checkpoint()
 

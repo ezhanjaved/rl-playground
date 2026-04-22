@@ -15,7 +15,11 @@ export const CAPABILITY_SCHEMAS = {
       "dist_to_nearest_obstacle",
       "obstacle_in_path", //obstacle hai yah nahi
     ],
-    state: {},
+    state: {
+      previous_distance_obstacle: Infinity,
+      previous_distance_obstacle_x: Infinity,
+      previous_distance_obstacle_z: Infinity,
+    },
   },
 
   Finder: {
@@ -46,7 +50,9 @@ export const CAPABILITY_SCHEMAS = {
       holding: false,
       heldItemAssetRef: null,
       lastPickSuccess: null,
-      previous_distance_pickable: 0,
+      previous_distance_pickable: Infinity,
+      previous_distance_pickable_x: Infinity,
+      previous_distance_pickable_z: Infinity,
     },
   },
 
@@ -62,7 +68,9 @@ export const CAPABILITY_SCHEMAS = {
       lastItemCollected: null,
       items_collected: 0,
       lastPickSuccess: null,
-      previous_distance_collect: 0,
+      previous_distance_collect: Infinity,
+      previous_distance_collect_x: Infinity,
+      previous_distance_collect_z: Infinity,
     },
   },
 
@@ -79,7 +87,9 @@ export const CAPABILITY_SCHEMAS = {
       items_deposited: 0,
       nearDeposit: false,
       lastPickSuccess: null,
-      previous_distance_deposit: 0,
+      previous_distance_deposit: Infinity,
+      previous_distance_deposit_x: Infinity,
+      previous_distance_deposit_z: Infinity,
     },
   },
 };

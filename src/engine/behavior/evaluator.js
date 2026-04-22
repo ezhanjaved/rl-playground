@@ -210,6 +210,8 @@ function visitNode(NodeId, graph, ctxObj) {
       e.isCollectable === 1;
     const depositPredicate = (e) =>
       e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+    const obstaclePredicate = (e) =>
+      e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
 
     const diffCal = (predicate, key) => {
       const agentCurrentPos = ctxObj?.facts?.position;
@@ -229,6 +231,10 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if (entityTwo === "Target Object") {
       diffCal(targetPredicate, "previous_distance_target");
+    }
+
+    if (entityTwo === "Non-State Object") {
+      diffCal(obstaclePredicate, "previous_distance_obstacle");
     }
 
     if (entityTwo === "Pickable Object") {
@@ -269,20 +275,22 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    // const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    // const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    // const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
 
     const targetPredicate = (e) =>
       e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
-    // const pickablePredicate = (e) =>
-    //   e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
-    // const collectPredicate = (e) =>
-    //   e.isCollectable === true ||
-    //   e.isCollectable === "true" ||
-    //   e.isCollectable === 1;
-    // const depositPredicate = (e) =>
-    //   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+    const pickablePredicate = (e) =>
+      e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+    const collectPredicate = (e) =>
+      e.isCollectable === true ||
+      e.isCollectable === "true" ||
+      e.isCollectable === 1;
+    const depositPredicate = (e) =>
+      e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+    const obstaclePredicate = (e) =>
+      e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
 
     const diffCal = (predicate, key) => {
       const agentCurrentPos = ctxObj?.facts?.position;
@@ -304,23 +312,27 @@ function visitNode(NodeId, graph, ctxObj) {
       diffCal(targetPredicate, "previous_distance_target_x");
     }
 
-    // if (entityTwo === "Pickable Object") {
-    //   if (hasHolder) {
-    //     diffCal(pickablePredicate, "previous_distance_pickable");
-    //   } else if (hasCollector) {
-    //     diffCal(collectPredicate, "previous_distance_collect");
-    //   } else {
-    //     return;
-    //   }
-    // }
+    if (entityTwo === "Non-State Object") {
+      diffCal(obstaclePredicate, "previous_distance_obstacle_x");
+    }
 
-    // if (entityTwo === "Deposit Object") {
-    //   if (hasDepositor) {
-    //     diffCal(depositPredicate, "previous_distance_deposit");
-    //   } else {
-    //     return;
-    //   }
-    // }
+    if (entityTwo === "Pickable Object") {
+      if (hasHolder) {
+        diffCal(pickablePredicate, "previous_distance_pickable_x");
+      } else if (hasCollector) {
+        diffCal(collectPredicate, "previous_distance_collect_x");
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        diffCal(depositPredicate, "previous_distance_deposit_x");
+      } else {
+        return;
+      }
+    }
 
     const edges = findEdges(NodeId, graph);
     const chosenEdge = edges.find((e) =>
@@ -342,20 +354,22 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    // const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    // const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    // const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
 
     const targetPredicate = (e) =>
       e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
-    // const pickablePredicate = (e) =>
-    //   e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
-    // const collectPredicate = (e) =>
-    //   e.isCollectable === true ||
-    //   e.isCollectable === "true" ||
-    //   e.isCollectable === 1;
-    // const depositPredicate = (e) =>
-    //   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+    const pickablePredicate = (e) =>
+      e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+    const collectPredicate = (e) =>
+      e.isCollectable === true ||
+      e.isCollectable === "true" ||
+      e.isCollectable === 1;
+    const depositPredicate = (e) =>
+      e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+    const obstaclePredicate = (e) =>
+      e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
 
     const diffCal = (predicate, key) => {
       const agentCurrentPos = ctxObj?.facts?.position;
@@ -377,23 +391,27 @@ function visitNode(NodeId, graph, ctxObj) {
       diffCal(targetPredicate, "previous_distance_target_z");
     }
 
-    // if (entityTwo === "Pickable Object") {
-    //   if (hasHolder) {
-    //     diffCal(pickablePredicate, "previous_distance_pickable");
-    //   } else if (hasCollector) {
-    //     diffCal(collectPredicate, "previous_distance_collect");
-    //   } else {
-    //     return;
-    //   }
-    // }
+    if (entityTwo === "Non-State Object") {
+      diffCal(obstaclePredicate, "previous_distance_obstacle_z");
+    }
 
-    // if (entityTwo === "Deposit Object") {
-    //   if (hasDepositor) {
-    //     diffCal(depositPredicate, "previous_distance_deposit");
-    //   } else {
-    //     return;
-    //   }
-    // }
+    if (entityTwo === "Pickable Object") {
+      if (hasHolder) {
+        diffCal(pickablePredicate, "previous_distance_pickable_z");
+      } else if (hasCollector) {
+        diffCal(collectPredicate, "previous_distance_collect_z");
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        diffCal(depositPredicate, "previous_distance_deposit_z");
+      } else {
+        return;
+      }
+    }
 
     const edges = findEdges(NodeId, graph);
     const chosenEdge = edges.find((e) =>
