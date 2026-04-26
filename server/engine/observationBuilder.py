@@ -54,15 +54,16 @@ def partition_entities(entities):
     return buckets
 
 
-def nearestDistance(position, bucket, mode):
-
+def nearestDistance(position, rotation, bucket, mode):
     min_dist = float("inf")
     min_pos = []
     found = False
 
     for entity in bucket:
-        target_pos = entity.position  # Three.js space
-        bullet_pos = positionSwap(target_pos)  # PyBullet space
+        target_pos = entity.position  # Three.js space [x, z, y] // Euler [x,y,z]
+        bullet_pos = positionSwap(
+            target_pos
+        )  # PyBullet space [x, y, z] // Quanterion [x,y,z,w]
 
         if mode == "both":
             d = distance3D(position, bullet_pos)
@@ -72,8 +73,17 @@ def nearestDistance(position, bucket, mode):
         elif mode == "y":
             # PyBullet Y = depth axis (Three.js Z)
             d = abs(position[1] - bullet_pos[1])
+        elif mode == "delta-x":
+            dx = bullet_pos[0] - position[0]
+            dy = bullet_pos[1] - position[1]
+            theta = rotation[2]
+            d = math.cos(theta) * dx + math.sin(theta) * dy
+        elif mode == "delta-z":
+            dx = bullet_pos[0] - position[0]
+            dy = bullet_pos[1] - position[1]
+            theta = rotation[2]
+            d = -math.sin(theta) * dx + math.cos(theta) * dy
         else:
-            # FIX: unknown mode — skip rather than leaving d unbound
             continue
 
         if d < min_dist:
@@ -88,16 +98,17 @@ def nearestDistance(position, bucket, mode):
 
 
 class _DistCache:
-    def __init__(self, position, buckets):
+    def __init__(self, position, rotation, buckets):
         self.position = position
         self.buckets = buckets
+        self.rotation = rotation
         self._cache = {}
 
     def get(self, bucket_key, mode):
         key = (bucket_key, mode)
         if key not in self._cache:
             self._cache[key] = nearestDistance(
-                self.position, self.buckets[bucket_key], mode
+                self.position, self.rotation, self.buckets[bucket_key], mode
             )
         return self._cache[key]
 
@@ -112,12 +123,12 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
     if entity_buckets is None:
         entity_buckets = partition_entities(runTimeSnapShot)
 
-    cache = _DistCache(position, entity_buckets)
+    cache = _DistCache(position, rotation, entity_buckets)
     constructed_obs = []
 
     for obs in obs_space:
         match obs:
-            # --- Agent self-awareness (Moveable) ---
+            # --- (Moveable) ---
             case "agent_pos_x":
                 constructed_obs.append(position[0] / MAX_DIST)
 
@@ -128,13 +139,21 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "agent_rotation_y":
                 constructed_obs.append(rotation[2] / math.pi)
 
-            # --- Obstacle observations (Navigator) ---
+            # --- (Navigator) ---
             case "dist_x_to_obstacle":
                 dist, _ = cache.get("obstacle", "x")
                 constructed_obs.append(dist)
 
             case "dist_z_to_obstacle":
                 dist, _ = cache.get("obstacle", "y")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_obstacle":
+                dist, _ = cache.get("obstacle", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_obstacle":
+                dist, _ = cache.get("obstacle", "delta-z")
                 constructed_obs.append(dist)
 
             case "dist_to_nearest_obstacle":
@@ -149,13 +168,21 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     obs_in_path = obstacleAvoid(position, rotation, min_pos)
                     constructed_obs.append(float(obs_in_path))
 
-            # --- Target observations (Finder) ---
+            # --- (Finder) ---
             case "dist_x_to_target":
                 dist, _ = cache.get("target", "x")
                 constructed_obs.append(dist)
 
             case "dist_z_to_target":
                 dist, _ = cache.get("target", "y")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_target":
+                dist, _ = cache.get("target", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_target":
+                dist, _ = cache.get("target", "delta-z")
                 constructed_obs.append(dist)
 
             case "dist_to_nearest_target":
@@ -178,13 +205,21 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 else:
                     constructed_obs.append(0.0)
 
-            # --- Pickable observations (Holder) ---
+            # --- (Holder) ---
             case "dist_x_to_pickable":
                 dist, _ = cache.get("pickable", "x")
                 constructed_obs.append(dist)
 
             case "dist_z_to_pickable":
                 dist, _ = cache.get("pickable", "y")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_pickable":
+                dist, _ = cache.get("pickable", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_pickable":
+                dist, _ = cache.get("pickable", "delta-z")
                 constructed_obs.append(dist)
 
             case "dist_to_nearest_pickable":
@@ -194,7 +229,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "holding":
                 constructed_obs.append(1.0 if state_space.get("holding") else 0.0)
 
-            # --- Collectable observations (Collector) ---
+            # --- (Collector) ---
             case "dist_x_to_collect":
                 dist, _ = cache.get("collectable", "x")
                 constructed_obs.append(dist)
@@ -207,12 +242,20 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 dist, _ = cache.get("collectable", "both")
                 constructed_obs.append(dist)
 
+            case "delta_x_to_collectable":
+                dist, _ = cache.get("collectable", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_collectable":
+                dist, _ = cache.get("collectable", "delta-z")
+                constructed_obs.append(dist)
+
             case "items_collected":
                 constructed_obs.append(
                     min(float(state_space.get("items_collected", 0)) / 10.0, 1.0)
                 )
 
-            # --- Deposit observations (Depositor) ---
+            # --- (Depositor) ---
             case "dist_x_to_deposit":
                 dist, _ = cache.get("deposit", "x")
                 constructed_obs.append(dist)
@@ -223,6 +266,14 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
 
             case "dist_to_nearest_deposit":
                 dist, _ = cache.get("deposit", "both")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_deposit":
+                dist, _ = cache.get("deposit", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_deposit":
+                dist, _ = cache.get("deposit", "delta-z")
                 constructed_obs.append(dist)
 
             case "items_deposit":

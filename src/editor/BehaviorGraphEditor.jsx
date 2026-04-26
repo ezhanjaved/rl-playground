@@ -21,6 +21,8 @@ import {
   ObsValueNode,
   IsDistanceXLessNode,
   IsDistanceZLessNode,
+  IsDeltaXLessNode,
+  IsDeltaZPosNode,
 } from "./nodes/conditionalNodes.jsx";
 import {
   EndEpisodeNode,
@@ -44,6 +46,8 @@ export function BehaviorGraphEditor() {
     IsDistanceLessNode: IsDistanceLessNode,
     IsDistanceXLessNode: IsDistanceXLessNode,
     IsDistanceZLessNode: IsDistanceZLessNode,
+    IsDeltaXLessNode: IsDeltaXLessNode,
+    IsDeltaZPosNode: IsDeltaZPosNode,
     OnEpisodeStartNode: OnEpisodeStartNode,
     InRadiusNode: InRadiusNode,
     LastActionIsNode: LastActionIsNode,

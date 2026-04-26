@@ -41,6 +41,7 @@ export default function runTimeloop(entities) {
       return;
 
     const observation_space = buildObsSpace(entity);
+    console.log("Obs: " + observation_space);
     const action_space = entity.action_space;
 
     const action = ControllerRouter(

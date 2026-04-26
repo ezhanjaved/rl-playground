@@ -6,7 +6,7 @@ from server.utilities.rotationCal import getForwardVectorFromYaw, getYaw
 def moveableActuator(action, pos, rot, speed, id, eM, client):
     bullet_id = eM[id]
     status = body_exist(bullet_id, client)
-    speed = float(speed)
+    speed = float(5.0)
 
     if not status:
         return
@@ -30,13 +30,13 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
 
         case "move_left":
             rz += turnSpeed
-            vx = Rx * speed
-            vy = Ry * speed
+            # vx = Rx * speed
+            # vy = Ry * speed
 
         case "move_right":
             rz -= turnSpeed
-            vx = Rx * speed
-            vy = Ry * speed
+            # vx = Rx * speed
+            # vy = Ry * speed
 
     p.resetBaseVelocity(
         bullet_id,

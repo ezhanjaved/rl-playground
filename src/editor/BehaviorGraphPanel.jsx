@@ -50,6 +50,20 @@ export function BehaviorGraphPanel() {
       },
     },
     {
+      id: "is-delta-x-less-node",
+      payload: {
+        data: { label: "IsDeltaXLess", entityOne: null, entityTwo: null },
+        type: "IsDeltaXLessNode",
+      },
+    },
+    {
+      id: "is-delta-z-pos-node",
+      payload: {
+        data: { label: "IsDeltaZPos", entityOne: null, entityTwo: null },
+        type: "IsDeltaZPosNode",
+      },
+    },
+    {
       id: "last-action-is-node",
       payload: {
         data: {

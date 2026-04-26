@@ -5,11 +5,12 @@ from server.utilities.nearPick import nearbyPickable
 
 def collectorActuator(action, agent, entities, eM, client):
     agent = entities[agent.id]
+
     if "Collector" not in agent.capabilities:
         return
 
     if action == "collect":
-        pickRadius = 1.5  # Engine Defined - Not User
+        pickRadius = 1.0  # Engine Defined - Not User
         targetObj = nearbyPickable(
             entities, agent.position, pickRadius, agent.capabilities
         )
@@ -18,8 +19,6 @@ def collectorActuator(action, agent, entities, eM, client):
             agent.last_action = action
             return
 
-        # FIX: removed the dead `if targetObj` check — always True here
-        # since `not targetObj` already returned above
         numberItemsCollected = agent.state_space["items_collected"]
         updatedNum = numberItemsCollected + 1
         agent.last_action = action

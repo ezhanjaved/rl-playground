@@ -683,6 +683,216 @@ export function IsDistanceLessNode({ data, id }) {
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
+          <option value="Navigator Object">Navigator Object</option>
+        </select>
+
+        <br />
+
+        <span>Entity Two</span>
+        <select
+          name="in-radius-entity-two"
+          id="in-radius-entity-two"
+          onChange={UpdateEntityTwo}
+          value={data.entityTwo ?? "Pickable Object"}
+        >
+          <option value="Agent">Agent</option>
+          <option value="Non-State Object">Non-State Object</option>
+          <option value="Pickable Object">Pickable Object</option>
+          <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
+          <option value="Navigator Object">Navigator Object</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function IsDeltaXLessNode({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  function UpdateEntityOne(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        entityOne: event.target.value,
+      },
+    });
+  }
+
+  function UpdateEntityTwo(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        entityTwo: event.target.value,
+      },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>Entity One</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateEntityOne}
+          value={data.entityOne ?? "Agent"}
+        >
+          <option value="Agent">Agent</option>
+          <option value="Non-State Object">Non-State Object</option>
+          <option value="Pickable Object">Pickable Object</option>
+          <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
+          <option value="Navigator Object">Navigator Object</option>
+        </select>
+
+        <br />
+
+        <span>Entity Two</span>
+        <select
+          name="in-radius-entity-two"
+          id="in-radius-entity-two"
+          onChange={UpdateEntityTwo}
+          value={data.entityTwo ?? "Pickable Object"}
+        >
+          <option value="Agent">Agent</option>
+          <option value="Non-State Object">Non-State Object</option>
+          <option value="Pickable Object">Pickable Object</option>
+          <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
+          <option value="Navigator Object">Navigator Object</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function IsDeltaZPosNode({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  function UpdateEntityOne(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        entityOne: event.target.value,
+      },
+    });
+  }
+
+  function UpdateEntityTwo(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        entityTwo: event.target.value,
+      },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>Entity One</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateEntityOne}
+          value={data.entityOne ?? "Agent"}
+        >
+          <option value="Agent">Agent</option>
+          <option value="Non-State Object">Non-State Object</option>
+          <option value="Pickable Object">Pickable Object</option>
+          <option value="Target Object">Target Object</option>
+          <option value="Deposit Object">Deposit Object</option>
         </select>
 
         <br />

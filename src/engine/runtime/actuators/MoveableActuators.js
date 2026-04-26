@@ -39,14 +39,14 @@ export default function moveAdapter(action, position, rotation, agentId) {
 
     case "move_left":
       ry += turnSpeed;
-      vx = Rx * speed;
-      vz = Rz * speed;
+      // vx = Rx * speed;
+      // vz = Rz * speed;
       break;
 
     case "move_right":
       ry -= turnSpeed;
-      vx = Rx * speed;
-      vz = Rz * speed;
+      // vx = Rx * speed;
+      // vz = Rz * speed;
       break;
   }
 

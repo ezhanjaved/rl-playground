@@ -27,6 +27,7 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
         "info": {},
         "facts": {
             "position": agent.position,
+            "rotation": agent.rotation,
             "capabilities": agent.capabilities,
             "last_action": agent.last_action,
             "state_space": agent.state_space,
@@ -238,9 +239,10 @@ def visitNode(node_id, graph, ctx):
         def diff_cal(bucket_key, state_key):
             nonlocal distance_less
             agent_pos = ctx["facts"]["position"]
+            agent_rot = ctx["facts"]["rotation"]
             previous_distance = ctx["facts"]["state_space"].get(state_key)
             current_distance, _ = nearestDistance(
-                agent_pos, buckets[bucket_key], "both"
+                agent_pos, agent_rot, buckets[bucket_key], "both"
             )
             if current_distance is not None and previous_distance is not None:
                 if current_distance < previous_distance:
@@ -292,8 +294,11 @@ def visitNode(node_id, graph, ctx):
         def diff_cal(bucket_key, state_key):
             nonlocal distance_less_x
             agent_pos = ctx["facts"]["position"]
+            agent_rot = ctx["facts"]["rotation"]
             previous_distance = ctx["facts"]["state_space"].get(state_key)
-            current_distance, _ = nearestDistance(agent_pos, buckets[bucket_key], "x")
+            current_distance, _ = nearestDistance(
+                agent_pos, agent_rot, buckets[bucket_key], "x"
+            )
             if current_distance is not None and previous_distance is not None:
                 if current_distance < previous_distance:
                     distance_less_x = True
@@ -344,8 +349,11 @@ def visitNode(node_id, graph, ctx):
         def diff_cal(bucket_key, state_key):
             nonlocal distance_less_y
             agent_pos = ctx["facts"]["position"]
+            agent_rot = ctx["facts"]["rotation"]
             previous_distance = ctx["facts"]["state_space"].get(state_key)
-            current_distance, _ = nearestDistance(agent_pos, buckets[bucket_key], "y")
+            current_distance, _ = nearestDistance(
+                agent_pos, agent_rot, buckets[bucket_key], "y"
+            )
             if current_distance is not None and previous_distance is not None:
                 if current_distance < previous_distance:
                     distance_less_y = True
@@ -371,6 +379,136 @@ def visitNode(node_id, graph, ctx):
                 return
 
         chosen_edge = _find_bool_edge(node_id, graph, distance_less_y)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
+    elif node_data.type == "IsDeltaXLessNode":
+        DELTA_X_CHECK = 0.05
+        delta_x = False
+
+        entity_one = node_data.data.get("entityOne")
+        entity_two = node_data.data.get("entityTwo")
+        is_agent_1 = entity_one == "Agent"
+        is_agent_2 = entity_two == "Agent"
+
+        if is_agent_1 == is_agent_2:
+            return
+
+        capabilities = ctx["facts"].get("capabilities", [])
+        has_holder = "Holder" in capabilities
+        has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
+        has_navigator = "Navigator" in capabilities
+
+        def get_obs(key):
+            obs_space = ctx["facts"].get("obs_space", [])
+            obs_vector = ctx.get("obsVector", [])
+            try:
+                idx = obs_space.index(key)
+                return obs_vector[idx]
+            except (ValueError, IndexError):
+                return None
+
+        if entity_two == "Target Object":
+            val = get_obs("delta_x_to_target")
+            if val is not None and abs(val) <= DELTA_X_CHECK:
+                delta_x = True
+
+        elif entity_two == "Pickable Object":
+            if has_holder:
+                val = get_obs("delta_x_to_pickable")
+                if val is not None and abs(val) <= DELTA_X_CHECK:
+                    delta_x = True
+            elif has_collector:
+                val = get_obs("delta_x_to_collectable")
+                if val is not None and abs(val) <= DELTA_X_CHECK:
+                    delta_x = True
+            else:
+                return
+
+        elif entity_two == "Navigator Object":
+            if has_navigator:
+                val = get_obs("delta_x_to_obstacle")
+                if val is not None and abs(val) <= DELTA_X_CHECK:
+                    delta_x = True
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                val = get_obs("delta_x_to_deposit")
+                if val is not None and abs(val) <= DELTA_X_CHECK:
+                    delta_x = True
+            else:
+                return
+
+        chosen_edge = _find_bool_edge(node_id, graph, delta_x)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
+    elif node_data.type == "IsDeltaZPosNode":
+        DELTA_Z_CHECK = 0.05
+        delta_z = False
+
+        entity_one = node_data.data.get("entityOne")
+        entity_two = node_data.data.get("entityTwo")
+        is_agent_1 = entity_one == "Agent"
+        is_agent_2 = entity_two == "Agent"
+
+        if is_agent_1 == is_agent_2:
+            return
+
+        capabilities = ctx["facts"].get("capabilities", [])
+        has_holder = "Holder" in capabilities
+        has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
+        has_navigator = "Navigator" in capabilities
+
+        def get_obs(key):
+            obs_space = ctx["facts"].get("obs_space", [])
+            obs_vector = ctx.get("obsVector", [])
+            try:
+                idx = obs_space.index(key)
+                return obs_vector[idx]
+            except (ValueError, IndexError):
+                return None
+
+        if entity_two == "Target Object":
+            val = get_obs("delta_z_to_target")
+            if val is not None and val > DELTA_Z_CHECK:
+                delta_z = True
+
+        elif entity_two == "Pickable Object":
+            if has_holder:
+                val = get_obs("delta_z_to_pickable")
+                if val is not None and val > DELTA_Z_CHECK:
+                    delta_z = True
+            elif has_collector:
+                val = get_obs("delta_z_to_collectable")
+                if val is not None and val > DELTA_Z_CHECK:
+                    delta_z = True
+            else:
+                return
+
+        elif entity_two == "Navigator Object":
+            if has_navigator:
+                val = get_obs("delta_z_to_obstacle")
+                if val is not None and val > DELTA_Z_CHECK:
+                    delta_z = True
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                val = get_obs("delta_z_to_deposit")
+                if val is not None and val > DELTA_Z_CHECK:
+                    delta_z = True
+            else:
+                return
+
+        chosen_edge = _find_bool_edge(node_id, graph, delta_z)
         if chosen_edge:
             visitNode(chosen_edge.target, graph, ctx)
         return

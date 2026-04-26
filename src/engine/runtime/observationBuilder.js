@@ -23,7 +23,7 @@ const obstaclePredicate = (e) =>
 const depositPredicate = (e) =>
   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
 
-export function nearestDistance(position, predicate, mode, entities) {
+export function nearestDistance(position, rotation, predicate, mode, entities) {
   let minDist = Infinity;
   let minPos = [];
   let found = false;
@@ -41,6 +41,16 @@ export function nearestDistance(position, predicate, mode, entities) {
       d = Math.abs(position?.[0] - targetObjPos?.[0]);
     } else if (mode === "z") {
       d = Math.abs(position?.[2] - targetObjPos?.[2]);
+    } else if (mode === "x-delta") {
+      const dx = targetObjPos?.[0] - position?.[0];
+      const dz = targetObjPos?.[2] - position?.[2];
+      const theta = rotation?.[1] ?? 0;
+      d = Math.cos(theta) * dx + Math.sin(theta) * dz;
+    } else if (mode === "z-delta") {
+      const dx = targetObjPos?.[0] - position?.[0];
+      const dz = targetObjPos?.[2] - position?.[2];
+      const theta = rotation?.[1] ?? 0;
+      d = -Math.sin(theta) * dx + Math.cos(theta) * dz;
     }
 
     if (Number.isFinite(d) && d < minDist) {
@@ -60,13 +70,16 @@ export function nearestDistance(position, predicate, mode, entities) {
   };
 }
 
-function makeCache(position, entities) {
+function makeCache(position, rotation, entities) {
   const _cache = new Map();
 
   return function getCached(predicate, mode) {
     const key = `${predicate.name}_${mode}`;
     if (!_cache.has(key)) {
-      _cache.set(key, nearestDistance(position, predicate, mode, entities));
+      _cache.set(
+        key,
+        nearestDistance(position, rotation, predicate, mode, entities),
+      );
     }
     return _cache.get(key);
   };
@@ -81,7 +94,7 @@ export default function buildObsSpace(agent) {
   const stateSpace = agent?.state_space;
 
   const constructedObs = [];
-  const cached = makeCache(position, entities);
+  const cached = makeCache(position, rotation, entities);
 
   for (const obsVar of obs) {
     switch (obsVar) {
@@ -96,7 +109,7 @@ export default function buildObsSpace(agent) {
       }
 
       case "agent_rotation_y": {
-        const ry = rotation?.[1] ?? 0; // Three.js Y rotation
+        const ry = rotation?.[1] ?? 0;
         constructedObs.push(ry / Math.PI);
         break;
       }
@@ -115,6 +128,18 @@ export default function buildObsSpace(agent) {
 
       case "dist_to_nearest_obstacle": {
         const { min } = cached(obstaclePredicate, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_x_to_obstacle": {
+        const { min } = cached(obstaclePredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_obstacle": {
+        const { min } = cached(obstaclePredicate, "z-delta");
         constructedObs.push(min);
         break;
       }
@@ -148,6 +173,18 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      case "delta_x_to_target": {
+        const { min } = cached(targetPredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_target": {
+        const { min } = cached(targetPredicate, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
       case "in_target_radius": {
         const info = getNearestTargetInfo(position, entities, "isTarget");
         const targetReached = info?.found && info?.distance <= info?.radius;
@@ -169,6 +206,18 @@ export default function buildObsSpace(agent) {
 
       case "dist_to_nearest_pickable": {
         const { min } = cached(pickablePredicate, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_x_to_pickable": {
+        const { min } = cached(pickablePredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_pickable": {
+        const { min } = cached(pickablePredicate, "z-delta");
         constructedObs.push(min);
         break;
       }
@@ -196,8 +245,22 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      case "delta_x_to_collectable": {
+        const { min } = cached(collectPredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_collectable": {
+        const { min } = cached(collectPredicate, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
       case "items_collected": {
-        constructedObs.push(stateSpace?.items_collected ?? 0);
+        let val = parseFloat(stateSpace?.items_collected ?? 0);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
         break;
       }
 
@@ -219,8 +282,22 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      case "delta_x_to_deposit": {
+        const { min } = cached(depositPredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_deposit": {
+        const { min } = cached(depositPredicate, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
       case "items_deposit": {
-        constructedObs.push(stateSpace?.items_deposited ?? 0);
+        let val = parseFloat(stateSpace?.items_deposited ?? 0);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
         break;
       }
 

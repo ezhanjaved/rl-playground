@@ -21,6 +21,7 @@ export default function BehaviorGraphEval(agentId, obsVector) {
     truncated: false,
     facts: {
       position: agent.position,
+      rotation: agent.rotation,
       capabilities: agent.capabilities,
       last_action: agent.last_action,
       state_space: agent.state_space,
@@ -186,6 +187,150 @@ function visitNode(NodeId, graph, ctxObj) {
     return;
   }
 
+  if (currentNodeData.type === "IsDeltaXLessNode") {
+    const deltaXCheck = 0.05;
+    let deltaX = false;
+    // Delta X POS means object is left
+    // Delta X NEG means object is right
+    // If current Delta will be bigger it means there is significant deviation and agent will not find obj in its path
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
+    const isAgent1 = entityOne === "Agent";
+    const isAgent2 = entityTwo === "Agent";
+
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
+    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+    const hasNavigator = ctxObj.facts?.capabilities.includes("Navigator");
+
+    const getObs = (key) => {
+      const idx = ctxObj?.facts?.obs_space.indexOf(key);
+      return idx === -1 ? null : ctxObj.obsVector[idx];
+    };
+
+    if (entityTwo === "Target Object") {
+      const currentDeltaX = getObs("delta_x_to_target");
+      if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
+        deltaX = true;
+    }
+
+    if (entityTwo === "Pickable Object") {
+      if (hasHolder) {
+        const currentDeltaX = getObs("delta_x_to_pickable");
+        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
+          deltaX = true;
+      } else if (hasCollector) {
+        const currentDeltaX = getObs("delta_x_to_collectable");
+        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
+          deltaX = true;
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Navigator Object") {
+      if (hasNavigator) {
+        const currentDeltaX = getObs("delta_x_to_obstacle");
+        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
+          deltaX = true;
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        const currentDeltaX = getObs("delta_x_to_deposit");
+        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
+          deltaX = true;
+      } else {
+        return;
+      }
+    }
+
+    const edges = findEdges(NodeId, graph);
+    const chosenEdge = edges.find((e) =>
+      deltaX
+        ? e.sourceHandle?.toLowerCase().includes("true")
+        : e.sourceHandle?.toLowerCase().includes("false"),
+    );
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    return;
+  }
+
+  if (currentNodeData.type === "IsDeltaZPosNode") {
+    const deltaZCheck = 0.05;
+    let deltaZ = false;
+    // Delta Z POS means object is forward
+    // If current Delta will be pos it means target is indeed ahead. If not we can penalize the agent for being ahead.
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
+    const isAgent1 = entityOne === "Agent";
+    const isAgent2 = entityTwo === "Agent";
+
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
+    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+    const hasNavigator = ctxObj.facts?.capabilities.includes("Navigator");
+
+    const getObs = (key) => {
+      const idx = ctxObj?.facts?.obs_space.indexOf(key);
+      return idx === -1 ? null : ctxObj.obsVector[idx];
+    };
+
+    if (entityTwo === "Target Object") {
+      const currentDeltaZ = getObs("delta_z_to_target");
+      if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck) deltaZ = true;
+    }
+
+    if (entityTwo === "Pickable Object") {
+      if (hasHolder) {
+        const currentDeltaZ = getObs("delta_z_to_pickable");
+        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
+          deltaZ = true;
+      } else if (hasCollector) {
+        const currentDeltaZ = getObs("delta_z_to_collectable");
+        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
+          deltaZ = true;
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Navigator Object") {
+      if (hasNavigator) {
+        const currentDeltaZ = getObs("delta_z_to_obstacle");
+        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
+          deltaZ = true;
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        const currentDeltaZ = getObs("delta_z_to_deposit");
+        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
+          deltaZ = true;
+      } else {
+        return;
+      }
+    }
+
+    const edges = findEdges(NodeId, graph);
+    const chosenEdge = edges.find((e) =>
+      deltaZ
+        ? e.sourceHandle?.toLowerCase().includes("true")
+        : e.sourceHandle?.toLowerCase().includes("false"),
+    );
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    return;
+  }
+
   if (currentNodeData.type === "IsDistanceLessNode") {
     let distanceLess = false;
 
@@ -217,8 +362,10 @@ function visitNode(NodeId, graph, ctxObj) {
       const agentCurrentPos = ctxObj?.facts?.position;
       const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
       const { entities } = useSceneStore.getState();
+      const rotation = ctxObj?.facts?.rotation;
       const { min: currentDistance } = nearestDistance(
         agentCurrentPos,
+        rotation,
         predicate,
         "both",
         entities,

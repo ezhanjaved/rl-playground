@@ -5,7 +5,7 @@ export default function holderAdapter(action, entity) {
     useSceneStore.getState();
 
   if (action === "pick") {
-    const pickRadius = 2.0; //Engine Defined - Not User
+    const pickRadius = 1.0; //Engine Defined - Not User
     const targetObj = nearbyPickable(
       entities,
       entity.position,

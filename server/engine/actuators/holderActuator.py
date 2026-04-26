@@ -38,8 +38,8 @@ def holderActuator(action, agentData, entities, eM, client):
 
     if action == "drop" and agent.state_space["holding"]:
         [wx, wy, wz] = agentData.position
-        wx += 1
-        wy += 1
+        wx += 2
+        wy += 2
         newPos = [wx, wy, 0]
 
         convertedRot = p.getQuaternionFromEuler([0, 0, 0], physicsClientId=client)

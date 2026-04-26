@@ -13,3 +13,6 @@ def debugRunner(id):
 # debugRunner("4a5ec2e4-a411-46b0-b3be-04233e274c03") Introducted X & Z coordinates for previous distance calculation
 # debugRunner("f6e29250-54e9-4471-8d09-39a3dd7eab03") Pickable with X & Z check
 # debugRunner("0c0caf7a-f8d4-4229-a0ff-99b1b504682f")
+# debugRunner("84cd980b-2d32-4efb-885c-81d632170adb")
+# debugRunner("267c2968-4aa6-453c-b10c-08ee01361797")
+debugRunner("333ab1fb-9c9e-4610-bc92-b4f84bb9a54b")

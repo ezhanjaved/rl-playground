@@ -65,7 +65,7 @@ class PyBulletWorld:
 
         return bullet_id
 
-    def step_simulation(self, steps=5):
+    def step_simulation(self, steps=2):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
 
