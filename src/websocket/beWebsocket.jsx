@@ -11,14 +11,17 @@ export function useBackendWebSocket(onModelReady) {
   const connectSocket = async (item) => {
     if (socketRef.current) return;
     try {
-      const res = await fetch("http://127.0.0.1:8000/trainer/run-model", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model_uid: item.training_id,
-          user_uid: user?.id,
-        }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/trainer/run-model`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model_uid: item.training_id,
+            user_uid: user?.id,
+          }),
+        },
+      );
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const rep = await res.json();
 

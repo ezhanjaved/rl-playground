@@ -245,9 +245,11 @@ def visitNode(node_id, graph, ctx):
             agent_pos = ctx["facts"]["position"]
             agent_rot = ctx["facts"]["rotation"]
             previous_distance = ctx["facts"]["state_space"].get(state_key)
+            print("Previous Best Distance: ", previous_distance)
             current_distance, _ = nearestDistance(
                 agent_pos, agent_rot, buckets[bucket_key], "both"
             )
+            print("Current Distance: ", current_distance)
             if current_distance is not None and previous_distance is not None:
                 if current_distance < previous_distance:
                     distance_less = True

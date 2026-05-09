@@ -111,7 +111,7 @@ function Message({ msg }) {
 
 export default function GraphAIChat({
   agentCapabilities = [],
-  apiPath = "http://127.0.0.1:8000/api/graph-ai/chat",
+  apiPath = `${import.meta.env.VITE_API_BASE_URL}/api/graph-ai/chat`,
 }) {
   const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState("");

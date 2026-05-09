@@ -24,7 +24,7 @@ export async function sendServer() {
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/trainer/export-data-debug",
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

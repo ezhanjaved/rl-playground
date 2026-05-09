@@ -9,8 +9,6 @@ import depositAdapter from "./DepositActuators.js";
 export default function applyAction(action_picked, agent, observation_space) {
   const capabilityMatched = CapabilityMatcher(action_picked);
   const actionSpace = agent.action_space;
-  console.log("Action: " + action_picked);
-  console.log("Action Space: " + actionSpace);
   switch (capabilityMatched) {
     case "Moveable":
       moveableWorker(action_picked, agent, observation_space);

@@ -51,9 +51,9 @@ export default function previousDistanceCorrection(
           "dist_to_nearest_collectable",
         );
         value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_collectable; //current best
+        best = newStateSpace.previous_distance_collect; //current best
         if (value < best) {
-          newStateSpace.previous_distance_collectable = value;
+          newStateSpace.previous_distance_collect = value;
         }
         break;
 

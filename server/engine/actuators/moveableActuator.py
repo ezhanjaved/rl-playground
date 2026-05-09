@@ -9,7 +9,6 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
         return
 
     turnSpeed = 0.05
-    print("Speed: ", speed)
 
     _, quat = p.getBasePositionAndOrientation(bullet_id, physicsClientId=client)
     rot = p.getEulerFromQuaternion(quat, physicsClientId=client)

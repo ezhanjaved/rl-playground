@@ -239,7 +239,6 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     found, best, radius = getNearestTargetInfo(
                         position, runTimeSnapShot, "target"
                     )
-                    print("Found: ", found, " Best: ", best, "Radius: ", radius)
                     constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
                 else:
                     constructed_obs.append(0.0)

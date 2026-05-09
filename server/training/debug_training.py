@@ -1,5 +1,5 @@
+from server.engine.controller.heuristic.finderMoveable import heuristic_controller
 from server.engine.controller.randomController import (
-    heuristic_controller,
     random_controller,
 )
 from server.training.simulationBase import SimulationEnv

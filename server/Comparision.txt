@@ -107,3 +107,11 @@ IsDistanceLessNode compares current raw distance to previous_distance_* stored i
 NumericObsNode and BoolObsNode both support a mode field (Pre/Post) to select pre- or post-action obs vector
 Return signature differs: JS returns { reward, done, truncated }, Python returns (reward, terminated, truncated, info)
 postObs sourcing differs: JS builds it internally via buildObsSpace(agent), Python receives it as a parameter from the caller
+
+//mainActuator
+Both Python & Js version uses the action to find the right Capability and then uses that actuator
+
+//previousDist function
+Both update the pevious_best by comparing to old value - if old value is high than current it only updates then otherwise old value stays intact
+In Python previousDict function updates last_action & state_space but in Js version previousDict last_action, state_space, rot, pos are updated to Zustand store.
+In Python we update pos & rot at engine level by using the sync_world state.

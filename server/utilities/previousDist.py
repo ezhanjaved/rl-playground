@@ -11,7 +11,7 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
     obs_space = agent.observation_space
 
     # previous distance should be updated only when agent has did an action from MOVEABLE ability - interact/collect does not reduce distance
-    if last_action not in ["move_up", "move_down", "move_right", "move_left"]:
+    if last_action not in ["move_up", "move_right", "move_left", "idle"]:
         agent = entities[agent_id]
         agent.last_action = last_action
         agent.state_space["last_action_index"] = indexOfAction
@@ -57,13 +57,6 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
                         best = float("inf")
                     if obs[index] < best:
                         new_state_space["previous_distance_deposit"] = obs[index]
-
-            case "Navigator":
-                index = getIndexOfObs(obs_space, "dist_to_nearest_obstacle")
-                if index is not None and index < len(obs):
-                    best = new_state_space["previous_distance_obstacle"]
-                    if obs[index] < best:
-                        new_state_space["previous_distance_obstacle"] = obs[index]
 
     agent = entities[agent_id]
     agent.last_action = last_action

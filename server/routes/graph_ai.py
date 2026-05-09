@@ -33,13 +33,14 @@ CAPABILITIES (registry.js)
 Moveable is UNIVERSAL — every agent always has it. Other capabilities are optional and additive.
 
 Moveable (always present):
-  actions:      move_up, move_down, move_left, move_right, idle
-  observations: agent_rotation_y
+  actions:      move_up, move_left, move_right, idle
+  observations: agent_rotation_y, last_action
+  state:        last_action_index (int)
   settings:     speed=2
 
 Navigator (optional — obstacle awareness):
-  observations: dist_to_nearest_obstacle, delta_x_to_obstacle, delta_z_to_obstacle, obstacle_in_path
-  state:        previous_distance_obstacle
+  observations: obstacle_forward, obstacle_left, obstacle_right, obstacle_in_path
+  state:        (none)
 
 Finder (optional — target seeking):
   actions:      interact
@@ -48,18 +49,18 @@ Finder (optional — target seeking):
 
 Holder (optional — pick & drop single item):
   actions:      pick, drop
-  observations: dist_to_nearest_pickable, delta_x_to_pickable, delta_z_to_pickable, holding
-  state:        holding (bool), lastPickSuccess, previous_distance_pickable
+  observations: dist_to_nearest_pickable, delta_x_to_pickable, delta_z_to_pickable, holding, lastPickSuccess
+  state:        holding (bool), heldItemAssetRef, lastPickSuccess (bool|null), previous_distance_pickable
 
 Collector (optional — collect many items, tracks count):
   actions:      collect
-  observations: dist_to_nearest_collectable, delta_x_to_collectable, delta_z_to_collectable, items_collected
-  state:        items_collected (int, 0..N), lastPickSuccess, previous_distance_collect
+  observations: dist_to_nearest_collectable, delta_x_to_collectable, delta_z_to_collectable, items_collected, lastPickSuccess
+  state:        lastItemCollected, items_collected (int, 0..N), lastPickSuccess (bool|null), previous_distance_collect
 
 Depositor (optional — must pair with Holder or Collector):
   actions:      deposit
-  observations: dist_to_nearest_deposit, delta_x_to_deposit, delta_z_to_deposit, items_deposit
-  state:        items_deposited (int), nearDeposit (bool), previous_distance_deposit
+  observations: dist_to_nearest_deposit, delta_x_to_deposit, delta_z_to_deposit, items_deposit, last_deposit_success
+  state:        items_deposited (int), nearDeposit (bool), lastDepositSuccess (bool), previous_distance_deposit
 
 IMPORTANT: Capabilities stack — an agent can have any subset of {Navigator, Finder, Holder, Collector, Depositor} plus Moveable.
 Depositor only makes sense paired with Holder (carry one item) or Collector (carry many).
@@ -112,14 +113,6 @@ IsDistanceLess
   - Uses previous_distance_* state memory to compare.
   - Typical use: dense approach reward — fire a small reward every step agent closes distance.
 
-IsDistanceXLess
-  - True if current X-axis distance < previous X-axis distance (closer along X).
-  - Config: entityOne, entityTwo (same options as IsDistanceLess).
-
-IsDistanceZLess
-  - True if current Z-axis distance < previous Z-axis distance (closer along Z).
-  - Config: entityOne, entityTwo (same options as IsDistanceLess).
-
 StateEqualsTo
   - True if agent state key equals a boolean value.
   - Config: capabilities (checkboxes: Finder | Holder | Collector | Depositor), entityState (key), StateStatus (true|false)
@@ -153,16 +146,31 @@ LastActionIs
       Finder:    interact
   - Typical use: reward only when the pick/collect action actually succeeded.
 
-ObsValue
-  - Compare any raw observation value against a threshold using an operator.
-  - ALL obs values are normalized 0.0–1.0 (dist = raw/40.0, items = raw/10.0).
-  - Config: obsKey (see list), Operator (Less Than | Higher Than | Less Than Equal To | Higher Than Equal To | Equal To), ObsValue (float 0–1)
-  - obsKey options: agent_pos_x, agent_pos_z, agent_rotation_y, dist_to_nearest_obstacle, delta_x_to_obstacle,
-    delta_z_to_obstacle, obstacle_in_path, dist_to_nearest_target, delta_x_to_target, delta_z_to_target,
-    in_target_radius, dist_to_nearest_pickable, delta_x_to_pickable, delta_z_to_pickable, holding,
+NumericObsNode
+  - Compare any raw numeric observation value against a threshold using an operator.
+  - ALL distance obs values are normalized 0.0–1.0 (dist = raw/40.0, items = raw/10.0).
+  - Config: obsKey (see list), Operator (Less Than | Higher Than | Less Than Equal To | Higher Than Equal To | Equal To), ObsValue (float 0–1), mode (Pre | Post)
+  - mode=Pre uses obs before the action; mode=Post uses obs after the action (default: Pre).
+  - obsKey options: agent_rotation_y, last_action, obstacle_forward, obstacle_left, obstacle_right,
+    dist_to_nearest_target, delta_x_to_target, delta_z_to_target,
+    dist_to_nearest_pickable, delta_x_to_pickable, delta_z_to_pickable,
     dist_to_nearest_collectable, delta_x_to_collectable, delta_z_to_collectable, items_collected,
     dist_to_nearest_deposit, delta_x_to_deposit, delta_z_to_deposit, items_deposit
-  - Typical use: fine-grained obs-based conditions not covered by other nodes.
+  - Typical use: fine-grained numeric obs conditions not covered by other nodes.
+
+BoolObsNode
+  - Check if a boolean observation equals an expected value.
+  - Config: obsKey, status (True | False), mode (Pre | Post)
+  - mode=Pre uses obs before the action; mode=Post uses obs after the action (default: Pre).
+  - obsKey options: obstacle_in_path, in_target_radius, holding, lastPickSuccess, last_deposit_success
+  - Typical use: check if agent is holding an item, or if obstacle is in path, using raw obs vector.
+
+IsObstacleInPath
+  - True if an obstacle is blocking the agent in a given direction (forward, left, or right).
+  - Requires Navigator capability — returns without branching if agent lacks it.
+  - Config: direction (Left | Right | Forward, default: Forward)
+  - Uses two obs keys together: the directional distance (obstacle_forward/left/right) must be ≤ 0.15 AND obstacle_in_path must be true.
+  - Typical use: detect imminent collision and branch to avoidance reward/penalty logic.
 
 EFFECT NODES
 ────────────
@@ -193,7 +201,7 @@ that cannot be built in the UI and will confuse the user.
      Finder → targetReached
      Holder → holding, lastPickSuccess
      Collector → lastPickSuccess
-     Depositor → nearDeposit
+     Depositor → nearDeposit, lastDepositSuccess
 
    CompareState readable keys (numeric):
      Finder → previous_distance_target
@@ -212,8 +220,8 @@ that cannot be built in the UI and will confuse the user.
 
 4. NODE TYPES ARE A CLOSED SET.
    Valid node types: OnEpisodeStart, OnStep, InRadius, IsDeltaXLess, IsDeltaZPos,
-   IsDistanceLess, IsDistanceXLess, IsDistanceZLess, StateEqualsTo, CompareState,
-   LastActionIs, ObsValue, AddReward, EndEpisode, TruncateEpisode.
+   IsDistanceLess, IsObstacleInPath, StateEqualsTo, CompareState,
+   LastActionIs, NumericObsNode, BoolObsNode, AddReward, EndEpisode, TruncateEpisode.
    Never invent new node types.
 
 5. IF THE BEHAVIOR CANNOT BE EXPRESSED WITH EXISTING NODES AND STATES, SAY SO.
@@ -236,8 +244,8 @@ EVALUATION MECHANICS (evaluator.js)
 - Chained conditionals (A→B→C all on true path): acts as A AND B AND C.
 - AddReward is pass-through: reward accumulates and execution continues to next node.
 - EndEpisode / TruncateEpisode stop traversal immediately.
-- Distance-comparison nodes (IsDistanceLess, IsDistanceXLess, IsDistanceZLess) use previous_distance_* from state_space — they fire when current < previous, meaning agent moved closer this step.
-- InRadius threshold: ~1.5 world-units (= 1.5/40 ≈ 0.0375 normalized).
+- Distance-comparison node (IsDistanceLess) uses previous_distance_* from state_space — fires when current < previous, meaning agent moved closer this step.
+- InRadius threshold: 1.5 world-units raw distance (not normalized).
 - IsDeltaXLess threshold: 0.05 (angular alignment).
 - IsDeltaZPos threshold: 0.05 (entity must be meaningfully ahead).
 
