@@ -7,10 +7,10 @@ from server.utilities.capabilitiesMatch import capabilityMatcher
 
 
 def process_action(agent_id, agent_data, action, entityMapping, client, entities):
-    capabilityMatched = capabilityMatcher(
-        action
-    )  # Capability of ACTION produced by system
-    agentCapability = agent_data.capabilities  # Actual Capability of the Agent
+    capabilityMatched = capabilityMatcher(action)
+    agentCapability = agent_data.capabilities
+    actionSpace = agent_data.action_space  # array
+    indexOfAction = actionSpace.index(action)
     match capabilityMatched:
         case "Moveable":
             moveableActuator(
@@ -24,14 +24,17 @@ def process_action(agent_id, agent_data, action, entityMapping, client, entities
             )
         case "Finder":
             if "Finder" in agentCapability:
-                targetReached = finderActuator(action, agent_data, entities)
-                agent_data.state_space["targetReached"] = targetReached
+                finderActuator(action, agent_data, entities, indexOfAction)
         case "Holder":
             if "Holder" in agentCapability:
-                holderActuator(action, agent_data, entities, entityMapping, client)
+                holderActuator(
+                    action, agent_data, entities, entityMapping, client, indexOfAction
+                )
         case "Collector":
             if "Collector" in agentCapability:
-                collectorActuator(action, agent_data, entities, entityMapping, client)
+                collectorActuator(
+                    action, agent_data, entities, entityMapping, client, indexOfAction
+                )
         case "Depositor":
             if "Depositor" in agentCapability:
-                depositActuator(action, agent_data, entities)
+                depositActuator(action, agent_data, entities, indexOfAction)

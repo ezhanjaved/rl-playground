@@ -1,9 +1,11 @@
 import { nearbyPickable } from "../../utility/nearByPickable";
 import { useSceneStore } from "../../../stores/useSceneStore";
-export default function collectorAdapter(action, agent) {
+import { getIndexOfObs } from "../../utility/getIndex";
+export default function collectorAdapter(action, agent, actionSpace) {
   const { updateEntity, entities, deleteEntity } = useSceneStore.getState();
+  const indexOfAction = getIndexOfObs(actionSpace, action);
   if (action === "collect") {
-    const pickRadius = 1.0; //Engine Defined - Not User
+    const pickRadius = 1.5; //Engine Defined - Not User
     const targetObj = nearbyPickable(
       entities,
       agent.position,
@@ -15,6 +17,11 @@ export default function collectorAdapter(action, agent) {
     if (!targetObj) {
       updateEntity(agent.id, {
         last_action: action,
+        state_space: {
+          ...agent.state_space,
+          last_action_index: indexOfAction,
+          lastPickSuccess: false,
+        },
       });
       return;
     }
@@ -27,6 +34,7 @@ export default function collectorAdapter(action, agent) {
         last_action: action,
         state_space: {
           ...agent.state_space,
+          last_action_index: indexOfAction,
           lastItemCollected: targetObj.tag,
           items_collected: updatedNumber,
           lastPickSuccess: true,

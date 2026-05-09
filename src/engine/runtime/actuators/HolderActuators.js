@@ -1,11 +1,15 @@
 import { nearbyPickable } from "../../utility/nearByPickable";
 import { useSceneStore } from "../../../stores/useSceneStore";
-export default function holderAdapter(action, entity) {
+import { getIndexOfObs } from "../../utility/getIndex";
+
+export default function holderAdapter(action, entity, actionSpace) {
   const { updateEntity, entities, deleteEntity, addEntity } =
     useSceneStore.getState();
+  const freshEntity = entities[entity.id];
+  const indexOfAction = getIndexOfObs(actionSpace, action);
 
   if (action === "pick") {
-    const pickRadius = 1.0; //Engine Defined - Not User
+    const pickRadius = 1.5;
     const targetObj = nearbyPickable(
       entities,
       entity.position,
@@ -13,73 +17,84 @@ export default function holderAdapter(action, entity) {
       entity.capabilities,
     );
 
+    // Nothing nearby to pick
     if (!targetObj) {
       updateEntity(entity.id, {
         last_action: action,
+        state_space: {
+          ...freshEntity.state_space,
+          last_action_index: indexOfAction,
+          lastPickSuccess: false,
+        },
       });
       return;
     }
 
-    if (targetObj) {
-      if (entity.state_space.holding) {
-        updateEntity(entity.id, {
-          last_action: action,
-        });
-        return;
-      } else if (!entity.state_space.holding) {
-        deleteEntity(targetObj.id);
-        console.log("Picking Item");
-        updateEntity(entity.id, {
-          last_action: action,
-          state_space: {
-            ...entity.state_space,
-            holding: true,
-            heldItemAssetRef: targetObj.assetRef,
-            lastPickSuccess: true,
-          },
-        });
-        return;
-      } else {
-        updateEntity(entity.id, {
-          last_action: action,
-        });
-        return;
-      }
+    // Already holding something
+    if (freshEntity.state_space.holding) {
+      updateEntity(entity.id, {
+        last_action: action,
+        state_space: {
+          ...freshEntity.state_space,
+          last_action_index: indexOfAction,
+          lastPickSuccess: false,
+        },
+      });
+      return;
     }
+
+    // Successful pick
+    deleteEntity(targetObj.id);
+    console.log("Picking Item");
+    updateEntity(entity.id, {
+      last_action: action,
+      state_space: {
+        ...freshEntity.state_space,
+        last_action_index: indexOfAction,
+        holding: true,
+        heldItemAssetRef: targetObj.assetRef,
+        lastPickSuccess: true,
+      },
+    });
+    return;
   }
 
-  if (action === "drop" && entity.state_space.holding) {
-    let [wx, wy, wz] = entity.position;
+  if (action === "drop") {
+    // Not holding anything
+    if (!freshEntity.state_space.holding) {
+      updateEntity(entity.id, {
+        last_action: action,
+        state_space: {
+          ...freshEntity.state_space,
+          last_action_index: indexOfAction,
+          lastPickSuccess: false,
+        },
+      });
+      return;
+    }
 
-    wx += 2;
-    wz += 2;
-
+    // Successful drop
+    const [wx, wy, wz] = entity.position;
     const droppedObj = {
-      tag: "pickable",
-      assetRef: entity.state_space.heldItemAssetRef,
+      tag: "Pickable Object",
+      assetRef: freshEntity.state_space.heldItemAssetRef,
       collider: { shape: "capsule", h: 1, r: 0.4 },
-      position: [wx, wy, wz],
+      position: [wx + 2, wy, wz + 2],
+      isDecor: "false",
       isPickable: "true",
       isCollectable: "false",
     };
 
     addEntity(droppedObj);
-
     updateEntity(entity.id, {
       last_action: action,
       state_space: {
-        ...entity.state_space,
+        ...freshEntity.state_space,
+        last_action_index: indexOfAction,
         holding: false,
         heldItemAssetRef: null,
         lastPickSuccess: false,
       },
     });
-
-    return;
-  } else if (action === "drop" && !entity.state_space.holding) {
-    updateEntity(entity.id, {
-      last_action: action,
-    });
-    return;
   }
 }

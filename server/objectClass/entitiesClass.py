@@ -3,6 +3,8 @@ from typing import TypedDict, cast
 
 
 class StateSpace(TypedDict, total=False):
+    last_action_index: float
+
     targetReached: bool
     previous_distance_target: float
 
@@ -13,6 +15,11 @@ class StateSpace(TypedDict, total=False):
     lastItemCollected: str
     items_collected: int
     previous_distance_collect: float
+
+    items_deposited: float
+    nearDeposit: bool
+    previous_distance_deposit: float
+    lastDepositSuccess: bool
 
 
 @dataclass(kw_only=True)

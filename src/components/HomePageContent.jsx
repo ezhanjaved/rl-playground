@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { useAuthStore } from "../stores/useAuthStore"; // adjust path as needed
+import { useAuthStore } from "../stores/useAuthStore";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
 );
 
-/* ─── tiny helpers ─── */
 const statusColor = (s) => {
   if (!s) return "#6b7280";
   if (s === "completed") return "#10b981";
@@ -22,7 +21,6 @@ const modeColors = {
   PRIVATE: { bg: "#fee2e2", text: "#b91c1c", border: "#fca5a5" },
 };
 
-/* ─── ModelCard ─── */
 function ModelCard({ model, isFriend = false, friendName = null, onUpdate }) {
   const navigate = useNavigate();
   const { setFriendModel } = useAuthStore.getState();
@@ -62,7 +60,10 @@ function ModelCard({ model, isFriend = false, friendName = null, onUpdate }) {
 
   const handleRunModel = () => {
     setFriendModel(model.training_id);
-    // navigation logic to be added by caller
+  };
+
+  const handleAnalyzeModel = (id) => {
+    navigate(`/analyze/${id}`);
   };
 
   return (
@@ -120,11 +121,10 @@ function ModelCard({ model, isFriend = false, friendName = null, onUpdate }) {
               {toggling ? "…" : `→ ${mode === "PUBLIC" ? "PRIVATE" : "PUBLIC"}`}
             </button>
             <button
-              className="btn-upload"
-              disabled
-              title="Inference upload coming soon"
+              onClick={() => handleAnalyzeModel(model?.training_id)}
+              className="btn-ghost"
             >
-              ↑ Upload
+              Analyze
             </button>
           </>
         )}
@@ -142,6 +142,12 @@ function ModelCard({ model, isFriend = false, friendName = null, onUpdate }) {
             </button>
             <button className="btn-run" onClick={handleRunModel}>
               ▶ Run Model
+            </button>
+            <button
+              onClick={() => handleAnalyzeModel(model?.training_id)}
+              className="btn-ghost"
+            >
+              Analyze
             </button>
           </>
         )}
@@ -178,34 +184,31 @@ function ModelCard({ model, isFriend = false, friendName = null, onUpdate }) {
   );
 }
 
-/* ─── Main Component ─── */
 export default function HomePageContent() {
   const { user } = useAuthStore.getState();
 
   const [myModels, setMyModels] = useState([]);
   const [friendModels, setFriendModels] = useState([]);
-  const [friendsList, setFriendsList] = useState({}); // { uid: { name, email } }
+  const [friendsList, setFriendsList] = useState({});
   const [selectedFriendId, setSelectedFriendId] = useState("all");
   const [showFriends, setShowFriends] = useState(false);
   const [loadingMine, setLoadingMine] = useState(true);
   const [loadingFriends, setLoadingFriends] = useState(false);
 
-  /* search */
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [pendingFriend, setPendingFriend] = useState(null); // user object to confirm
+  const [pendingFriend, setPendingFriend] = useState(null);
   const [sendingReq, setSendingReq] = useState(false);
   const [reqSent, setReqSent] = useState(false);
   const searchTimeout = useRef(null);
 
-  /* friend requests inbox */
   const [friendReqs, setFriendReqs] = useState([]); // [{ reqKey, senderId, senderName, senderEmail }]
   const [loadingReqs, setLoadingReqs] = useState(true);
   const [reqsPanelOpen, setReqsPanelOpen] = useState(true);
   const [processingReq, setProcessingReq] = useState(null); // reqKey being acted on
+  const [friendsListOpen, setFriendsListOpen] = useState(false);
 
-  /* ── fetch own models ── */
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
@@ -228,7 +231,6 @@ export default function HomePageContent() {
     })();
   }, [user?.id]);
 
-  /* ── fetch friend models ── */
   useEffect(() => {
     if (!showFriends || !user?.id) return;
     setLoadingFriends(true);
@@ -347,17 +349,27 @@ export default function HomePageContent() {
   const acceptRequest = async (req) => {
     setProcessingReq(req.reqKey);
     try {
-      // 1. fetch friend's PUBLIC models and collect their training_ids
-      const { data: friendModelsData } = await supabase
+      // 1. fetch sender's PUBLIC model training_ids
+      const { data: senderModelsData } = await supabase
         .from("models")
         .select("training_id")
         .eq("user_id", req.senderId)
         .eq("modelMode", "PUBLIC")
         .not("training_id", "is", null);
 
-      const trainingIds = (friendModelsData ?? []).map((m) => m.training_id);
+      const senderTrainingIds = (senderModelsData ?? []).map((m) => m.training_id);
 
-      // 2. get current user's friend_req and friends_list
+      // 2. fetch MY (accepter's) PUBLIC model training_ids
+      const { data: myModelsData } = await supabase
+        .from("models")
+        .select("training_id")
+        .eq("user_id", user.id)
+        .eq("modelMode", "PUBLIC")
+        .not("training_id", "is", null);
+
+      const myTrainingIds = (myModelsData ?? []).map((m) => m.training_id);
+
+      // 3. get current user's friend_req and friends_list
       const { data: me } = await supabase
         .from("users")
         .select("friend_req, friends_list")
@@ -368,16 +380,34 @@ export default function HomePageContent() {
       const updatedReqs = { ...(me?.friend_req ?? {}) };
       delete updatedReqs[req.reqKey];
 
-      // add to friends_list: { senderUid: [training_id, ...] }
-      const updatedFriends = {
+      // add sender to MY friends_list with sender's training_ids
+      const updatedMyFriends = {
         ...(me?.friends_list ?? {}),
-        [req.senderId]: trainingIds,
+        [req.senderId]: senderTrainingIds,
+      };
+
+      // update accepter's row
+      await supabase
+        .from("users")
+        .update({ friend_req: updatedReqs, friends_list: updatedMyFriends })
+        .eq("id", user.id);
+
+      // 4. also update SENDER's friends_list to include the accepter's training_ids
+      const { data: sender } = await supabase
+        .from("users")
+        .select("friends_list")
+        .eq("id", req.senderId)
+        .single();
+
+      const updatedSenderFriends = {
+        ...(sender?.friends_list ?? {}),
+        [user.id]: myTrainingIds,
       };
 
       await supabase
         .from("users")
-        .update({ friend_req: updatedReqs, friends_list: updatedFriends })
-        .eq("id", user.id);
+        .update({ friends_list: updatedSenderFriends })
+        .eq("id", req.senderId);
 
       setFriendReqs((prev) => prev.filter((r) => r.reqKey !== req.reqKey));
     } finally {
@@ -816,6 +846,57 @@ export default function HomePageContent() {
         }
         .btn-decline:hover:not(:disabled) { border-color: #ef4444; color: #ef4444; }
         .btn-decline:disabled { opacity: .5; cursor: default; }
+
+        /* ── friends list button ── */
+        .topbar-right {
+          display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+        }
+        .btn-friends-list {
+          display: flex; align-items: center; gap: 7px;
+          padding: 8px 16px; border-radius: 9px;
+          border: 1.5px solid #7c3aed;
+          background: transparent; color: #7c3aed;
+          font-size: 13px; font-weight: 700;
+          cursor: pointer;
+          transition: background .15s, color .15s;
+        }
+        .btn-friends-list:hover { background: #7c3aed; color: #fff; }
+        .friends-count-badge {
+          background: #7c3aed; color: #fff;
+          font-size: 11px; font-weight: 700;
+          padding: 1px 7px; border-radius: 99px;
+          min-width: 18px; text-align: center;
+          transition: background .15s;
+        }
+        .btn-friends-list:hover .friends-count-badge {
+          background: #fff; color: #7c3aed;
+        }
+
+        /* ── friends list modal ── */
+        .friends-list-modal {
+          max-width: 440px; text-align: left;
+        }
+        .fl-list {
+          margin-top: 16px;
+          max-height: 340px; overflow-y: auto;
+          border: 1.5px solid #e5e7eb; border-radius: 10px;
+        }
+        .fl-row {
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px 14px;
+          border-bottom: 1px solid #f3f4f6;
+        }
+        .fl-row:last-child { border-bottom: none; }
+        .fl-model-count {
+          margin-left: auto; flex-shrink: 0;
+          font-size: 11px; font-weight: 600;
+          background: #ede9fe; color: #7c3aed;
+          padding: 2px 8px; border-radius: 99px;
+        }
+        .fl-empty {
+          text-align: center; padding: 24px 0 8px;
+          color: #9ca3af; font-size: 14px;
+        }
       `}</style>
 
       <div className="hpc-root">
@@ -824,17 +905,30 @@ export default function HomePageContent() {
           <div className="hpc-title">
             My <span>Models</span>
           </div>
-          <label className="toggle-wrap">
-            <span>Show Friend Models</span>
-            <span className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={showFriends}
-                onChange={(e) => setShowFriends(e.target.checked)}
-              />
-              <span className="toggle-slider" />
-            </span>
-          </label>
+          <div className="topbar-right">
+            <button
+              className="btn-friends-list"
+              onClick={() => setFriendsListOpen(true)}
+            >
+              👥 My Friends
+              {Object.keys(friendsList ?? {}).length > 0 && (
+                <span className="friends-count-badge">
+                  {Object.keys(friendsList ?? {}).length}
+                </span>
+              )}
+            </button>
+            <label className="toggle-wrap">
+              <span>Show Friend Models</span>
+              <span className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={showFriends}
+                  onChange={(e) => setShowFriends(e.target.checked)}
+                />
+                <span className="toggle-slider" />
+              </span>
+            </label>
+          </div>
         </div>
 
         {/* ── Search bar ── */}
@@ -1105,6 +1199,50 @@ export default function HomePageContent() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+      {/* ── Friends List Modal ── */}
+      {friendsListOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setFriendsListOpen(false)}
+        >
+          <div
+            className="modal-box friends-list-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-title">My Friends</div>
+            {Object.keys(friendsList ?? {}).length === 0 ? (
+              <div className="fl-empty">
+                <div className="empty-icon">👥</div>
+                <p>No friends yet. Search for users above to add them!</p>
+              </div>
+            ) : (
+              <div className="fl-list">
+                {Object.entries(friendsList ?? {}).map(([uid, u]) => (
+                  <div key={uid} className="fl-row">
+                    <div className="fr-avatar">
+                      {(u.name ?? "?").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="fr-info">
+                      <div className="fr-name">{u.name ?? "Unknown"}</div>
+                      <div className="fr-email">{u.email ?? ""}</div>
+                    </div>
+                    <span className="fl-model-count">
+                      {(friendModels.filter((m) => m.user_id === uid).length)} models
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              className="btn-confirm"
+              style={{ marginTop: 20 }}
+              onClick={() => setFriendsListOpen(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

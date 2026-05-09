@@ -54,6 +54,38 @@ def partition_entities(entities):
     return buckets
 
 
+def distance_in_direction(position, rotation, direction_angle_offset, bucket):
+    theta = rotation[2] if rotation and len(rotation) > 2 else 0.0
+    angle = theta + direction_angle_offset
+
+    fx = math.sin(angle)
+    fy = math.cos(angle)  # depth axis (PyBullet Y ↔ Three.js Z)
+
+    cone_half_angle = math.pi / 4  # 45°
+    max_range = 5.0
+    min_dist = max_range
+
+    for entity in bucket:
+        target_pos = entity.position
+        bullet_pos = positionSwap(target_pos)
+
+        dx = bullet_pos[0] - position[0]
+        dy = bullet_pos[1] - position[1]
+        dist = math.sqrt(dx * dx + dy * dy)
+        if dist > max_range or dist == 0.0:
+            continue
+
+        forward_dot = dx * fx + dy * fy
+        if forward_dot <= 0:
+            continue
+
+        cone_angle = math.acos(min(forward_dot / dist, 1.0))
+        if cone_angle <= cone_half_angle:
+            min_dist = min(min_dist, dist)
+
+    return min_dist / max_range  # normalised 0-1
+
+
 def nearestDistance(position, rotation, bucket, mode):
     min_dist = float("inf")
     min_pos = []
@@ -84,6 +116,10 @@ def nearestDistance(position, rotation, bucket, mode):
             theta = rotation[2]
             d = -math.sin(theta) * dx + math.cos(theta) * dy
         else:
+            continue
+
+        # Guard against non-finite values, mirroring JS Number.isFinite() check
+        if not math.isfinite(d):
             continue
 
         if d < min_dist:
@@ -133,21 +169,19 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 constructed_obs.append(position[0] / MAX_DIST)
 
             case "agent_pos_z":
-                # Three.js Z = PyBullet Y (depth axis)
                 constructed_obs.append(position[1] / MAX_DIST)
 
             case "agent_rotation_y":
                 constructed_obs.append(rotation[2] / math.pi)
 
+            case "last_action":
+                idx = state_space.get("last_action_index", 0)
+                total_actions = (
+                    len(agentData.action_space) if agentData.action_space else 1
+                )
+                constructed_obs.append(idx / max(total_actions - 1, 1))
+
             # --- (Navigator) ---
-            case "dist_x_to_obstacle":
-                dist, _ = cache.get("obstacle", "x")
-                constructed_obs.append(dist)
-
-            case "dist_z_to_obstacle":
-                dist, _ = cache.get("obstacle", "y")
-                constructed_obs.append(dist)
-
             case "delta_x_to_obstacle":
                 dist, _ = cache.get("obstacle", "delta-x")
                 constructed_obs.append(dist)
@@ -156,9 +190,26 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 dist, _ = cache.get("obstacle", "delta-z")
                 constructed_obs.append(dist)
 
-            case "dist_to_nearest_obstacle":
-                dist, _ = cache.get("obstacle", "both")
-                constructed_obs.append(dist)
+            case "obstacle_forward":
+                constructed_obs.append(
+                    distance_in_direction(
+                        position, rotation, 0, entity_buckets["obstacle"]
+                    )
+                )
+
+            case "obstacle_left":
+                constructed_obs.append(
+                    distance_in_direction(
+                        position, rotation, math.pi / 2, entity_buckets["obstacle"]
+                    )
+                )
+
+            case "obstacle_right":
+                constructed_obs.append(
+                    distance_in_direction(
+                        position, rotation, -math.pi / 2, entity_buckets["obstacle"]
+                    )
+                )
 
             case "obstacle_in_path":
                 dist, min_pos = cache.get("obstacle", "both")
@@ -169,14 +220,6 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     constructed_obs.append(float(obs_in_path))
 
             # --- (Finder) ---
-            case "dist_x_to_target":
-                dist, _ = cache.get("target", "x")
-                constructed_obs.append(dist)
-
-            case "dist_z_to_target":
-                dist, _ = cache.get("target", "y")
-                constructed_obs.append(dist)
-
             case "delta_x_to_target":
                 dist, _ = cache.get("target", "delta-x")
                 constructed_obs.append(dist)
@@ -190,30 +233,18 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 constructed_obs.append(dist)
 
             case "in_target_radius":
-                # FIX: use the cached target bucket instead of re-querying
-                # entities from scratch, so this stays consistent with the
-                # rest of the obs vector within the same step.
                 dist, _ = cache.get("target", "both")
                 target_bucket = entity_buckets["target"]
                 if target_bucket:
-                    # getNearestTargetInfo uses its own radius field on each entity;
-                    # fall back to it so we respect per-entity radius values.
                     found, best, radius = getNearestTargetInfo(
-                        position, runTimeSnapShot, "isTarget"
+                        position, runTimeSnapShot, "target"
                     )
+                    print("Found: ", found, " Best: ", best, "Radius: ", radius)
                     constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
                 else:
                     constructed_obs.append(0.0)
 
             # --- (Holder) ---
-            case "dist_x_to_pickable":
-                dist, _ = cache.get("pickable", "x")
-                constructed_obs.append(dist)
-
-            case "dist_z_to_pickable":
-                dist, _ = cache.get("pickable", "y")
-                constructed_obs.append(dist)
-
             case "delta_x_to_pickable":
                 dist, _ = cache.get("pickable", "delta-x")
                 constructed_obs.append(dist)
@@ -229,15 +260,14 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "holding":
                 constructed_obs.append(1.0 if state_space.get("holding") else 0.0)
 
+            case "lastPickSuccess":
+                lps = state_space.get("lastPickSuccess")
+                if lps is None:
+                    constructed_obs.append(0.5)
+                else:
+                    constructed_obs.append(1.0 if lps else 0.0)
+
             # --- (Collector) ---
-            case "dist_x_to_collect":
-                dist, _ = cache.get("collectable", "x")
-                constructed_obs.append(dist)
-
-            case "dist_z_to_collect":
-                dist, _ = cache.get("collectable", "y")
-                constructed_obs.append(dist)
-
             case "dist_to_nearest_collectable":
                 dist, _ = cache.get("collectable", "both")
                 constructed_obs.append(dist)
@@ -256,14 +286,6 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 )
 
             # --- (Depositor) ---
-            case "dist_x_to_deposit":
-                dist, _ = cache.get("deposit", "x")
-                constructed_obs.append(dist)
-
-            case "dist_z_to_deposit":
-                dist, _ = cache.get("deposit", "y")
-                constructed_obs.append(dist)
-
             case "dist_to_nearest_deposit":
                 dist, _ = cache.get("deposit", "both")
                 constructed_obs.append(dist)
@@ -280,6 +302,13 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 constructed_obs.append(
                     min(float(state_space.get("items_deposited", 0)) / 10.0, 1.0)
                 )
+
+            case "last_deposit_success":
+                lds = state_space.get("lastDepositSuccess")
+                if lds is None:
+                    constructed_obs.append(0.5)
+                else:
+                    constructed_obs.append(1.0 if lds else 0.0)
 
             case _:
                 constructed_obs.append(0.0)

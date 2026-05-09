@@ -18,17 +18,15 @@ import {
   StateEqualsToNode,
   CompareStateNode,
   IsDistanceLessNode,
-  ObsValueNode,
-  IsDistanceXLessNode,
-  IsDistanceZLessNode,
+  NumericObsNode,
+  BoolObsNode,
   IsDeltaXLessNode,
   IsDeltaZPosNode,
+  IsObstacleInPath,
 } from "./nodes/conditionalNodes.jsx";
 import {
   EndEpisodeNode,
   AddRewardNode,
-  SetStateNode,
-  RequestAction,
   TruncateEpisodeNode,
 } from "./nodes/effectNodes.jsx";
 
@@ -44,8 +42,6 @@ export function BehaviorGraphEditor() {
   const nodeTypes = {
     OnStepNode: OnStepNode,
     IsDistanceLessNode: IsDistanceLessNode,
-    IsDistanceXLessNode: IsDistanceXLessNode,
-    IsDistanceZLessNode: IsDistanceZLessNode,
     IsDeltaXLessNode: IsDeltaXLessNode,
     IsDeltaZPosNode: IsDeltaZPosNode,
     OnEpisodeStartNode: OnEpisodeStartNode,
@@ -55,9 +51,9 @@ export function BehaviorGraphEditor() {
     CompareStateNode: CompareStateNode,
     EndEpisodeNode: EndEpisodeNode,
     AddRewardNode: AddRewardNode,
-    SetStateNode: SetStateNode,
-    RequestActionNode: RequestAction,
-    ObsValueNode: ObsValueNode,
+    NumericObsNode: NumericObsNode,
+    BoolObsNode: BoolObsNode,
+    IsObstacleInPath: IsObstacleInPath,
     TruncateEpisodeNode: TruncateEpisodeNode,
   };
 

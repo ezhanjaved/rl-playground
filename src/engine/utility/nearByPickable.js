@@ -1,26 +1,28 @@
 import distance3D from "./3dDistance";
-export function nearbyPickable(entities, position, pickRadius, capabilities) {
-  let agentIsHolder = false;
 
-  if (capabilities.includes("Holder")) {
-    agentIsHolder = true;
-    console.log("Agent is Holder!");
+export function nearbyPickable(entities, position, pickRadius, capabilities) {
+  let agentIsHolder = capabilities.includes("Holder");
+
+  let nearestEntity = null;
+  let minDist = Infinity;
+
+  for (const e of Object.values(entities)) {
+    if (!e.isPickable) continue;
+
+    // Collectors can only collect collectable items
+    if (!agentIsHolder) {
+      if (!e.isCollectable || e.isCollectable === "false") {
+        continue;
+      }
+    }
+
+    const dist = distance3D(position, e.position);
+
+    if (dist < minDist) {
+      minDist = dist;
+      nearestEntity = e;
+    }
   }
 
-  return (
-    Object.values(entities).find((e) => {
-      if (!e.isPickable) return false; //Ingore unpickable items!
-
-      if (!agentIsHolder) {
-        //If agent is not holder - it would be collector and collector cannot collect items that are not marked for collection
-        console.log("Agent is Collector!");
-        if (!e.isCollectable || e.isCollectable === "false") {
-          console.log("Item was not collectable!");
-          return false;
-        }
-      }
-      const dist = distance3D(position, e.position);
-      return dist <= pickRadius;
-    }) || null
-  );
+  return minDist <= pickRadius ? nearestEntity : null;
 }

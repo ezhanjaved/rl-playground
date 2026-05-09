@@ -1,0 +1,109 @@
+// Collector Actuator
+Both Js & Python version uses radius of 1.5
+Both uses nearPick/nearPickable function to find the Pickable obj - it uses raw distance (not normalized)
+In case of Target Obj not found - we update last_action, in state_space we update last_action_index & lastPickSucess
+In case of Target Obj being found - we update last_action, in state_space we update last_action_index, lastPickSucess, lastItemCollected, items_collected
+We also physically delete the collectable obj from env/remove it from entities snapshot too
+
+//Holder Actuator
+Both Js & Python version uses radius of 1.5
+Both uses nearPick/nearPickable function to find the Pickable obj - it uses raw distance (not normalized)
+In case of Target Obj not found - we update last_action, in state_space we update last_action_index & lastPickSucess
+In case of Target Obj being found - we check if agent is holding already, if it is we update last_action, in state_space we update last_action_index, lastPickSucess.
+In case of Target Obj being found - we check if agent is holding already, if it is not, we update last_action, in state_space we update last_action_index, lastPickSucess, holding.
+We also delete object from physical space/entity store
+
+//Finder Actuator
+Both Js & Python version uses radius of 1.5
+Both uses nearTarget/nearByObject function to find the object nearest - it uses raw distance (not normalized) - also it is important to note that this function in Python uses "tag" property whereas in Js it directly uses a flag of the property.
+In case of Obj not found we update last_action and in state_space last_action_index.
+In case of Obj found we update last_action and in state_space last_action_index & targetReached
+
+//Deposit Actuator
+Both Js & Python version uses radius of 1.5
+Both uses nearTarget/nearByObject function to find the object nearest - it uses raw distance (not normalized) - also it is important to note that this function in Python uses "tag" property whereas in Js it directly uses a flag of the property.
+In case of Obj not found (Deposit Area not near) we update last_action and in state_space last_action_index.
+In case of Obj found we check the ability of Agent (Holder/Collector) and use that to find out if it is holding something or collected something. If it has done any of those - we deposit (update item_deposited, lastDepositSucess & nearDeposit) last_action & last_action_index.
+In case of Obj found we check the ability of Agent (Holder/Collector) and use that to find out if it is holding something or collected something. If it has not done any of those - we update last_action, last_action_index, nearDeposit (True), lastDepositSuccess (False)
+
+
+//Moveable Actuator
+Both Js & Python version uses velocity based movement instead of direct teleportation.
+Both versions derive forward direction using yaw/rotation and calculate forward vector from that yaw.
+Both versions support move_up, move_left, move_right & idle actions.
+In Js version movement happens on XZ plane because Rapier.js uses Y-Up coordinate system. In Python version movement happens on XY plane because PyBullet uses Z-Up coordinate system.
+In Js version linear velocity is updated using body.setLinvel() and current Y velocity is preserved to maintain gravity/physics behaviour.
+In Python version linear & angular velocity is updated using p.resetBaseVelocity().
+In case of move_up both versions calculate forward direction using current yaw and apply velocity scaled by speed.
+In case of move_left and move_right both versions apply rotational movement using turnSpeed of 0.05. Js version directly updates yaw/rotation value whereas Python version applies angular velocity through physics engine.
+In case of idle both versions stop directional movement velocity but preserve runtime physics simulation behaviour.
+In Js version if body does not exist we return existing position & rotation without applying movement.
+In Python version if body does not exist we return early without applying movement.
+
+
+//Observation Builder
+Both Js & Python version dynamically construct observation vectors using observation_space defined on Agent.
+
+Both versions normalize positional & distance based observations using MAX_DIST of 40.0 and sanitize NaN/Infinity values before returning final observation array/vector.
+
+Both versions partition/filter entities using semantic predicates/flags:
+Target -> isTarget
+Pickable -> isPickable
+Collectable -> isCollectable
+Obstacle -> isDecor
+Deposit -> isDeposit
+
+Both versions support directional obstacle sensing using cone based detection:
+Forward
+Left
+Right
+Each direction uses a coneHalfAngle of 45° and maxRange of 5.0. Returned values are normalized between 0-1.
+
+Both versions support nearest distance calculations using:
+Raw distance ("both")
+Relative local-space X delta
+Relative local-space Z delta
+Both versions cache nearest-distance calculations to avoid recomputation during same observation build cycle.
+
+Both versions support observations for:
+Moveable
+Navigator
+Finder
+Holder
+Collector
+Depositor
+
+Both versions expose:
+Agent Position
+Agent Rotation
+Last Action
+Obstacle Information
+Target Information
+Pickable Information
+Collectable Information
+Deposit Information
+Holding State
+Collection Count
+Deposit Count
+Action Success/Failure States
+
+In Js version nearest object lookup directly uses semantic flags/properties on entity objects.
+In Python version nearest object lookup internally uses PyBullet compatible coordinate conversion using positionSwap() because PyBullet uses different axis convention from Rapier.js/Three.js.
+In Js version movement/navigation calculations operate on XZ plane because Rapier.js uses Y-Up coordinate system.
+In Python version movement/navigation calculations operate on XY plane because PyBullet uses Z-Up coordinate system.
+In case no nearest object is found both versions return normalized fallback distance of 1.0.
+In case observation values become NaN or Infinity both versions sanitize values before returning final observation vector.
+
+// Evaluator
+Both JS & Python versions traverse a behavior graph starting from OnStepNode, visiting nodes recursively via visitNode
+Both use a _stop flag to halt traversal early (distinct from done/terminated and truncated)
+Both cap traversal at 300 steps, setting truncated = true and _stop = true if exceeded
+Both use a visitedNodes set to prevent re-visiting the same node in a single eval pass
+EndEpisodeNode sets done/terminated + _stop; TruncateEpisodeNode sets truncated + _stop (same order in both)
+AddRewardNode applies rewardValue * rewardMultiplier from config; multiplier defaults to 1
+All conditional nodes (StateEquals, LastActionIs, CompareState, InRadius, NumericObs, BoolObs, IsObstacleInPath) route to true/false edges via sourceHandle string matching
+InRadiusNode uses a normalized radius check: 1.5 / 40.0 against the obs vector (pre-action), not raw distance
+IsDistanceLessNode compares current raw distance to previous_distance_* stored in state_space — JS uses inline predicates against all entities, Python uses pre-partitioned buckets
+NumericObsNode and BoolObsNode both support a mode field (Pre/Post) to select pre- or post-action obs vector
+Return signature differs: JS returns { reward, done, truncated }, Python returns (reward, terminated, truncated, info)
+postObs sourcing differs: JS builds it internally via buildObsSpace(agent), Python receives it as a parameter from the caller

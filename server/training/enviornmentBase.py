@@ -48,12 +48,14 @@ class EnvironmentCore:
             agentObs = obs[agent_id]
             previousDistanceCorrection(entities, agentObs, action, agentData)
 
-    def compute_reward(self, obs):  # will call it to calculate reward
+    def compute_reward(self, obsBefore, obsAfter):  # will call it to calculate reward
         runtimeSnap = self.runtime
-        for aid, agent_obs in obs.items():
+        for aid, agent_obs in obsBefore.items():
             graph = runtimeSnap.graph_per_agent[aid]
             config = runtimeSnap.assignment_by_agent[aid]
-            r, ter, tru, i = evaluator(aid, agent_obs, graph, config, runtimeSnap)
+            r, ter, tru, i = evaluator(
+                aid, agent_obs, obsAfter, graph, config, runtimeSnap
+            )
             runtimeSnap.rewards_agent[aid] = r
             runtimeSnap.terminated_agents[aid] = ter
             runtimeSnap.truncated_agents[aid] = tru

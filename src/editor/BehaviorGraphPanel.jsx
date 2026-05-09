@@ -36,20 +36,6 @@ export function BehaviorGraphPanel() {
       },
     },
     {
-      id: "is-distance-x-less-node",
-      payload: {
-        data: { label: "IsDistanceXLess", entityOne: null, entityTwo: null },
-        type: "IsDistanceXLessNode",
-      },
-    },
-    {
-      id: "is-distance-z-less-node",
-      payload: {
-        data: { label: "IsDistanceZLess", entityOne: null, entityTwo: null },
-        type: "IsDistanceZLessNode",
-      },
-    },
-    {
       id: "is-delta-x-less-node",
       payload: {
         data: { label: "IsDeltaXLess", entityOne: null, entityTwo: null },
@@ -101,15 +87,38 @@ export function BehaviorGraphPanel() {
       },
     },
     {
-      id: "obs-value-node",
+      id: "num-obs-value-node",
       payload: {
         data: {
-          label: "ObsValue",
+          label: "NumObsNode",
           obsKey: null,
+          mode: null,
           Operator: null,
           ObsValue: null,
         },
-        type: "ObsValueNode",
+        type: "NumericObsNode",
+      },
+    },
+    {
+      id: "bool-obs-value-node",
+      payload: {
+        data: {
+          label: "BoolObsNode",
+          obsKey: null,
+          mode: null,
+          status: null,
+        },
+        type: "BoolObsNode",
+      },
+    },
+    {
+      id: "is-obstacle-in-path",
+      payload: {
+        data: {
+          label: "IsObstacleIn",
+          direction: null,
+        },
+        type: "IsObstacleInPath",
       },
     },
   ];

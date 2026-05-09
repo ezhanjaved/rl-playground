@@ -5,10 +5,12 @@ import {
   FaTimes,
   FaPlus,
   FaArrowRight,
+  FaShieldAlt,
   FaFileSignature,
   FaListUl,
   FaSignOutAlt,
   FaPlay,
+  FaRobot,
 } from "react-icons/fa";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
@@ -16,6 +18,7 @@ import { useCanvasSetting } from "../stores/useCanvasSetting";
 import { useGraphStore } from "../stores/useGraphStore";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { validateGraphWithStore } from "../editor/nodes/validateGraph";
 
 const Header = () => {
   const location = useLocation();
@@ -43,7 +46,24 @@ const Header = () => {
   const addGraph = useGraphStore((state) => state.addGraph);
   const nextGraph = useGraphStore((state) => state.nextGraph);
   const updateName = useGraphStore((state) => state.updateName);
+  const removeGraphError = useGraphStore((state) => state.removeGraphError);
+  const graphError = useGraphStore((state) => state.graphError);
+  const addGraphError = useGraphStore((state) => state.addGraphError);
   const activeGraphId = useGraphStore((state) => state.activeGraphId);
+
+  const errors = graphError?.[activeGraphId];
+  const isError = errors && errors.length > 0;
+  const message = isError ? errors[0] : "Graph is Valid";
+
+  useEffect(() => {
+    if (!activeGraphId) return;
+
+    validateGraphWithStore(
+      graphs[activeGraphId],
+      addGraphError,
+      removeGraphError,
+    );
+  }, [activeGraphId]);
 
   const [visibility, setVisibility] = useState(0);
   const [setting, setSetting] = useState(null);
@@ -101,6 +121,18 @@ const Header = () => {
             ))}
           </div>
         )}
+        <span
+          style={{
+            display: visibility !== 2 ? "none" : "flex",
+            background: isError ? "red" : "green",
+            color: "white",
+            padding: "5px 10px",
+            borderRadius: "100px",
+            fontSize: "18px",
+          }}
+        >
+          {message}
+        </span>
         <span style={{ display: visibility !== 2 ? "none" : "flex" }}>
           {graphs[activeGraphId]?.name || null}
         </span>
@@ -113,19 +145,6 @@ const Header = () => {
             <FaSignOutAlt />
           </span>
         )}
-        <Link
-          to="/records"
-          style={{
-            color: "inherit",
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span>
-            <FaListUl />
-          </span>
-        </Link>
         <span
           style={{
             display: visibility !== 2 ? "none" : "flex",
@@ -143,6 +162,41 @@ const Header = () => {
           onClick={() => addGraph()}
         >
           <FaPlus />
+        </span>
+        <Link
+          to="/chat-ai"
+          style={{
+            color: "inherit",
+            textDecoration: "none",
+            display: "flex",
+          }}
+        >
+          <span
+            style={{
+              cursor: "pointer",
+            }}
+          >
+            <FaRobot />
+          </span>
+        </Link>
+        <span
+          style={{
+            display: visibility !== 2 ? "none" : "flex",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            if (!activeGraphId) {
+              console.warn("Graph missing id");
+              return;
+            }
+            validateGraphWithStore(
+              graphs[activeGraphId],
+              addGraphError,
+              removeGraphError,
+            );
+          }}
+        >
+          <FaShieldAlt />
         </span>
         <span
           style={{

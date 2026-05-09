@@ -9,7 +9,6 @@ export function TrainingInfoPage() {
     <div className="container">
       <Header />
       <SidebarV2 />
-      {/* <TrainingInfoPanel />*/}
       <TrainingInfoDesc />
     </div>
   );

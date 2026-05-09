@@ -24,7 +24,7 @@ export async function sendServer() {
 
   try {
     const response = await fetch(
-      "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/export-data",
+      "http://127.0.0.1:8000/trainer/export-data-debug",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

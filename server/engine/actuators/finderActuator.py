@@ -1,15 +1,21 @@
 from server.utilities.nearestTarget import getNearestTargetInfo
 
 
-def finderActuator(action, agentData, entities):
+def finderActuator(action, agentData, entities, indexOfAction):
     if "Finder" not in agentData.capabilities:
-        return False
+        return
     if action != "interact":
-        return False
+        agentData.last_action = action
+        agentData.state_space["last_action_index"] = indexOfAction
+        return
     pos = agentData.position
-    found, distance, radius = getNearestTargetInfo(pos, entities, "isTarget")
+    found, distance, radius = getNearestTargetInfo(pos, entities, "target")
     if found and distance <= radius:
         targetReached = True
     else:
         targetReached = False
-    return targetReached
+
+    agentData.last_action = action
+    agentData.state_space["targetReached"] = targetReached
+    agentData.state_space["last_action_index"] = indexOfAction
+    return

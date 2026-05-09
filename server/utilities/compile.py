@@ -125,6 +125,7 @@ def build_agents(agent_obj):
         observation_space=agent_obj.get("observation_space", []),
         state_space=build_state_space(agent_obj.get("state_space", {})),
         settings=agent_obj.get("settings", {}),
+        collider=agent_obj.get("collider", {}),
     )
 
 
@@ -141,11 +142,15 @@ def build_objects(obj):
         isCollectable=obj.get("isCollectable", False),
         isTarget=obj.get("isTarget", False),
         isDeposit=obj.get("isDeposit", False),
+        collider=obj.get("collider", {}),
     )
 
 
 def build_state_space(ss_dict) -> StateSpace:
     state: StateSpace = {}
+
+    if "last_action_index" in ss_dict:
+        state["last_action_index"] = ss_dict["last_action_index"]
 
     if "targetReached" in ss_dict:
         state["targetReached"] = ss_dict["targetReached"]
@@ -155,6 +160,9 @@ def build_state_space(ss_dict) -> StateSpace:
 
     if "holding" in ss_dict:
         state["holding"] = ss_dict["holding"]
+
+    if "lastPickSuccess" in ss_dict:
+        state["lastPickSuccess"] = ss_dict["lastPickSuccess"]
 
     if "previous_distance_pickable" in ss_dict:
         state["previous_distance_pickable"] = ss_dict["previous_distance_pickable"]
@@ -167,5 +175,17 @@ def build_state_space(ss_dict) -> StateSpace:
 
     if "previous_distance_collect" in ss_dict:
         state["previous_distance_collect"] = ss_dict["previous_distance_collect"]
+
+    if "items_deposited" in ss_dict:
+        state["items_deposited"] = ss_dict["items_deposited"]
+
+    if "nearDeposit" in ss_dict:
+        state["nearDeposit"] = ss_dict["nearDeposit"]
+
+    if "lastDepositSuccess" in ss_dict:
+        state["lastDepositSuccess"] = ss_dict["lastDepositSuccess"]
+
+    if "previous_distance_deposit" in ss_dict:
+        state["previous_distance_deposit"] = ss_dict["previous_distance_deposit"]
 
     return state

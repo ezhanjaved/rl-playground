@@ -1,56 +1,61 @@
 import getNearestTargetInfo from "../../utility/nearByObjects";
 import { useSceneStore } from "../../../stores/useSceneStore";
+import { getIndexOfObs } from "../../utility/getIndex";
 
-const MAX_DIST = 40.0;
-
-export default function depositAdapter(action, ent, obs, obsSpace) {
+export default function depositAdapter(action, ent, actionSpace) {
   const { updateEntity, entities } = useSceneStore.getState();
   const agent = entities[ent.id];
-
-  const getObs = (key) => {
-    const idx = obsSpace?.indexOf(key) ?? -1;
-    return idx === -1 ? null : obs[idx];
-  };
-
+  const indexOfAction = getIndexOfObs(actionSpace, action);
   if (action !== "deposit") {
-    updateEntity(agent.id, { last_action: action });
-    return {
-      nearDeposit: false,
-      previousDistance: getObs("dist_to_nearest_deposit"),
-      items_deposit: agent?.state_space?.items_deposited ?? 0,
-    };
+    updateEntity(agent.id, {
+      last_action: action,
+      state_space: {
+        ...agent.state_space,
+        last_action_index: indexOfAction,
+      },
+    });
+    return;
   }
 
   const info = getNearestTargetInfo(agent.position, entities, "isDeposit");
   const targetReached = info?.found && info?.distance <= info?.radius;
 
+  // Not near deposit zone
   if (!targetReached) {
-    return {
-      nearDeposit: false,
-      previousDistance: info?.found
-        ? info.distance / MAX_DIST
-        : getObs("dist_to_nearest_deposit"),
-      items_deposit: agent?.state_space?.items_deposited ?? 0,
-    };
+    updateEntity(agent.id, {
+      last_action: action,
+      state_space: {
+        ...agent.state_space,
+        last_action_index: indexOfAction,
+        lastDepositSuccess: false,
+        nearDeposit: targetReached,
+      },
+    });
+    return;
   }
 
   const isHolder = agent.capabilities.includes("Holder");
   const isCollector = agent.capabilities.includes("Collector");
-
   const holdingItem = isHolder && (agent?.state_space?.holding ?? false);
   const collectedItems = isCollector
     ? (agent?.state_space?.items_collected ?? 0)
     : 0;
-  const previousDeposit = agent?.state_space?.items_deposited ?? 0;
 
+  // Near deposit but nothing to deposit
   if (!holdingItem && collectedItems === 0) {
-    return {
-      nearDeposit: true,
-      previousDistance: info.distance / MAX_DIST,
-      items_deposit: previousDeposit,
-    };
+    updateEntity(agent.id, {
+      last_action: action,
+      state_space: {
+        ...agent.state_space,
+        last_action_index: indexOfAction,
+        lastDepositSuccess: false,
+        nearDeposit: targetReached,
+      },
+    });
+    return;
   }
 
+  // Successful deposit
   let newStateFragment = { ...agent.state_space };
   let itemsJustDeposited = 0;
 
@@ -73,21 +78,15 @@ export default function depositAdapter(action, ent, obs, obsSpace) {
     itemsJustDeposited += collectedItems;
   }
 
-  const updatedItemsDeposited = previousDeposit + itemsJustDeposited;
-
   updateEntity(agent.id, {
     last_action: action,
     state_space: {
       ...newStateFragment,
-      nearDeposit: true,
-      items_deposited: updatedItemsDeposited,
-      previous_distance_deposit: info.distance / MAX_DIST, // store normalized
+      last_action_index: indexOfAction,
+      lastDepositSuccess: true,
+      nearDeposit: targetReached,
+      items_deposited:
+        (agent?.state_space?.items_deposited ?? 0) + itemsJustDeposited,
     },
   });
-
-  return {
-    nearDeposit: true,
-    previousDistance: info.distance / MAX_DIST,
-    items_deposit: updatedItemsDeposited,
-  };
 }

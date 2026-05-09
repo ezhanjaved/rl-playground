@@ -9,21 +9,21 @@ from server.engine.observationBuilder import (
 )
 
 
-def evaluator(aid, agentObs, graph, config, runTimeSnap):
+def evaluator(aid, agentObs, agentObsAfter, graph, config, runTimeSnap):
     entities = runTimeSnap.entities
     if not entities or not graph or not config:
         return 0, False, False, {}
 
     agent = entities[aid]
     visited_nodes = set()
-
+    postAgentObs = agentObsAfter[aid]
     entity_buckets = partition_entities(entities)
 
     ctx = {
         "reward": 0.0,
         "terminated": False,
         "truncated": False,
-        "_stop": False,  # FIX: internal traversal-stop flag, separate from terminated
+        "_stop": False,
         "info": {},
         "facts": {
             "position": agent.position,
@@ -38,6 +38,7 @@ def evaluator(aid, agentObs, graph, config, runTimeSnap):
         "visitedNodes": visited_nodes,
         "config": config,
         "obsVector": agentObs,
+        "postObsVector": postAgentObs,
         "ent": entities,
         "buckets": entity_buckets,
     }
@@ -75,8 +76,6 @@ def visitNode(node_id, graph, ctx):
     ctx["visitedNodes"].add(node_id)
     ctx["stepCount"] += 1
 
-    entities = ctx["ent"]
-
     node_data = None
     for node in graph.nodes:
         if node.id == node_id:
@@ -98,6 +97,11 @@ def visitNode(node_id, graph, ctx):
 
     elif node_data.type == "EndEpisodeNode":
         ctx["terminated"] = True
+        ctx["_stop"] = True
+        return
+
+    elif node_data.type == "TruncateEpisodeNode":
+        ctx["truncated"] = True
         ctx["_stop"] = True
         return
 
@@ -273,116 +277,6 @@ def visitNode(node_id, graph, ctx):
             visitNode(chosen_edge.target, graph, ctx)
         return
 
-    elif node_data.type == "IsDistanceXLessNode":
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
-
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
-
-        capabilities = ctx["facts"].get("capabilities", [])
-        has_holder = "Holder" in capabilities
-        has_collector = "Collector" in capabilities
-        has_depositor = "Depositor" in capabilities
-
-        distance_less_x = False
-        buckets = ctx["buckets"]
-
-        def diff_cal(bucket_key, state_key):
-            nonlocal distance_less_x
-            agent_pos = ctx["facts"]["position"]
-            agent_rot = ctx["facts"]["rotation"]
-            previous_distance = ctx["facts"]["state_space"].get(state_key)
-            current_distance, _ = nearestDistance(
-                agent_pos, agent_rot, buckets[bucket_key], "x"
-            )
-            if current_distance is not None and previous_distance is not None:
-                if current_distance < previous_distance:
-                    distance_less_x = True
-
-        if entity_two == "Target Object":
-            diff_cal("target", "previous_distance_target_x")
-
-        if entity_two == "Non-State Object":
-            diff_cal("obstacle", "previous_distance_obstacle_x")
-
-        elif entity_two == "Pickable Object":
-            if has_holder:
-                diff_cal("pickable", "previous_distance_pickable_x")
-            elif has_collector:
-                diff_cal("collectable", "previous_distance_collect_x")
-            else:
-                return
-
-        elif entity_two == "Deposit Object":
-            if has_depositor:
-                diff_cal("deposit", "previous_distance_deposit_x")
-            else:
-                return
-
-        chosen_edge = _find_bool_edge(node_id, graph, distance_less_x)
-        if chosen_edge:
-            visitNode(chosen_edge.target, graph, ctx)
-        return
-
-    elif node_data.type == "IsDistanceZLessNode":
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
-
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
-
-        capabilities = ctx["facts"].get("capabilities", [])
-        has_holder = "Holder" in capabilities
-        has_collector = "Collector" in capabilities
-        has_depositor = "Depositor" in capabilities
-
-        distance_less_y = False
-        buckets = ctx["buckets"]
-
-        def diff_cal(bucket_key, state_key):
-            nonlocal distance_less_y
-            agent_pos = ctx["facts"]["position"]
-            agent_rot = ctx["facts"]["rotation"]
-            previous_distance = ctx["facts"]["state_space"].get(state_key)
-            current_distance, _ = nearestDistance(
-                agent_pos, agent_rot, buckets[bucket_key], "y"
-            )
-            if current_distance is not None and previous_distance is not None:
-                if current_distance < previous_distance:
-                    distance_less_y = True
-
-        if entity_two == "Target Object":
-            diff_cal("target", "previous_distance_target_z")
-
-        if entity_two == "Non-State Object":
-            diff_cal("obstacle", "previous_distance_obstacle_z")
-
-        elif entity_two == "Pickable Object":
-            if has_holder:
-                diff_cal("pickable", "previous_distance_pickable_z")
-            elif has_collector:
-                diff_cal("collectable", "previous_distance_collect_z")
-            else:
-                return
-
-        elif entity_two == "Deposit Object":
-            if has_depositor:
-                diff_cal("deposit", "previous_distance_deposit_z")
-            else:
-                return
-
-        chosen_edge = _find_bool_edge(node_id, graph, distance_less_y)
-        if chosen_edge:
-            visitNode(chosen_edge.target, graph, ctx)
-        return
-
     elif node_data.type == "IsDeltaXLessNode":
         DELTA_X_CHECK = 0.05
         delta_x = False
@@ -513,12 +407,7 @@ def visitNode(node_id, graph, ctx):
             visitNode(chosen_edge.target, graph, ctx)
         return
 
-    elif node_data.type == "TruncateEpisodeNode":
-        ctx["truncated"] = True
-        ctx["_stop"] = True
-        return
-
-    elif node_data.type == "ObsValueNode":
+    elif node_data.type == "NumericObsNode":
         operations = {
             "Less Than": lambda a, b: a < b,
             "Higher Than": lambda a, b: a > b,
@@ -529,12 +418,15 @@ def visitNode(node_id, graph, ctx):
         obs_key = node_data.data.get("obsKey")
         obs_value = node_data.data.get("ObsValue")
         operator = node_data.data.get("Operator")
+        mode = node_data.data.get("mode", "Pre")
+        obs_vector = (
+            ctx.get("postObsVector") if mode == "Post" else ctx.get("obsVector")
+        )
         try:
             obs_value = float(obs_value)
         except (TypeError, ValueError):
             return
         obs_space = ctx["facts"].get("obs_space", [])
-        obs_vector = ctx.get("obsVector", [])
         try:
             idx = obs_space.index(obs_key)
             current_val = float(obs_vector[idx])
@@ -545,6 +437,70 @@ def visitNode(node_id, graph, ctx):
             return
         result = op_fn(current_val, obs_value)
         chosen_edge = _find_bool_edge(node_id, graph, result)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
+    elif node_data.type == "BoolObsNode":
+        obs_key = node_data.data.get("obsKey")
+        expected_status = node_data.data.get("status", "True")
+        expected_bool = (
+            expected_status is True or str(expected_status).lower() == "true"
+        )
+        mode = node_data.data.get("mode", "Pre")
+        obs_vector = (
+            ctx.get("postObsVector") if mode == "Post" else ctx.get("obsVector")
+        )
+        obs_space = ctx["facts"].get("obs_space", [])
+        try:
+            idx = obs_space.index(obs_key)
+            current_val = obs_vector[idx]
+        except (ValueError, IndexError, TypeError):
+            return
+        as_bool = current_val is True or current_val == 1
+        result = as_bool == expected_bool
+        chosen_edge = _find_bool_edge(node_id, graph, result)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
+    elif node_data.type == "IsObstacleInPath":
+        capabilities = ctx["facts"].get("capabilities", [])
+        if "Navigator" not in capabilities:
+            return
+
+        direction = node_data.data.get("direction", "Forward")
+        direction_key_map = {
+            "Left": "obstacle_left",
+            "Right": "obstacle_right",
+            "Forward": "obstacle_forward",
+        }
+        OBSTACLE_DIST_THRESHOLD = 0.15
+        dist_key = direction_key_map.get(direction)
+        if not dist_key:
+            return
+
+        obs_space = ctx["facts"].get("obs_space", [])
+        obs_vector = ctx.get("obsVector", [])
+
+        def get_obs(key):
+            try:
+                idx = obs_space.index(key)
+                return obs_vector[idx]
+            except (ValueError, IndexError):
+                return None
+
+        directional_dist = get_obs(dist_key)
+        in_path = get_obs("obstacle_in_path")
+
+        in_path_bool = in_path is True or in_path == 1
+        is_blocked = (
+            directional_dist is not None
+            and directional_dist <= OBSTACLE_DIST_THRESHOLD
+            and in_path_bool
+        )
+
+        chosen_edge = _find_bool_edge(node_id, graph, is_blocked)
         if chosen_edge:
             visitNode(chosen_edge.target, graph, ctx)
         return

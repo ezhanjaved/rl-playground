@@ -5,26 +5,27 @@ import holderAdapter from "./HolderActuators.js";
 import collectorAdapter from "./CollectorActuators.js";
 import finderAdapter from "./finderActuators.js";
 import depositAdapter from "./DepositActuators.js";
-import { useSceneStore } from "../../../stores/useSceneStore.js";
 
 export default function applyAction(action_picked, agent, observation_space) {
   const capabilityMatched = CapabilityMatcher(action_picked);
-  const obs = agent.observation_space;
+  const actionSpace = agent.action_space;
+  console.log("Action: " + action_picked);
+  console.log("Action Space: " + actionSpace);
   switch (capabilityMatched) {
     case "Moveable":
       moveableWorker(action_picked, agent, observation_space);
       break;
     case "Holder":
-      holderWorker(action_picked, agent);
+      holderWorker(action_picked, agent, actionSpace);
       break;
     case "Collector":
-      collectorWorker(action_picked, agent);
+      collectorWorker(action_picked, agent, actionSpace);
       break;
     case "Finder":
-      finderWorker(action_picked, agent, observation_space, obs);
+      finderWorker(action_picked, agent, actionSpace);
       break;
     case "Depositor":
-      depositWorker(action_picked, agent, observation_space, obs);
+      depositWorker(action_picked, agent, actionSpace);
       break;
     default:
       break;
@@ -47,32 +48,18 @@ function moveableWorker(action, entity, observation_space) {
   );
 }
 
-function holderWorker(action, entity) {
-  holderAdapter(action, entity); //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered
+function holderWorker(action, entity, actionSpace) {
+  holderAdapter(action, entity, actionSpace); //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered
 }
 
-function collectorWorker(action, entity) {
-  collectorAdapter(action, entity); //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered
+function collectorWorker(action, entity, actionSpace) {
+  collectorAdapter(action, entity, actionSpace); //This Adapter would TRY adding picking obj by hand (by adding obj as  a child to hand bone) on pick action - however this action will only suceed if pickable obj would be in nearby - if obj would be nearby it will update state_space of agent holding to true otherwise it would remain false - regardless pick animation would be rendered
 }
 
-function depositWorker(action, entity, observation_space, obs) {
-  depositAdapter(action, entity, observation_space, obs);
+function depositWorker(action, entity, actionSpace) {
+  depositAdapter(action, entity, actionSpace);
 }
 
-function finderWorker(action, entity, observation_space, obs) {
-  const { updateEntity, entities } = useSceneStore.getState();
-  const { targetReached, previousDistance } = finderAdapter(
-    action,
-    entity,
-    observation_space,
-    obs,
-  );
-  const freshAgent = entities[entity.id];
-  updateEntity(entity.id, {
-    state_space: {
-      ...freshAgent.state_space,
-      targetReached: targetReached,
-      previous_distance_target: previousDistance,
-    },
-  });
+function finderWorker(action, entity, actionSpace) {
+  finderAdapter(action, entity, actionSpace);
 }

@@ -23,6 +23,48 @@ const obstaclePredicate = (e) =>
 const depositPredicate = (e) =>
   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
 
+export function distanceInDirection(
+  position,
+  rotation,
+  directionAngleOffset,
+  entities,
+  predicate,
+) {
+  const ry = rotation?.[1] ?? 0;
+  const angle = ry + directionAngleOffset;
+
+  // Forward vector for this direction
+  const Fx = Math.sin(angle);
+  const Fz = Math.cos(angle);
+
+  const coneHalfAngle = Math.PI / 4;
+  const maxRange = 5.0;
+
+  let minDist = maxRange;
+
+  for (const entity of Object.values(entities)) {
+    if (!entity || !predicate(entity)) continue;
+    const [ox, , oz] = entity?.position ?? [0, 0, 0];
+    const [ax, , az] = position;
+
+    const dx = ox - ax;
+    const dz = oz - az;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist > maxRange) continue;
+
+    // Check if obstacle falls within this direction's cone
+    const forwardDot = dx * Fx + dz * Fz;
+    if (forwardDot <= 0) continue;
+
+    const angle = Math.acos(Math.min(forwardDot / dist, 1.0));
+    if (angle <= coneHalfAngle) {
+      minDist = Math.min(minDist, dist);
+    }
+  }
+
+  return minDist / maxRange; // normalized 0-1
+}
+
 export function nearestDistance(position, rotation, predicate, mode, entities) {
   let minDist = Infinity;
   let minPos = [];
@@ -98,6 +140,7 @@ export default function buildObsSpace(agent) {
 
   for (const obsVar of obs) {
     switch (obsVar) {
+      // --- (Moveable) ---
       case "agent_pos_x": {
         constructedObs.push((position?.[0] ?? 0) / MAX_DIST);
         break;
@@ -114,24 +157,14 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      case "dist_x_to_obstacle": {
-        const { min } = cached(obstaclePredicate, "x");
-        constructedObs.push(min);
+      case "last_action": {
+        const idx = stateSpace?.last_action_index ?? 0;
+        const totalActions = agent?.action_space?.length ?? 1;
+        constructedObs.push(idx / Math.max(totalActions - 1, 1));
         break;
       }
 
-      case "dist_z_to_obstacle": {
-        const { min } = cached(obstaclePredicate, "z");
-        constructedObs.push(min);
-        break;
-      }
-
-      case "dist_to_nearest_obstacle": {
-        const { min } = cached(obstaclePredicate, "both");
-        constructedObs.push(min);
-        break;
-      }
-
+      // --- (Navigator) ---
       case "delta_x_to_obstacle": {
         const { min } = cached(obstaclePredicate, "x-delta");
         constructedObs.push(min);
@@ -144,6 +177,40 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      case "obstacle_forward":
+        constructedObs.push(
+          distanceInDirection(
+            position,
+            rotation,
+            0,
+            entities,
+            obstaclePredicate,
+          ),
+        );
+        break;
+      case "obstacle_left":
+        constructedObs.push(
+          distanceInDirection(
+            position,
+            rotation,
+            Math.PI / 2,
+            entities,
+            obstaclePredicate,
+          ),
+        );
+        break;
+      case "obstacle_right":
+        constructedObs.push(
+          distanceInDirection(
+            position,
+            rotation,
+            -Math.PI / 2,
+            entities,
+            obstaclePredicate,
+          ),
+        );
+        break;
+
       case "obstacle_in_path": {
         const { min, minPos } = cached(obstaclePredicate, "both");
         if (min >= 1.0) {
@@ -155,18 +222,7 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      case "dist_x_to_target": {
-        const { min } = cached(targetPredicate, "x");
-        constructedObs.push(min);
-        break;
-      }
-
-      case "dist_z_to_target": {
-        const { min } = cached(targetPredicate, "z");
-        constructedObs.push(min);
-        break;
-      }
-
+      // --- (Finder) ---
       case "dist_to_nearest_target": {
         const { min } = cached(targetPredicate, "both");
         constructedObs.push(min);
@@ -187,23 +243,13 @@ export default function buildObsSpace(agent) {
 
       case "in_target_radius": {
         const info = getNearestTargetInfo(position, entities, "isTarget");
+        console.log("INFO: " + JSON.stringify(info));
         const targetReached = info?.found && info?.distance <= info?.radius;
         constructedObs.push(targetReached ? 1 : 0);
         break;
       }
 
-      case "dist_x_to_pickable": {
-        const { min } = cached(pickablePredicate, "x");
-        constructedObs.push(min);
-        break;
-      }
-
-      case "dist_z_to_pickable": {
-        const { min } = cached(pickablePredicate, "z");
-        constructedObs.push(min);
-        break;
-      }
-
+      // --- (Holder) ---
       case "dist_to_nearest_pickable": {
         const { min } = cached(pickablePredicate, "both");
         constructedObs.push(min);
@@ -227,18 +273,14 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      case "dist_x_to_collect": {
-        const { min } = cached(collectPredicate, "x");
-        constructedObs.push(min);
+      case "lastPickSuccess": {
+        const lps = stateSpace?.lastPickSuccess;
+        const val = lps === null || lps === undefined ? 0.5 : lps ? 1 : 0;
+        constructedObs.push(val);
         break;
       }
 
-      case "dist_z_to_collect": {
-        const { min } = cached(collectPredicate, "z");
-        constructedObs.push(min);
-        break;
-      }
-
+      // --- (Collector) ---
       case "dist_to_nearest_collectable": {
         const { min } = cached(collectPredicate, "both");
         constructedObs.push(min);
@@ -264,18 +306,7 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      case "dist_x_to_deposit": {
-        const { min } = cached(depositPredicate, "x");
-        constructedObs.push(min);
-        break;
-      }
-
-      case "dist_z_to_deposit": {
-        const { min } = cached(depositPredicate, "z");
-        constructedObs.push(min);
-        break;
-      }
-
+      // --- (Depositor) ---
       case "dist_to_nearest_deposit": {
         const { min } = cached(depositPredicate, "both");
         constructedObs.push(min);
@@ -297,6 +328,14 @@ export default function buildObsSpace(agent) {
       case "items_deposit": {
         let val = parseFloat(stateSpace?.items_deposited ?? 0);
         val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "last_deposit_success": {
+        // null = never tried (0.5), true = success (1), false = failed (0)
+        const lds = stateSpace?.lastDepositSuccess;
+        const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
         constructedObs.push(val);
         break;
       }

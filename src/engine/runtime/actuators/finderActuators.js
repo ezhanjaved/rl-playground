@@ -1,27 +1,33 @@
 import getNearestTargetInfo from "../../utility/nearByObjects";
 import { useSceneStore } from "../../../stores/useSceneStore";
+import { getIndexOfObs } from "../../utility/getIndex";
 
-export default function finderAdapter(action, agent, obs, obsSpace) {
-  const { entities } = useSceneStore.getState();
-
-  const getObs = (key) => {
-    const idx = obsSpace?.indexOf(key) ?? -1;
-    return idx === -1 ? null : obs[idx];
-  };
+export default function finderAdapter(action, agent, actionSpace) {
+  const { updateEntity, entities } = useSceneStore.getState();
+  const freshAgent = entities[agent.id];
+  const indexOfAction = getIndexOfObs(actionSpace, action);
 
   if (action !== "interact") {
-    return {
-      targetReached: false,
-      previousDistance: getObs("dist_to_nearest_target"),
-    };
+    updateEntity(agent.id, {
+      last_action: action,
+      state_space: {
+        ...freshAgent.state_space,
+        last_action_index: indexOfAction,
+      },
+    });
+    return;
   }
 
-  const position = agent.position;
-  const info = getNearestTargetInfo(position, entities, "isTarget");
+  const info = getNearestTargetInfo(agent.position, entities, "isTarget");
   const targetReached = info?.found && info?.distance <= info?.radius;
   console.log("Target Reached: " + targetReached);
-  return {
-    targetReached,
-    previousDistance: getObs("dist_to_nearest_target"),
-  };
+
+  updateEntity(agent.id, {
+    last_action: action,
+    state_space: {
+      ...freshAgent.state_space,
+      last_action_index: indexOfAction,
+      targetReached,
+    },
+  });
 }

@@ -4,7 +4,7 @@ from server.objectClass.entitiesClass import Object
 from server.utilities.nearPick import nearbyPickable
 
 
-def holderActuator(action, agentData, entities, eM, client):
+def holderActuator(action, agentData, entities, eM, client, indexOfAction):
     agentPos = agentData.position
     capabilities = agentData.capabilities
     agent = entities[agentData.id]
@@ -14,43 +14,45 @@ def holderActuator(action, agentData, entities, eM, client):
         return
 
     if action == "pick":
-        pickRadius = 1.0  # Engine Defined - Not User
+        pickRadius = 1.5  # Engine Defined - Not User
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
         if not targetObj:
+            print("Pickable not found")
             agent.last_action = action
+            agent.state_space["last_action_index"] = indexOfAction
+            agent.state_space["lastPickSuccess"] = False
             return
 
         if targetObj:
             if agent.state_space["holding"]:
                 agent.last_action = action
+                agent.state_space["last_action_index"] = indexOfAction
+                agent.state_space["lastPickSuccess"] = False
                 return
             elif not agent.state_space["holding"]:
                 bulletId = eM[targetObj.id]
                 p.removeBody(bulletId, physicsClientId=client)
                 agent.last_action = action
+                agent.state_space["last_action_index"] = indexOfAction
                 agent.state_space["holding"] = True
                 agent.state_space["lastPickSuccess"] = True
                 del entities[targetObj.id]
             return
         else:
             agent.last_action = action
+            agent.state_space["last_action_index"] = indexOfAction
+            agent.state_space["lastPickSuccess"] = True
             return
 
     if action == "drop" and agent.state_space["holding"]:
         [wx, wy, wz] = agentData.position
         wx += 2
         wy += 2
-        newPos = [wx, wy, 0]
+        newPos = [-wx, wy, 0]
 
         convertedRot = p.getQuaternionFromEuler([0, 0, 0], physicsClientId=client)
-        holderId = p.loadURDF(
-            "cube.urdf",
-            newPos,
-            convertedRot,
-            useFixedBase=True,
-            globalScaling=0.2,
-            physicsClientId=client,
-        )
+        collider = {"shape": "capsule", "h": 1, "r": 0.4}
+        holderId = spawn_non_state(newPos, convertedRot, collider, client)
 
         entityId = str(holderId)
         eM[entityId] = holderId
@@ -84,9 +86,33 @@ def holderActuator(action, agentData, entities, eM, client):
         )
 
         agent.last_action = action
+        agent.state_space["last_action_index"] = indexOfAction
         agent.state_space["holding"] = False
         agent.state_space["lastPickSuccess"] = False
         return
     else:
         agent.last_action = action
+        agent.state_space["last_action_index"] = indexOfAction
+        agent.state_space["lastPickSuccess"] = False
         return
+
+
+def spawn_non_state(pos, rot, collider, client):
+    r = collider.get("r", 0.4)
+    h = collider.get("h", 1.0)
+    cylinder_height = max(0.0, h - 2 * r)
+    collision_shape = p.createCollisionShape(
+        p.GEOM_CAPSULE,
+        radius=r,
+        height=cylinder_height,
+        physicsClientId=client,
+    )
+    px, py, _ = pos
+    pos = (px, py, h / 2)
+    return p.createMultiBody(
+        baseMass=0,
+        baseCollisionShapeIndex=collision_shape,
+        basePosition=pos,
+        baseOrientation=rot,
+        physicsClientId=client,
+    )

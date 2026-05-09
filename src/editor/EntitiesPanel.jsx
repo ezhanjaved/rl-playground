@@ -24,6 +24,8 @@ import agent5 from "../assets/agent5.png";
 import agent6 from "../assets/agent6.png";
 import target1 from "../assets/target_1.png";
 import target2 from "../assets/target_2.png";
+import Wall from "../assets/Wall.png";
+import Rubble from "../assets/Rubble.png";
 
 function DraggableItem({ id, payload, imageSrc, ...rest }) {
   const { listeners, setNodeRef, attributes, transform } = useDraggable({
@@ -244,6 +246,28 @@ export default function EntitiesPanel() {
         isDecor: "true",
         assetRef: "nature/Rock_1_D_Color1.gltf",
         collider: { shape: "capsule", h: 2, r: 0.4 },
+      },
+    },
+    {
+      id: "lib_non_state_obj_5",
+      image: Wall,
+      payload: {
+        name: "Wall Gated",
+        tag: "non_state",
+        isDecor: "true",
+        assetRef: "nature/wall_gated.gltf",
+        collider: { shape: "box", w: 3.5, h: 2.5, d: 0.6 },
+      },
+    },
+    {
+      id: "lib_non_state_obj_6",
+      image: Rubble,
+      payload: {
+        name: "Rubble",
+        tag: "non_state",
+        isDecor: "true",
+        assetRef: "nature/rubble_large.gltf",
+        collider: { shape: "box", w: 6.5, h: 0.6, d: 2.5 },
       },
     },
   ];

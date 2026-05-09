@@ -1,26 +1,46 @@
 // We will maintain state of Behavior graphs (nodes/edges) it's params and validation
 import { create } from "zustand";
+import { validateGraphWithStore } from "../editor/nodes/validateGraph";
 
 export const useGraphStore = create((set, get) => ({
   graphs: {},
   totalGraph: [],
   indexNumber: 0,
   activeGraphId: null,
+  graphError: {},
 
-  updateName: (graphId, name) => set((state) => {
-    const graph = graphId ? state.graphs[graphId] : state.graph[state.activeGraphId];
-    if(!graph) return state;
-    if(!name) return state;
-    return {
-      graphs: {
-        ...state.graphs,
-        [graphId] : {
-          ...graph,
-          name: name
-        }
-      }
-    }
-  }),
+  addGraphError: (id, result) =>
+    set((state) => ({
+      graphError: {
+        ...state.graphError,
+        [id]: result,
+      },
+    })),
+
+  removeGraphError: (id) =>
+    set((state) => {
+      const updated = { ...state.graphError };
+      delete updated[id];
+      return { graphError: updated };
+    }),
+
+  updateName: (graphId, name) =>
+    set((state) => {
+      const graph = graphId
+        ? state.graphs[graphId]
+        : state.graph[state.activeGraphId];
+      if (!graph) return state;
+      if (!name) return state;
+      return {
+        graphs: {
+          ...state.graphs,
+          [graphId]: {
+            ...graph,
+            name: name,
+          },
+        },
+      };
+    }),
 
   nextGraph: () =>
     set((state) => {
@@ -35,10 +55,9 @@ export const useGraphStore = create((set, get) => ({
       return {
         ...state,
         indexNumber: newIndex,
-        activeGraphId: newActiveId
+        activeGraphId: newActiveId,
       };
     }),
-
 
   addGraph: () =>
     set((state) => {
@@ -47,10 +66,10 @@ export const useGraphStore = create((set, get) => ({
       const newTotal = [...state.totalGraph, id];
 
       return {
-        ...state,  
+        ...state,
         graphs: { ...state.graphs, [id]: graph },
         totalGraph: newTotal,
-        indexNumber: newTotal.length - 1, 
+        indexNumber: newTotal.length - 1,
         activeGraphId: id,
       };
     }),
@@ -92,15 +111,27 @@ export const useGraphStore = create((set, get) => ({
       const graph = state.graphs[graphId];
       if (!graph) return state;
 
-      const nextNodes = typeof updater === "function" ? updater(graph.nodes) : updater;
+      const nextNodes =
+        typeof updater === "function" ? updater(graph.nodes) : updater;
+
+      const updatedGraph = { ...graph, nodes: nextNodes };
+
+      validateGraphWithStore(
+        updatedGraph,
+        (id, errs) =>
+          set((s) => ({ graphError: { ...s.graphError, [id]: errs } })),
+        (id) =>
+          set((s) => {
+            const updated = { ...s.graphError };
+            delete updated[id];
+            return { graphError: updated };
+          }),
+      );
 
       return {
         graphs: {
           ...state.graphs,
-          [graphId]: {
-            ...graph,
-            nodes: nextNodes,
-          },
+          [graphId]: updatedGraph,
         },
       };
     }),
@@ -110,15 +141,27 @@ export const useGraphStore = create((set, get) => ({
       const graph = state.graphs[graphId];
       if (!graph) return state;
 
-      const nextEdges = typeof updater === "function" ? updater(graph.edges) : updater;
+      const nextEdges =
+        typeof updater === "function" ? updater(graph.edges) : updater;
+
+      const updatedGraph = { ...graph, edges: nextEdges };
+
+      validateGraphWithStore(
+        updatedGraph,
+        (id, errs) =>
+          set((s) => ({ graphError: { ...s.graphError, [id]: errs } })),
+        (id) =>
+          set((s) => {
+            const updated = { ...s.graphError };
+            delete updated[id];
+            return { graphError: updated };
+          }),
+      );
 
       return {
         graphs: {
           ...state.graphs,
-          [graphId]: {
-            ...graph,
-            edges: nextEdges,
-          },
+          [graphId]: updatedGraph,
         },
       };
     }),
@@ -128,7 +171,9 @@ export const useGraphStore = create((set, get) => ({
       const graph = state.graphs[graphId];
       if (!graph) return state;
 
-      const nodes = graph.nodes.map((node) => node.id === nodeId ? { ...node, ...partial } : node);
+      const nodes = graph.nodes.map((node) =>
+        node.id === nodeId ? { ...node, ...partial } : node,
+      );
 
       return {
         graphs: {
@@ -147,7 +192,7 @@ export const useGraphStore = create((set, get) => ({
       if (!graph) return state;
 
       const edges = graph.edges.map((edge) =>
-        edge.id === edgeId ? { ...edge, ...partial } : edge
+        edge.id === edgeId ? { ...edge, ...partial } : edge,
       );
 
       return {
@@ -173,11 +218,10 @@ export const useGraphStore = create((set, get) => ({
             ...graph,
             nodes: graph.nodes.filter((n) => n.id !== nodeId),
             edges: graph.edges.filter(
-              (e) => e.source !== nodeId && e.target !== nodeId
+              (e) => e.source !== nodeId && e.target !== nodeId,
             ),
           },
         },
       };
     }),
-
 }));

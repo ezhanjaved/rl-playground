@@ -55,7 +55,6 @@ export default function runTimeloop(entities) {
     );
 
     if (action !== null && action !== undefined) {
-      console.log("Actions are applied locally");
       applyAction(action, entity, observation_space);
     }
   });

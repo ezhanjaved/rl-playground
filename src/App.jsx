@@ -18,6 +18,8 @@ import { useAuthStore } from "./stores/useAuthStore";
 import { useEffect } from "react";
 import { LoadingModal } from "./components/LoadingModal";
 import { useRunTimeStore } from "./stores/useRunTimeStore";
+import { AnalysisPage } from "./pages/AnalysisPage";
+import { GraphAIChatPage } from "./pages/ConversationPage";
 
 function App() {
   const initializeAuth = useAuthStore((state) => state.initialize);
@@ -53,7 +55,7 @@ function App() {
 
   return (
     <>
-      <LoadingModal /> {/* ← always mounted, portal controls visibility */}
+      <LoadingModal />
       <Router>
         <Routes>
           <Route
@@ -118,6 +120,18 @@ function App() {
             path="/visualize/:id"
             element={
               user ? <VisualizePage /> : <Navigate to="/signing-in" replace />
+            }
+          />
+          <Route
+            path="/analyze/:id"
+            element={
+              user ? <AnalysisPage /> : <Navigate to="/signing-in" replace />
+            }
+          />
+          <Route
+            path="/chat-ai"
+            element={
+              user ? <GraphAIChatPage /> : <Navigate to="/signing-in" replace />
             }
           />
         </Routes>

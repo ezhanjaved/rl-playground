@@ -114,13 +114,7 @@ export function LastActionIsNode({ data, id }) {
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
 
-  const moveableAction = [
-    "move_up",
-    "move_down",
-    "move_right",
-    "move_left",
-    "idle",
-  ];
+  const moveableAction = ["move_up", "move_right", "move_left", "idle"];
   const holderAction = ["pick", "drop"];
   const collectorAction = ["collect"];
   const depositAction = ["deposit"];
@@ -281,7 +275,7 @@ export function StateEqualsToNode({ data, id }) {
   const finderState = ["targetReached"];
   const holderState = ["holding", "lastPickSuccess"];
   const collectorState = ["lastPickSuccess"];
-  const depositorState = ["nearDeposit"];
+  const depositorState = ["nearDeposit", "lastDepositSuccess"];
 
   const stateMap = {
     Finder: finderState,
@@ -427,28 +421,10 @@ export function CompareStateNode({ data, id }) {
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
 
-  const finderState = [
-    "previous_distance_target",
-    "previous_distance_target_x",
-    "previous_distance_target_z",
-  ];
-  const holderState = [
-    "previous_distance_pickable",
-    "previous_distance_pickable_x",
-    "previous_distance_pickable_z",
-  ];
-  const collectorState = [
-    "previous_distance_collect",
-    "previous_distance_collect_x",
-    "previous_distance_collect_z",
-    "items_collected",
-  ];
-  const depositorState = [
-    "items_deposited",
-    "previous_distance_deposit",
-    "previous_distance_deposit_x",
-    "previous_distance_deposit_z",
-  ];
+  const finderState = ["previous_distance_target"];
+  const holderState = ["previous_distance_pickable"];
+  const collectorState = ["previous_distance_collect", "items_collected"];
+  const depositorState = ["items_deposited", "previous_distance_deposit"];
 
   const stateMap = {
     Finder: finderState,
@@ -915,241 +891,34 @@ export function IsDeltaZPosNode({ data, id }) {
   );
 }
 
-export function IsDistanceXLessNode({ data, id }) {
-  const activeGraphId = useGraphStore((s) => s.activeGraphId);
-  const updateNode = useGraphStore((s) => s.updateNode);
-  const deleteNode = useGraphStore((s) => s.deleteNode);
-  const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
-
-  return (
-    <div
-      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
-      className="conditional-node"
-    >
-      <span className="node-heading">{data?.label}</span>
-
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{
-          width: "10px",
-          height: "10px",
-          border: "none",
-          background: "#000",
-        }}
-      />
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="false"
-        style={{
-          top: "40%",
-          width: "10px",
-          height: "10px",
-          border: "none",
-          background: "red",
-        }}
-      />
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="true"
-        style={{
-          top: "60%",
-          width: "10px",
-          height: "10px",
-          border: "none",
-          background: "green",
-        }}
-      />
-
-      <div className="conditional-data-form">
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-        </select>
-      </div>
-    </div>
-  );
-}
-
-export function IsDistanceZLessNode({ data, id }) {
-  const activeGraphId = useGraphStore((s) => s.activeGraphId);
-  const updateNode = useGraphStore((s) => s.updateNode);
-  const deleteNode = useGraphStore((s) => s.deleteNode);
-  const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
-
-  return (
-    <div
-      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
-      className="conditional-node"
-    >
-      <span className="node-heading">{data?.label}</span>
-
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{
-          width: "10px",
-          height: "10px",
-          border: "none",
-          background: "#000",
-        }}
-      />
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="false"
-        style={{
-          top: "40%",
-          width: "10px",
-          height: "10px",
-          border: "none",
-          background: "red",
-        }}
-      />
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="true"
-        style={{
-          top: "60%",
-          width: "10px",
-          height: "10px",
-          border: "none",
-          background: "green",
-        }}
-      />
-
-      <div className="conditional-data-form">
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-        </select>
-      </div>
-    </div>
-  );
-}
-
-export function ObsValueNode({ data, id }) {
+export function NumericObsNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
   const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
 
   const allObsKeys = [
-    "agent_pos_x",
-    "agent_pos_z",
+    // Moveable
     "agent_rotation_y",
-    "dist_x_to_obstacle",
-    "dist_z_to_obstacle",
-    "dist_to_nearest_obstacle",
-    "obstacle_in_path",
-    "dist_x_to_target",
-    "dist_z_to_target",
+    // Navigator
+    "obstacle_forward",
+    "obstacle_left",
+    "obstacle_right",
+    // Finder
     "dist_to_nearest_target",
-    "in_target_radius",
-    "dist_x_to_pickable",
-    "dist_z_to_pickable",
+    "delta_x_to_target",
+    "delta_z_to_target",
+    // Holder
     "dist_to_nearest_pickable",
-    "holding",
-    "dist_x_to_collect",
-    "dist_z_to_collect",
+    "delta_x_to_pickable",
+    "delta_z_to_pickable",
+    // Collector
     "dist_to_nearest_collectable",
-    "items_collected",
-    "dist_x_to_deposit",
-    "dist_z_to_deposit",
+    "delta_x_to_collectable",
+    "delta_z_to_collectable",
+    // Depositor
     "dist_to_nearest_deposit",
-    "items_deposit",
+    "delta_x_to_deposit",
+    "delta_z_to_deposit",
   ];
 
   const operators = [
@@ -1159,6 +928,12 @@ export function ObsValueNode({ data, id }) {
     "Higher Than Equal To",
     "Equal To",
   ];
+
+  function updateMode(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, mode: e.target.value },
+    });
+  }
 
   function updateObsKey(e) {
     updateNode(activeGraphId, id, {
@@ -1219,6 +994,18 @@ export function ObsValueNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>Mode</span>
+        <select onChange={updateMode} value={data?.mode ?? "Pre"}>
+          <option key="Pre" value="Pre">
+            Pre Action OBS
+          </option>
+          <option key="Post" value="Post">
+            Post Action OBS
+          </option>
+        </select>
+
+        <br />
+
         <span>Obs Key</span>
         <select
           onChange={updateObsKey}
@@ -1251,6 +1038,196 @@ export function ObsValueNode({ data, id }) {
           value={data?.ObsValue ?? 0}
           onChange={updateValue}
         />
+      </div>
+    </div>
+  );
+}
+
+export function BoolObsNode({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+
+  const allObsKeys = [
+    // Navigator
+    "obstacle_in_path",
+    // Finder
+    "in_target_radius",
+    // Holder + Collector
+    "holding",
+    "lastPickSuccess",
+    // Depositor
+    "last_deposit_success",
+  ];
+
+  function updateMode(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, mode: e.target.value },
+    });
+  }
+
+  function updateObsKey(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, obsKey: e.target.value },
+    });
+  }
+
+  function updateStatus(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, status: e.target.value },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, id)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label ?? "Obs Value"}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>Mode</span>
+        <select onChange={updateMode} value={data?.mode ?? "Pre"}>
+          <option key="Pre" value="Pre">
+            Pre Action OBS
+          </option>
+          <option key="Post" value="Post">
+            Post Action OBS
+          </option>
+        </select>
+
+        <br />
+
+        <span>Obs Key</span>
+        <select
+          onChange={updateObsKey}
+          value={data?.obsKey ?? "obstacle_in_path"}
+        >
+          {allObsKeys.map((k) => (
+            <option key={k} value={k}>
+              {k}
+            </option>
+          ))}
+        </select>
+
+        <br />
+
+        <span>Status</span>
+        <select onChange={updateStatus} value={data?.status ?? "True"}>
+          <option key="True" value="True">
+            True
+          </option>
+          <option key="False" value="False">
+            False
+          </option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function IsObstacleInPath({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+
+  function updateDirection(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, direction: e.target.value },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, id)}
+      className="conditional-node"
+      style={{ width: "250px" }}
+    >
+      <span className="node-heading">{data?.label ?? "Obs Value"}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>Direction</span>
+        <select onChange={updateDirection} value={data?.direction ?? "Forward"}>
+          <option key="Left" value="Left">
+            Left
+          </option>
+          <option key="Forward" value="Forward">
+            Forward
+          </option>
+          <option key="Right" value="Right">
+            Right
+          </option>
+        </select>
       </div>
     </div>
   );

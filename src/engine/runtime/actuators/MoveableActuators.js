@@ -1,5 +1,5 @@
 import { useSceneStore } from "../../../stores/useSceneStore";
-import { getYaw, getForwardVectorFromYaw } from "../../utility/rotationCal";
+import { getForwardVectorFromYaw } from "../../utility/rotationCal";
 export default function moveAdapter(action, position, rotation, agentId) {
   const { bodies, entities } = useSceneStore.getState();
   const speed = entities[agentId]?.settings?.speed ?? 1;
@@ -20,8 +20,7 @@ export default function moveAdapter(action, position, rotation, agentId) {
 
   const turnSpeed = 0.05;
   let [rx, ry, rz] = rotation;
-  const yaw = getYaw(rotation);
-  const { x: Rx, z: Rz } = getForwardVectorFromYaw(yaw);
+  const { x: Rx, z: Rz } = getForwardVectorFromYaw(ry);
 
   let vx = 0;
   let vz = 0;
@@ -32,26 +31,26 @@ export default function moveAdapter(action, position, rotation, agentId) {
       vz = Rz * speed;
       break;
 
-    case "move_down":
-      vx = -Rx * speed;
-      vz = -Rz * speed;
-      break;
-
     case "move_left":
       ry += turnSpeed;
-      // vx = Rx * speed;
-      // vz = Rz * speed;
       break;
 
     case "move_right":
       ry -= turnSpeed;
-      // vx = Rx * speed;
-      // vz = Rz * speed;
+      break;
+
+    case "idle":
+      vx = 0;
+      vz = 0;
       break;
   }
 
   const currentVel = body.linvel();
-  body.setLinvel({ x: vx, y: currentVel.y, z: vz }, true);
+  if (action === "move_left" || action === "move_right") {
+    body.setLinvel({ x: currentVel.x, y: currentVel.y, z: currentVel.z }, true);
+  } else {
+    body.setLinvel({ x: vx, y: currentVel.y, z: vz }, true);
+  }
 
   const t = body.translation();
   const updatedPosition = [t.x, t.y, t.z];

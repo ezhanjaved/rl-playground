@@ -5,15 +5,13 @@ import * as THREE from "three";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
-import { orbitControlsRef } from "./EditorCanvas";
+import { orbitControlsRef, rotationDragState } from "./EditorCanvas";
 import { SkeletonUtils } from "three-stdlib";
 import animationsMapper from "../engine/capabilities/animationFinder";
 
 function EntityRenderer({ entity }) {
   const modelLoaded = useGLTF(`/models/${entity.assetRef}`);
-
   const playing = useRunTimeStore((state) => state.playing);
-
   const handRef = useRef(null);
 
   const animationRefs = useMemo(() => {
@@ -30,20 +28,15 @@ function EntityRenderer({ entity }) {
     [animationRefs],
   );
 
-  // console.log("All Animations: " + JSON.stringify(allAnimations, null, 1));
-
   const { clonedScene, size, handBone } = useMemo(() => {
     const clone = SkeletonUtils.clone(modelLoaded.scene);
-
     const box = new THREE.Box3().setFromObject(clone);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
-
     clone.position.sub(center);
     clone.position.y -= (size.y / 2) * -1;
 
     let foundHand = null;
-
     clone.traverse((obj) => {
       if (obj.isBone && obj.name === "handr") {
         console.log("Hand Bone Found!");
@@ -67,23 +60,16 @@ function EntityRenderer({ entity }) {
   useEffect(() => {
     if (!handRef.current) {
       console.log(`${entity?.name || entity.id} does not have a hand`);
-      return; //Entity does not have a hand
+      return;
     }
-
-    handRef.current.children.forEach((child) => {
-      handRef.current.remove(child);
-    });
-
+    handRef.current.children.forEach((child) => handRef.current.remove(child));
     if (!entity.state_space?.holding || !heldItemGLTF.scene) {
       console.log(`${entity?.name} is not holding anything!`);
-      return; //Agent isn't holding anything
+      return;
     }
-
     if (heldItemGLTF && entity.state_space?.holding) {
       const pickedObjectLoad = SkeletonUtils.clone(heldItemGLTF.scene);
-
       handRef.current.add(pickedObjectLoad);
-
       pickedObjectLoad.position.set(0.02, 0, 0);
       pickedObjectLoad.rotation.set(0, Math.PI / 2, 0);
       pickedObjectLoad.scale.set(1, 1, 1);
@@ -92,27 +78,37 @@ function EntityRenderer({ entity }) {
 
   useEffect(() => {
     if (!handRef.current) return;
-
     const isHolding = entity.state_space?.holding;
-
     if (!isHolding) {
       console.log("We are removing OBJ from hand!");
-      handRef.current.children.forEach((child) => {
-        handRef.current.remove(child);
-      });
+      handRef.current.children.forEach((child) =>
+        handRef.current.remove(child),
+      );
     }
   }, [entity.state_space?.holding, entity.state_space?.heldItemAssetRef]);
 
   const actions = useAnimations(allAnimations, clonedScene);
-
   const setActiveEntity = useSceneStore((s) => s.setActiveEntity);
   const setDragging = useSceneStore((s) => s.setDragging);
   const deleteEntity = useSceneStore((s) => s.deleteEntity);
 
   const onPointerDown = (e) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     setActiveEntity(entity.id);
     setDragging(true);
+    if (orbitControlsRef?.current) {
+      orbitControlsRef.current.enabled = false;
+    }
+  };
+
+  const onContextMenu = (e) => {
+    e.stopPropagation();
+    setActiveEntity(entity.id);
+
+    rotationDragState.isRotating = true;
+    rotationDragState.baseRotY = entity.rotation?.[1] ?? 0;
+    rotationDragState.startAngle = NaN;
 
     if (orbitControlsRef?.current) {
       orbitControlsRef.current.enabled = false;
@@ -126,23 +122,15 @@ function EntityRenderer({ entity }) {
   };
 
   useFrame(() => {
-    if (!playing) {
-      return;
-    }
-
-    if (entity.isDecor || !actions) {
-      return;
-    }
-
-    const actionPerformed = entity.last_action; //MoveForward, TurnLeft, etc.
-    const name = entity.name; //Mage, Lizard, etc.
-    //We will play the animation based on last_action
+    if (!playing) return;
+    if (entity.isDecor || !actions) return;
+    const actionPerformed = entity.last_action;
+    const name = entity.name;
     animationLoop(name, actionPerformed, actions, playing);
   });
 
   useEffect(() => {
     if (!actions) return;
-
     if (!playing) {
       Object.values(actions.actions).forEach((action) => action.stop());
     }
@@ -158,16 +146,17 @@ function EntityRenderer({ entity }) {
   }
 
   return (
-    <group
-      onDoubleClick={(e) => removeEntity(e)}
-      rotation={entity.rotation}
-      position={entity.position}
-    >
-      <primitive object={clonedScene} onPointerDown={onPointerDown} />
+    <group onDoubleClick={(e) => removeEntity(e)}>
+      <primitive
+        object={clonedScene}
+        onPointerDown={onPointerDown}
+        onContextMenu={onContextMenu}
+      />
       <mesh
         visible={false}
         position={[0, 1.3, 0]}
         onPointerDown={onPointerDown}
+        onContextMenu={onContextMenu}
       >
         <boxGeometry args={[size.x, size.y, size.z]} />
         <meshBasicMaterial color="orange" opacity={0.2} transparent />

@@ -2,7 +2,7 @@ import math
 
 
 def getYaw(euler):
-    return euler[2]  # yaw
+    return euler[2]  # yaw / z-axis
 
 
 def getForwardVectorFromYaw(rz):

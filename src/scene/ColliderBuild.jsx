@@ -1,4 +1,9 @@
-import { RigidBody, CapsuleCollider, BallCollider } from "@react-three/rapier";
+import {
+  RigidBody,
+  CapsuleCollider,
+  BallCollider,
+  CuboidCollider,
+} from "@react-three/rapier";
 import { useRef, useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 export default function ColliderBuilder({ entity, children }) {
@@ -14,17 +19,32 @@ export default function ColliderBuilder({ entity, children }) {
 
   if (!entity.collider) return;
 
-  const { h, r } = entity.collider;
-  const halfHeight = h / 2 - r;
+  const { shape, h, r, w, d } = entity.collider;
+  const halfHeight = h / 2 - (r ?? 0);
 
   const { isTarget } = entity;
   const radius = isTarget ? entity?.targetVisual?.radius : null;
+
+  const renderCollider = () => {
+    if (shape === "box") {
+      return (
+        <CuboidCollider args={[w / 2, h / 2, d / 2]} position={[0, h / 2, 0]} />
+      );
+    }
+    return (
+      <CapsuleCollider
+        args={[halfHeight, r]}
+        position={[0, halfHeight + r, 0]}
+      />
+    );
+  };
 
   return (
     <>
       <RigidBody
         ref={bodyRef}
         position={entity.position}
+        rotation={entity.rotation ?? [0, 0, 0]}
         type={entity.tag === "agent" ? "dynamic" : "fixed"}
         colliders={false}
         lockRotations
@@ -32,10 +52,7 @@ export default function ColliderBuilder({ entity, children }) {
         angularDamping={4}
       >
         <group position={[0, 0, 0]}>{children}</group>
-        <CapsuleCollider
-          args={[halfHeight, r]}
-          position={[0, halfHeight + r, 0]}
-        />
+        {renderCollider()}
         {/* {isTarget && (
                     <BallCollider
                         args={[radius / 2]}

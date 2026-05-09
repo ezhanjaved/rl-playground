@@ -12,7 +12,12 @@ export default function previousDistanceCorrection(
   const { updateEntity } = useSceneStore.getState();
   let index = null;
   let value = null;
+  let best = null;
   let newStateSpace = { ...agent.state_space };
+
+  const action_space = agent?.action_space; //array of actions
+  const indexOfAction = getIndexOfObs(action_space, last_action);
+  newStateSpace.last_action_index = indexOfAction;
 
   capabilities.forEach((cap) => {
     switch (cap) {
@@ -21,17 +26,11 @@ export default function previousDistanceCorrection(
           agent?.observation_space,
           "dist_to_nearest_target",
         );
-        value = obs_space[index];
-        newStateSpace.previous_distance_target = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_x_to_target");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_target_x = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_z_to_target");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_target_z = value;
-
+        value = obs_space[index]; //pre step obs value
+        best = newStateSpace.previous_distance_target; //current best
+        if (value < best) {
+          newStateSpace.previous_distance_target = value;
+        }
         break;
 
       case "Holder":
@@ -39,17 +38,11 @@ export default function previousDistanceCorrection(
           agent?.observation_space,
           "dist_to_nearest_pickable",
         );
-        value = obs_space[index];
-        newStateSpace.previous_distance_pickable = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_x_to_pickable");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_pickable_x = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_z_to_pickable");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_pickable_z = value;
-
+        value = obs_space[index]; //pre step obs value
+        best = newStateSpace.previous_distance_pickable; //current best
+        if (value < best) {
+          newStateSpace.previous_distance_pickable = value;
+        }
         break;
 
       case "Collector":
@@ -57,17 +50,11 @@ export default function previousDistanceCorrection(
           agent?.observation_space,
           "dist_to_nearest_collectable",
         );
-        value = obs_space[index];
-        newStateSpace.previous_distance_collect = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_x_to_collect");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_collect_x = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_z_to_collect");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_collect_z = value;
-
+        value = obs_space[index]; //pre step obs value
+        best = newStateSpace.previous_distance_collectable; //current best
+        if (value < best) {
+          newStateSpace.previous_distance_collectable = value;
+        }
         break;
 
       case "Depositor":
@@ -75,34 +62,11 @@ export default function previousDistanceCorrection(
           agent?.observation_space,
           "dist_to_nearest_deposit",
         );
-        value = obs_space[index];
-        newStateSpace.previous_distance_deposit = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_x_to_deposit");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_deposit_x = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_z_to_deposit");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_deposit_z = value;
-
-        break;
-
-      case "Navigator":
-        index = getIndexOfObs(
-          agent?.observation_space,
-          "dist_to_nearest_obstacle",
-        );
-        value = obs_space[index];
-        newStateSpace.previous_distance_obstacle = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_x_to_obstacle");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_obstacle_x = value;
-
-        // index = getIndexOfObs(agent?.observation_space, "dist_z_to_obstacle");
-        // value = obs_space[index];
-        // newStateSpace.previous_distance_obstacle_z = value;
+        value = obs_space[index]; //pre step obs value
+        best = newStateSpace.previous_distance_deposit; //current best
+        if (value < best) {
+          newStateSpace.previous_distance_deposit = value;
+        }
         break;
     }
   });

@@ -1,4 +1,7 @@
-from server.engine.controller.randomController import random_controller
+from server.engine.controller.randomController import (
+    heuristic_controller,
+    random_controller,
+)
 from server.training.simulationBase import SimulationEnv
 
 
@@ -6,8 +9,8 @@ def debugPipeline(scenario, runTimeState, uid):
     print("MODEL ID: ", uid)
     env = SimulationEnv(scenario, runTimeState)
 
-    num_episodes = 2
-    max_steps_per_episode = 100
+    num_episodes = 1
+    max_steps_per_episode = 500
 
     for episode in range(num_episodes):
         print(f"\n=== Episode Number: {episode} ===")
@@ -15,10 +18,10 @@ def debugPipeline(scenario, runTimeState, uid):
         print("Initial Obs: ", obs)
 
         for step in range(max_steps_per_episode):
-            actions = random_controller(obs, runTimeState)
+            actions = heuristic_controller(obs, runTimeState)
             obs, reward, terminated, truncated, info = env.step(actions)
 
-            print(f"  Step {step} | Action taken")
+            print(f"  Step {step} | Action taken: {actions}")
             print("  Next OBS: ", obs)
             print("  Reward: ", reward)
             print("  Terminated: ", terminated)
