@@ -17,8 +17,6 @@ def obstacleAvoid(pos, rot, obstaclePos):
 
     forward_x, forward_y = getForwardVectorFromYaw(rz)
     forwardDist = dx * forward_x + dy * forward_y
-    print("Forward X: ", forward_x, " Forward Y: ", forward_y, " RZ: ", rz)
-    print("Forward Dist: ", forwardDist)
     if forwardDist <= 0 or forwardDist > lookahead:
         return False
     lateralDist = abs(dx * forward_y - dy * forward_x)

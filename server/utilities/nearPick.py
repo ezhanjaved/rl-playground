@@ -31,9 +31,6 @@ def nearbyPickable(entities, position, pickRadius, cap):
         if dist < minDist:
             itemVal = ent_value
             minDist = dist
-
-    print("Distance: ", minDist)
-
     if minDist <= pickRadius:
         return itemVal
 

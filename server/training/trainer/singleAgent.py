@@ -33,9 +33,7 @@ class SingleAgentTrainer:
         self.assignment = assignment.config
         self.training_id = training_id
 
-        self.timesteps = (
-            self.assignment.episodeNumber * self.assignment.maxStepsPerEpisode
-        )
+        self.timesteps = self.assignment.timesteps
         self.gamma = self.assignment.rewardImp
         self.learning_rate = self.assignment.learningSpeed
         self.clip_range = self.assignment.clipRange

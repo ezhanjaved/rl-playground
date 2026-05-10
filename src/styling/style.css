@@ -26,19 +26,85 @@ body {
     background-color: white;
     color: black;
     display: flex;
-    justify-content: space-between;
+    justify-content: right;
     align-items: center;
-    padding: 0 20px;
-    font-size: 1.5em;
+    padding: 0 10px;
+    font-size: 1.2em;
     backdrop-filter: blur(24px);
     border-bottom: 1px solid #ccc;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2);
 }
 
+.template-picker select {
+    border: 1px solid #000;
+    width: 120px;
+    height: 25px;
+    cursor: pointer;
+    box-shadow: 1px 1px 2px rgba(168, 85, 247);
+    font-size: 15px;
+    padding: 2px;
+}
+
+.template-picker option {
+    font-weight: 500;
+}
+
 .Window-Controls {
     display: flex;
-    gap: 35px;
+    gap: 20px;
     margin-right: 28px;
+}
+
+.no-graph-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 20px;
+}
+
+.no-graph-screen span {
+    padding-top: 10px;
+    font-weight: 500;
+}
+
+.template-modal {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 20;
+    background: #fff;
+    border-radius: 5px;
+    border: 2px solid #000;
+    width: 390px;
+    height: 120px;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 2px 2px #4f46e5;
+}
+
+.template-modal h2 {
+    color: #000;
+    font-size: 20px;
+}
+
+.template-modal span {
+    padding-top: 5px;
+}
+
+.template-modal button {
+    width: 60px;
+    padding: 1px;
+    margin-top: 10px;
+    cursor: pointer;
+    background: #000;
+    color: #fff;
+    border-radius: 5px;
+    border: none;
+    font-size: 15px;
 }
 
 .training-indicator {
@@ -702,8 +768,8 @@ body {
 }
 
 .setting-pop-up input {
-    width: 250px;
-    padding-left: 5px;
+    width: 150px;
+    padding-left: 10px;
 }
 
 /* Dashboard & Records Styling */

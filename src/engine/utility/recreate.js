@@ -11,6 +11,7 @@ export function recreateEnv(entities) {
       capabilities: singleObj?.capabilities || [],
       position: singleObj.position,
       rotation: singleObj.rotation,
+      quatRotation: singleObj?.quatRotation || [0, 0, 0, 1],
       assetRef: singleObj.assetRef,
       animationRef: singleObj.animationRef,
       collider: singleObj.collider,

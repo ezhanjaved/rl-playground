@@ -1,0 +1,275 @@
+{
+    "entity_7ca0ee63-e301-46e2-a284-8d7e1c9b14d8": {
+        "id": "entity_7ca0ee63-e301-46e2-a284-8d7e1c9b14d8",
+        "tag": "agent",
+        "name": "Knight",
+        "capabilities": [
+            "Moveable",
+            "Collector",
+            "Depositor"
+        ],
+        "position": [
+            -1.1206291557209518,
+            0,
+            -12.240335884608445
+        ],
+        "rotation": [
+            0,
+            0,
+            0
+        ],
+        "quatRotation": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "assetRef": "agents/heroes/Knight.glb",
+        "animationRef": {
+            "0": "agents/heroes/Rig_Medium_MovementBasic.glb",
+            "1": "agents/heroes/Rig_Medium_General.glb"
+        },
+        "collider": {
+            "shape": "capsule",
+            "h": 2,
+            "r": 0.3
+        },
+        "actuator_type": "walker",
+        "targetVisual": null,
+        "isDecor": false,
+        "isDeposit": false,
+        "isPickable": false,
+        "isCollectable": false,
+        "isTarget": false,
+        "last_action": "idle",
+        "isAssigned": false,
+        "action_space": [
+            "move_up",
+            "move_left",
+            "move_right",
+            "idle",
+            "collect",
+            "deposit"
+        ],
+        "observation_space": [
+            "agent_rotation_y",
+            "last_action",
+            "dist_to_nearest_collectable",
+            "delta_x_to_collectable",
+            "delta_z_to_collectable",
+            "items_collected",
+            "lastPickSuccess",
+            "dist_to_nearest_deposit",
+            "delta_x_to_deposit",
+            "delta_z_to_deposit",
+            "items_deposit",
+            "last_deposit_success"
+        ],
+        "state_space": {
+            "last_action_index": 0,
+            "lastItemCollected": null,
+            "items_collected": 0,
+            "lastPickSuccess": null,
+            "previous_distance_collect": null,
+            "items_deposited": 0,
+            "nearDeposit": false,
+            "lastDepositSuccess": false,
+            "previous_distance_deposit": null
+        },
+        "settings": {
+            "speed": 2
+        }
+    },
+    "entity_64501690-badd-468d-bcdb-fbe6a6a1bd44": {
+        "id": "entity_64501690-badd-468d-bcdb-fbe6a6a1bd44",
+        "tag": "non_state",
+        "name": "Wide Tree",
+        "capabilities": [],
+        "position": [
+            -5.168688344349258,
+            0,
+            -10.868891751624043
+        ],
+        "rotation": [
+            0,
+            0,
+            0
+        ],
+        "quatRotation": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "assetRef": "nature/Tree_4_A_Color1.gltf",
+        "animationRef": null,
+        "collider": {
+            "shape": "capsule",
+            "h": 3,
+            "r": 0.6
+        },
+        "actuator_type": "walker",
+        "targetVisual": null,
+        "isDecor": "true",
+        "isDeposit": false,
+        "isPickable": false,
+        "isCollectable": false,
+        "isTarget": false
+    },
+    "entity_a3712e1b-2a61-489d-aba4-bc9f5c953c1f": {
+        "id": "entity_a3712e1b-2a61-489d-aba4-bc9f5c953c1f",
+        "tag": "non_state",
+        "name": "Tall Tree",
+        "capabilities": [],
+        "position": [
+            -2.945946218508573,
+            0,
+            -0.7617197751067124
+        ],
+        "rotation": [
+            0,
+            0,
+            0
+        ],
+        "quatRotation": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "assetRef": "nature/Tree_2_A_Color1.gltf",
+        "animationRef": null,
+        "collider": {
+            "shape": "capsule",
+            "h": 3,
+            "r": 0.6
+        },
+        "actuator_type": "walker",
+        "targetVisual": null,
+        "isDecor": "true",
+        "isDeposit": false,
+        "isPickable": false,
+        "isCollectable": false,
+        "isTarget": false
+    },
+    "entity_774a7039-8071-44c5-af0a-fb2a3a07cb13": {
+        "id": "entity_774a7039-8071-44c5-af0a-fb2a3a07cb13",
+        "tag": "non_state",
+        "name": "Rubble",
+        "capabilities": [],
+        "position": [
+            -5.461050402975529,
+            0,
+            1.9248113472111763
+        ],
+        "rotation": [
+            0,
+            0,
+            0
+        ],
+        "quatRotation": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "assetRef": "nature/rubble_large.gltf",
+        "animationRef": null,
+        "collider": {
+            "shape": "box",
+            "w": 6.5,
+            "h": 0.6,
+            "d": 2.5
+        },
+        "actuator_type": "walker",
+        "targetVisual": null,
+        "isDecor": "true",
+        "isDeposit": false,
+        "isPickable": false,
+        "isCollectable": false,
+        "isTarget": false
+    },
+    "entity_3879618f-7869-405e-8d22-a8fe435ee4a9": {
+        "id": "entity_3879618f-7869-405e-8d22-a8fe435ee4a9",
+        "tag": "agent",
+        "name": "Ranger",
+        "capabilities": [
+            "Moveable",
+            "Holder",
+            "Depositor"
+        ],
+        "position": [
+            -21.166431669501968,
+            0,
+            -15.84570758223435
+        ],
+        "rotation": [
+            0,
+            0,
+            0
+        ],
+        "quatRotation": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "assetRef": "agents/heroes/Ranger.glb",
+        "animationRef": {
+            "0": "agents/heroes/Rig_Medium_MovementBasic.glb",
+            "1": "agents/heroes/Rig_Medium_General.glb"
+        },
+        "collider": {
+            "shape": "capsule",
+            "h": 2,
+            "r": 0.3
+        },
+        "actuator_type": "walker",
+        "targetVisual": null,
+        "isDecor": false,
+        "isDeposit": false,
+        "isPickable": false,
+        "isCollectable": false,
+        "isTarget": false,
+        "last_action": "idle",
+        "isAssigned": false,
+        "action_space": [
+            "move_up",
+            "move_left",
+            "move_right",
+            "idle",
+            "pick",
+            "drop",
+            "deposit"
+        ],
+        "observation_space": [
+            "agent_rotation_y",
+            "last_action",
+            "dist_to_nearest_pickable",
+            "delta_x_to_pickable",
+            "delta_z_to_pickable",
+            "holding",
+            "lastPickSuccess",
+            "dist_to_nearest_deposit",
+            "delta_x_to_deposit",
+            "delta_z_to_deposit",
+            "items_deposit",
+            "last_deposit_success"
+        ],
+        "state_space": {
+            "last_action_index": 0,
+            "holding": false,
+            "heldItemAssetRef": null,
+            "lastPickSuccess": null,
+            "previous_distance_pickable": null,
+            "items_deposited": 0,
+            "nearDeposit": false,
+            "lastDepositSuccess": false,
+            "previous_distance_deposit": null
+        },
+        "settings": {
+            "speed": 2
+        }
+    },
+    "name": "Hunting"
+}

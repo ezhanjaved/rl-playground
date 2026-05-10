@@ -10,15 +10,21 @@ import {
   FaListUl,
   FaSignOutAlt,
   FaPlay,
+  FaFileImport,
+  FaFileExport,
   FaRobot,
 } from "react-icons/fa";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useCanvasSetting } from "../stores/useCanvasSetting";
+import { useSceneStore } from "../stores/useSceneStore";
 import { useGraphStore } from "../stores/useGraphStore";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { validateGraphWithStore } from "../editor/nodes/validateGraph";
+import { uploadEnv, uploadGraph } from "../export/exportTemplate";
+import { viewEnvs, viewGraphs } from "../export/viewTemplate";
+import { importEnv, importGraph } from "../export/importTemplate";
 
 const Header = () => {
   const location = useLocation();
@@ -43,6 +49,7 @@ const Header = () => {
   ];
 
   const graphs = useGraphStore((state) => state.graphs);
+  const totalGraphs = useGraphStore((state) => state.totalGraph);
   const addGraph = useGraphStore((state) => state.addGraph);
   const nextGraph = useGraphStore((state) => state.nextGraph);
   const updateName = useGraphStore((state) => state.updateName);
@@ -51,9 +58,47 @@ const Header = () => {
   const addGraphError = useGraphStore((state) => state.addGraphError);
   const activeGraphId = useGraphStore((state) => state.activeGraphId);
 
+  const envName = useSceneStore((state) => state.envName);
+  const setEnviorName = useSceneStore((state) => state.setName);
+  const setEnvName = useSceneStore((state) => state.setEnvName);
+
+  const [envList, setEnvList] = useState([]);
+  const [graphList, setGraphList] = useState([]);
+  const [currentPath, setPath] = useState(null);
+
+  const [eModal, seteModel] = useState(false);
+  const [iModal, setiModel] = useState(false);
+  const [infoModal, setInfoModal] = useState(false);
+  const [exportInfo, setMessage] = useState(null);
+
+  useEffect(() => {
+    if (visibility === 1 && envList.length > 0) {
+      setPath(envList[0].path);
+    }
+  }, [envList]);
+
+  useEffect(() => {
+    if (visibility === 2 && graphList.length > 0) {
+      setPath(graphList[0].path);
+    }
+  }, [graphList]);
+
+  useEffect(() => {
+    if (user?.id && envList.length === 0 && graphList.length === 0) {
+      getTemplateData();
+    }
+  }, [user]);
+
+  const getTemplateData = async () => {
+    await viewEnvs(setEnvList);
+    await viewGraphs(setGraphList);
+  };
+
   const errors = graphError?.[activeGraphId];
   const isError = errors && errors.length > 0;
-  const message = isError ? errors[0] : "Graph is Valid";
+  const numberOfGraphs = totalGraphs.length;
+  const noGraph = numberOfGraphs === 0 ? true : false;
+  const message = noGraph ? "No Graph" : isError ? errors[0] : "Graph is Valid";
 
   useEffect(() => {
     if (!activeGraphId) return;
@@ -77,167 +122,279 @@ const Header = () => {
   }, [location.pathname]);
 
   return (
-    <header className="header">
-      <h1></h1>
-      <div className="Window-Controls">
-        {training && (
-          <span className="training-indicator">
-            Training<span className="dots">...</span>
-          </span>
-        )}
-        {isModelReady && (
-          <span className="training-indicator">
-            Inference<span className="dots">...</span>
-          </span>
-        )}
-        {setting && (
-          <div className="setting-pop-up">
-            <input
-              value={name}
-              type="text"
-              placeholder="Enter Graph Name"
-              onChange={(e) => setName(e.target.value)}
-            />
+    <>
+      {eModal && (
+        <div className="template-modal">
+          <h2>
+            Do you want to save this{" "}
+            {visibility === 1 ? "Environment " : "Graph"}?
+          </h2>
+          <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
             <button
               onClick={() => {
-                updateName(activeGraphId, name);
-                setSetting(null);
+                if (visibility === 1) {
+                  uploadEnv(setMessage, setInfoModal);
+                } else if (visibility === 2) {
+                  uploadGraph(activeGraphId, setMessage, setInfoModal);
+                }
+                seteModel(false);
               }}
             >
-              Update
+              Yes
             </button>
+            <button onClick={() => seteModel(false)}>No</button>
           </div>
-        )}
-        {visibility === 1 && (
-          <div className="color-picker">
-            {colors.map((c) => (
-              <button
-                key={c.name}
-                className={`color-dot ${pickedColor === c.name ? "active" : ""}`}
-                style={{ background: c.gradient }}
-                onClick={() => changeColor(c.name)}
-                aria-label={c.name}
+        </div>
+      )}
+      {iModal && (
+        <div className="template-modal">
+          <h2>
+            Do you want to import selected{" "}
+            {visibility === 1 ? "Environment " : "Graph"}?
+          </h2>
+          <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+            <button
+              onClick={() => {
+                if (visibility === 1) {
+                  importEnv(currentPath);
+                } else if (visibility === 2) {
+                  importGraph(currentPath);
+                }
+                setiModel(false);
+              }}
+            >
+              Yes
+            </button>
+            <button onClick={() => setiModel(false)}>No</button>
+          </div>
+        </div>
+      )}
+      {infoModal && (
+        <div className="template-modal">
+          <h2>Export Info</h2>
+          <span>{exportInfo}</span>
+          <button onClick={() => setInfoModal(false)}>Okay</button>
+        </div>
+      )}
+      <header className="header">
+        <h1></h1>
+        <div className="Window-Controls">
+          {training && (
+            <span className="training-indicator">
+              Training<span className="dots">...</span>
+            </span>
+          )}
+          {isModelReady && (
+            <span className="training-indicator">
+              Inference<span className="dots">...</span>
+            </span>
+          )}
+          {setting && visibility === 2 && (
+            <div className="setting-pop-up">
+              <input
+                value={name}
+                type="text"
+                placeholder="Enter Graph Name"
+                onChange={(e) => setName(e.target.value)}
               />
-            ))}
-          </div>
-        )}
-        <span
-          style={{
-            display: visibility !== 2 ? "none" : "flex",
-            background: isError ? "red" : "green",
-            color: "white",
-            padding: "5px 10px",
-            borderRadius: "100px",
-            fontSize: "18px",
-          }}
-        >
-          {message}
-        </span>
-        <span style={{ display: visibility !== 2 ? "none" : "flex" }}>
-          {graphs[activeGraphId]?.name || null}
-        </span>
-        {user && (
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={signOut}
-            title="Sign Out"
-          >
-            <FaSignOutAlt />
+              <button
+                onClick={() => {
+                  updateName(activeGraphId, name);
+                  setSetting(null);
+                }}
+              >
+                Update
+              </button>
+            </div>
+          )}
+          {setting && visibility === 1 && (
+            <div className="setting-pop-up">
+              <input
+                value={envName}
+                type="text"
+                placeholder="Enter Env Name"
+                onChange={(e) => setEnviorName(e.target.value)}
+              />
+              <button
+                onClick={() => {
+                  setEnvName(envName);
+                  setSetting(null);
+                }}
+              >
+                Update
+              </button>
+            </div>
+          )}
+          {visibility === 1 && (
+            <div className="color-picker">
+              {colors.map((c) => (
+                <button
+                  key={c.name}
+                  className={`color-dot ${pickedColor === c.name ? "active" : ""}`}
+                  style={{ background: c.gradient }}
+                  onClick={() => changeColor(c.name)}
+                  aria-label={c.name}
+                />
+              ))}
+            </div>
+          )}
+          <span style={{ display: visibility !== 1 ? "none" : "flex" }}>
+            {envName || null}
           </span>
-        )}
-        <span
-          style={{
-            display: visibility !== 2 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => setSetting((prev) => !prev)}
-        >
-          <FaFileSignature />
-        </span>
-        <span
-          style={{
-            display: visibility !== 2 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => addGraph()}
-        >
-          <FaPlus />
-        </span>
-        <Link
-          to="/chat-ai"
-          style={{
-            color: "inherit",
-            textDecoration: "none",
-            display: "flex",
-          }}
-        >
+          {visibility === 1 && (
+            <div className="template-picker">
+              <select onChange={(e) => setPath(e.target.value)}>
+                {envList.map((env) => (
+                  <option value={env.path}>{env.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <span
             style={{
-              cursor: "pointer",
+              display: visibility !== 2 ? "none" : "flex",
+              background: isError ? "red" : noGraph ? "purple" : "green",
+              color: "white",
+              padding: "5px 10px",
+              borderRadius: "100px",
+              fontSize: "18px",
             }}
           >
-            <FaRobot />
+            {message}
           </span>
-        </Link>
-        <span
-          style={{
-            display: visibility !== 2 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            if (!activeGraphId) {
-              console.warn("Graph missing id");
-              return;
-            }
-            validateGraphWithStore(
-              graphs[activeGraphId],
-              addGraphError,
-              removeGraphError,
-            );
-          }}
-        >
-          <FaShieldAlt />
-        </span>
-        <span
-          style={{
-            display: visibility !== 2 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => nextGraph()}
-        >
-          <FaArrowRight />
-        </span>
-        <span
-          style={{
-            display: visibility !== 1 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => toggleDebug()}
-        >
-          <FaCode />
-        </span>
-        <span
-          style={{
-            display: visibility !== 1 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => clearExperiment(currentExpId)}
-        >
-          <FaTimes />
-        </span>
-        <span
-          style={{
-            display: visibility !== 1 ? "none" : "flex",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            if (!training) togglePlaying();
-          }}
-        >
-          {playing ? <FaPause /> : <FaPlay />}
-        </span>
-      </div>
-    </header>
+          <span style={{ display: visibility !== 2 ? "none" : "flex" }}>
+            {graphs[activeGraphId]?.name || null}
+          </span>
+          {visibility === 2 && (
+            <div className="template-picker">
+              <select onChange={(e) => setPath(e.target.value)}>
+                {graphList.map((graph) => (
+                  <option value={graph.path}>{graph.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <span
+            style={{
+              display: visibility === 1 || visibility === 2 ? "flex" : "none",
+              cursor: "pointer",
+            }}
+            onClick={() => setiModel(true)}
+          >
+            <FaFileImport />
+          </span>
+          <span
+            style={{
+              display: visibility === 1 || visibility === 2 ? "flex" : "none",
+              cursor: "pointer",
+            }}
+            onClick={() => seteModel(true)}
+          >
+            <FaFileExport />
+          </span>
+          {user && (
+            <span
+              style={{ cursor: "pointer" }}
+              onClick={signOut}
+              title="Sign Out"
+            >
+              <FaSignOutAlt />
+            </span>
+          )}
+          <span
+            style={{
+              display: visibility === 1 || visibility === 2 ? "flex" : "none",
+              cursor: "pointer",
+            }}
+            onClick={() => setSetting((prev) => !prev)}
+          >
+            <FaFileSignature />
+          </span>
+          <span
+            style={{
+              display: visibility !== 2 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => addGraph()}
+          >
+            <FaPlus />
+          </span>
+          <Link
+            to="/chat-ai"
+            style={{
+              color: "inherit",
+              textDecoration: "none",
+              display: "flex",
+            }}
+          >
+            <span
+              style={{
+                cursor: "pointer",
+              }}
+            >
+              <FaRobot />
+            </span>
+          </Link>
+          <span
+            style={{
+              display: visibility !== 2 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              if (!activeGraphId) {
+                console.warn("Graph missing id");
+                return;
+              }
+              validateGraphWithStore(
+                graphs[activeGraphId],
+                addGraphError,
+                removeGraphError,
+              );
+            }}
+          >
+            <FaShieldAlt />
+          </span>
+          <span
+            style={{
+              display: visibility !== 2 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => nextGraph()}
+          >
+            <FaArrowRight />
+          </span>
+          <span
+            style={{
+              display: visibility !== 1 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => toggleDebug()}
+          >
+            <FaCode />
+          </span>
+          <span
+            style={{
+              display: visibility !== 1 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => clearExperiment(currentExpId)}
+          >
+            <FaTimes />
+          </span>
+          <span
+            style={{
+              display: visibility !== 1 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              if (!training) togglePlaying();
+            }}
+          >
+            {playing ? <FaPause /> : <FaPlay />}
+          </span>
+        </div>
+      </header>
+    </>
   );
 };
 

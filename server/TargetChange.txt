@@ -1,0 +1,8 @@
+//Target Changes (Planned) (Later)
+
+Target Obj should have a state/flag of its own that should have two values: Found/Not Found (0,1)
+Agent with Finder ability should get one more state (maybe OBS too): num_target_found: int (similar to how Collector has for num of stuff collected)
+When agent will reach a target, actutaor will be extended to ensure that only target which is found is marked as found; using id and that agent state_space is incremented.
+CompareStateNode would be extended to include this new state: num_target_found
+
+These plan changes will allow the ability of Finder to be extended meaningfully - right now Finder allows agent to find only ONE target per training run - with this change we can ensure that Finder ability allows agents to find more than one target. With MARL introduction and use of independent PPO agents - two agents would also be able to compete to find most targets.

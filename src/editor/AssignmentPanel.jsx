@@ -110,8 +110,6 @@ const SuccessModal = ({ onClose }) => (
   </div>
 );
 
-// ─── Control Panel ────────────────────────────────────────────────────────────
-
 export default function ControlPanel() {
   const [trainingConfig, setTrainingConfig] = useState({});
   const addDraftConfig = useSceneStore((s) => s.addDraftConfig);
@@ -444,10 +442,19 @@ const PPOSection = ({ setThree }) => {
   const [batch, setBatch] = useState(64);
   const [epoch, setEpoch] = useState(10);
   const [n_steps, setnSteps] = useState(2048);
+  const [timesteps, setTimesteps] = useState(10000);
 
   useEffect(() => {
-    setThree({ clipRange, gaeLambda, valLossCf, batch, epoch, n_steps });
-  }, [clipRange, gaeLambda, valLossCf, batch, epoch, n_steps]);
+    setThree({
+      timesteps,
+      clipRange,
+      gaeLambda,
+      valLossCf,
+      batch,
+      epoch,
+      n_steps,
+    });
+  }, [timesteps, clipRange, gaeLambda, valLossCf, batch, epoch, n_steps]);
 
   return (
     <div className="section">
@@ -466,6 +473,12 @@ const PPOSection = ({ setThree }) => {
       </button>
       {open && (
         <div className="setting">
+          <label htmlFor="">Timesteps</label>
+          <input
+            value={timesteps}
+            type="number"
+            onChange={(e) => setTimesteps(Number(e.target.value))}
+          />
           <label htmlFor="">Clip Range</label>
           <input
             value={clipRange}

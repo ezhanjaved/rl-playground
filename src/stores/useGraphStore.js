@@ -74,6 +74,20 @@ export const useGraphStore = create((set, get) => ({
       };
     }),
 
+  addGraphWithId: (id, graphObj) =>
+    set((state) => {
+      const graph = graphObj;
+      const newTotal = [...state.totalGraph, id];
+
+      return {
+        ...state,
+        graphs: { ...state.graphs, [id]: graph },
+        totalGraph: newTotal,
+        indexNumber: newTotal.length - 1,
+        activeGraphId: id,
+      };
+    }),
+
   addNode: (graphId, nodeData) =>
     set((state) => {
       const graph = state.graphs[graphId];

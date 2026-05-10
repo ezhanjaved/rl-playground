@@ -243,7 +243,6 @@ export default function buildObsSpace(agent) {
 
       case "in_target_radius": {
         const info = getNearestTargetInfo(position, entities, "isTarget");
-        console.log("INFO: " + JSON.stringify(info));
         const targetReached = info?.found && info?.distance <= info?.radius;
         constructedObs.push(targetReached ? 1 : 0);
         break;

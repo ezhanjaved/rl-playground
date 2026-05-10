@@ -20,6 +20,13 @@ export const useSceneStore = create((set, get) => ({
   draftTrainingConfig: {},
   worldMounted: false,
   setWorldMounted: (v) => set({ worldMounted: v }),
+  envName: null,
+  setName: (name) => set({ envName: name }),
+  setEnvName: (name) =>
+    set((state) => {
+      const envName = name;
+      return { entities: { ...state.entities, name: envName } };
+    }),
 
   addDraftConfig: (configData) => set({ draftTrainingConfig: configData }),
 
@@ -93,35 +100,6 @@ export const useSceneStore = create((set, get) => ({
     set((state) => {
       return { models: { ...state.models, [id]: modelGLTF } };
     }),
-
-  initializeScene: () => {
-    const { initialized, addEntity } = get();
-    if (initialized) return;
-
-    // addEntity(
-    //     {
-    //         tag: "non-state",
-    //         name: "Bare Tree",
-    //         assetRef: "nature/Tree_4_A_Color1.gltf",
-    //         isDecor: "true",
-    //         position: [2, 0, 2],
-    //         collider: { shape: "capsule", h: 3, r: 0.8 }
-    //     }
-    // ),
-
-    //     addEntity(
-    //         {
-    //             tag: "non-state",
-    //             name: "Bare Tree",
-    //             assetRef: "nature/Tree_4_A_Color1.gltf",
-    //             isDecor: "true",
-    //             position: [6, 0, 2],
-    //             collider: { shape: "capsule", h: 3, r: 0.8 }
-    //         }
-    //     )
-
-    set({ initialized: true });
-  },
 }));
 
 const buildEntitiyFromPartial = (partial, id) => {

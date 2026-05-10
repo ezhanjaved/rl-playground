@@ -20,7 +20,6 @@ export default function finderAdapter(action, agent, actionSpace) {
 
   const info = getNearestTargetInfo(agent.position, entities, "isTarget");
   const targetReached = info?.found && info?.distance <= info?.radius;
-  console.log("Target Reached: " + targetReached);
 
   updateEntity(agent.id, {
     last_action: action,

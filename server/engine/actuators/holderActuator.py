@@ -17,7 +17,6 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
         pickRadius = 1.5  # Engine Defined - Not User
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
         if not targetObj:
-            print("Pickable not found")
             agent.last_action = action
             agent.state_space["last_action_index"] = indexOfAction
             agent.state_space["lastPickSuccess"] = False

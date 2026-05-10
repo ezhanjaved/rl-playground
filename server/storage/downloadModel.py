@@ -1,6 +1,6 @@
 import os
 
-from server.path_config import DATA_DIR, MODEL_DIR
+from server.path_config import DATA_DIR, MODEL_DIR, TEMPLATE_PATH
 from server.storage.r2Client import s3
 
 
@@ -11,6 +11,14 @@ def downloadModel(id):
     full_path.parent.mkdir(parents=True, exist_ok=True)
     s3.download_file("rl-models", file_name, str(full_path))
     return f"{file_name} is downloaded from the bucket to {download_model_path}"
+
+
+def downloadTemplate(name):
+    file_name = name
+    download_template_path = TEMPLATE_PATH
+    full_path = download_template_path / file_name
+    s3.download_file("templates", file_name, str(full_path))
+    return full_path
 
 
 def download_from_s3(uid):

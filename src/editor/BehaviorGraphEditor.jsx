@@ -93,7 +93,15 @@ export function BehaviorGraphEditor() {
   }, [graph?.nodes, graph?.edges]);
 
   if (!graph) {
-    return <div>No graph selected</div>;
+    return (
+      <div className="no-graph-screen">
+        <h2>No Graph Present...</h2>
+        <span>
+          Click "+" button to create a new graph or upload using the template
+          picker.
+        </span>
+      </div>
+    );
   }
 
   return (

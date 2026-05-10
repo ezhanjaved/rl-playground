@@ -13,6 +13,11 @@ def uploadModel(path, id):
     return f"{BUCKET}/{model_folder}/{model_name}"
 
 
+def upload_template(path, template_name):
+    s3.upload_file(path, "templates", template_name)
+    return template_name
+
+
 def uploadConfig(path):
     folder_prefix = os.path.basename(path)
     config_path = f"{BUCKET}/{folder_prefix}"

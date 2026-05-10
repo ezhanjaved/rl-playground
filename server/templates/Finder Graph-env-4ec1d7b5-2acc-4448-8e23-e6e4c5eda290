@@ -1,0 +1,241 @@
+{
+    "graph_412a750f-0bcd-4d04-b90c-5a8f2e8fb8f9": {
+        "nodes": [
+            {
+                "data": {
+                    "label": "OnStep"
+                },
+                "type": "OnStepNode",
+                "id": "node_a5a2022f-f51f-4a46-ade5-74a035990dde",
+                "position": {
+                    "x": 294,
+                    "y": 226
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 50
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "OnEpisodeStart"
+                },
+                "type": "OnEpisodeStartNode",
+                "id": "node_ce4fa6f3-0eb4-427c-b202-78d2a94f3e2c",
+                "position": {
+                    "x": 98,
+                    "y": 173
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 50
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "IsDistanceLess",
+                    "entityOne": null,
+                    "entityTwo": "Target Object"
+                },
+                "type": "IsDistanceLessNode",
+                "id": "node_73258868-3282-4bc8-bb35-e78a707f683c",
+                "position": {
+                    "x": 488,
+                    "y": 151
+                },
+                "measured": {
+                    "width": 400,
+                    "height": 176
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "WithInRadius",
+                    "entityOne": null,
+                    "entityTwo": "Target Object"
+                },
+                "type": "InRadiusNode",
+                "id": "node_23a96c8c-1e18-4c01-ab98-146d074b147f",
+                "position": {
+                    "x": 485,
+                    "y": 385
+                },
+                "measured": {
+                    "width": 400,
+                    "height": 176
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "LastActionIs",
+                    "agentCapability": [
+                        "Moveable"
+                    ],
+                    "entityAction": "idle",
+                    "actionStatus": null
+                },
+                "type": "LastActionIsNode",
+                "id": "node_33718970-44c2-46df-8716-1f393741363a",
+                "position": {
+                    "x": 508,
+                    "y": 608
+                },
+                "measured": {
+                    "width": 450,
+                    "height": 236
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "AddReward",
+                    "agentId": null,
+                    "rewardValue": "-0.01"
+                },
+                "type": "AddRewardNode",
+                "id": "node_5a612806-79ec-4ca0-ac9b-ede1987367a1",
+                "position": {
+                    "x": 1074.625,
+                    "y": 695
+                },
+                "measured": {
+                    "width": 300,
+                    "height": 128
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "AddReward",
+                    "agentId": null,
+                    "rewardValue": "1.0"
+                },
+                "type": "AddRewardNode",
+                "id": "node_4efc4ecf-b9ec-44b0-856b-f0b7e7a451d3",
+                "position": {
+                    "x": 934,
+                    "y": 438
+                },
+                "measured": {
+                    "width": 300,
+                    "height": 128
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "EndEpisode"
+                },
+                "type": "EndEpisodeNode",
+                "id": "node_e1839b5c-b5f8-43b3-b146-8aba7634e656",
+                "position": {
+                    "x": 1309.4704901177017,
+                    "y": 482.9381807794453
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 50
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "data": {
+                    "label": "AddReward",
+                    "agentId": null,
+                    "rewardValue": "0.02"
+                },
+                "type": "AddRewardNode",
+                "id": "node_9c223fdb-9a0f-42cd-870d-09cd702aebb4",
+                "position": {
+                    "x": 927.9818393147327,
+                    "y": 286.27999369594414
+                },
+                "measured": {
+                    "width": 300,
+                    "height": 128
+                },
+                "selected": false,
+                "dragging": false
+            }
+        ],
+        "edges": [
+            {
+                "source": "node_ce4fa6f3-0eb4-427c-b202-78d2a94f3e2c",
+                "sourceHandle": null,
+                "target": "node_a5a2022f-f51f-4a46-ade5-74a035990dde",
+                "targetHandle": null,
+                "id": "edge_c3f5edf1-07e6-4f05-bbea-fd4a50eab357"
+            },
+            {
+                "source": "node_a5a2022f-f51f-4a46-ade5-74a035990dde",
+                "sourceHandle": null,
+                "target": "node_73258868-3282-4bc8-bb35-e78a707f683c",
+                "targetHandle": null,
+                "id": "edge_b7901bed-567f-4b57-90ba-db8fb0aaef31",
+                "selected": false
+            },
+            {
+                "source": "node_a5a2022f-f51f-4a46-ade5-74a035990dde",
+                "sourceHandle": null,
+                "target": "node_23a96c8c-1e18-4c01-ab98-146d074b147f",
+                "targetHandle": null,
+                "id": "edge_1a74b929-be9b-40c1-b402-77f52726cf57"
+            },
+            {
+                "source": "node_a5a2022f-f51f-4a46-ade5-74a035990dde",
+                "sourceHandle": null,
+                "target": "node_33718970-44c2-46df-8716-1f393741363a",
+                "targetHandle": null,
+                "id": "edge_c39345ad-f0b4-4496-9bab-1fb99601be58"
+            },
+            {
+                "source": "node_33718970-44c2-46df-8716-1f393741363a",
+                "sourceHandle": "true",
+                "target": "node_5a612806-79ec-4ca0-ac9b-ede1987367a1",
+                "targetHandle": null,
+                "id": "edge_4214e20e-d86d-4c9e-adcc-6ffceeb8bb31"
+            },
+            {
+                "source": "node_23a96c8c-1e18-4c01-ab98-146d074b147f",
+                "sourceHandle": "true",
+                "target": "node_4efc4ecf-b9ec-44b0-856b-f0b7e7a451d3",
+                "targetHandle": null,
+                "id": "edge_65a9abec-51bf-484b-870d-0dc932efa284"
+            },
+            {
+                "source": "node_4efc4ecf-b9ec-44b0-856b-f0b7e7a451d3",
+                "sourceHandle": null,
+                "target": "node_e1839b5c-b5f8-43b3-b146-8aba7634e656",
+                "targetHandle": null,
+                "id": "edge_c1c6d48e-1e50-479b-bc55-6880a3c503ce"
+            },
+            {
+                "source": "node_73258868-3282-4bc8-bb35-e78a707f683c",
+                "sourceHandle": "true",
+                "target": "node_9c223fdb-9a0f-42cd-870d-09cd702aebb4",
+                "targetHandle": null,
+                "id": "edge_98e0bf4d-a8b9-4410-b661-78428d6c4452"
+            }
+        ],
+        "name": "Finder 2",
+        "id": "graph_412a750f-0bcd-4d04-b90c-5a8f2e8fb8f9"
+    },
+    "graph_c7e6acde-6dc3-46d7-8042-daebd615d225": {
+        "nodes": [],
+        "edges": [],
+        "name": "Finder 1",
+        "id": "graph_c7e6acde-6dc3-46d7-8042-daebd615d225"
+    }
+}
