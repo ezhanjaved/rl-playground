@@ -18,6 +18,8 @@ const animationMap = {
   Rogue: { ...baseAnimations },
   Ranger: { ...baseAnimations },
   Knight: { ...baseAnimations },
+  Barbarian: { ...baseAnimations },
+  "Rogue Human": { ...baseAnimations },
 };
 
 export default animationMap;

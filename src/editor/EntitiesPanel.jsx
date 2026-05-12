@@ -22,6 +22,8 @@ import agent3 from "../assets/agent3.png";
 import agent4 from "../assets/agent4.png";
 import agent5 from "../assets/agent5.png";
 import agent6 from "../assets/agent6.png";
+import agent7 from "../assets/agent7.png";
+import agent8 from "../assets/agent8.png";
 import target1 from "../assets/target_1.png";
 import target2 from "../assets/target_2.png";
 import Wall from "../assets/Wall.png";
@@ -197,6 +199,40 @@ export default function EntitiesPanel() {
           1: "agents/heroes/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Collector", "Depositor"],
+        isDecor: false,
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_7",
+      label: "Barbarian",
+      image: agent7,
+      payload: {
+        tag: "agent",
+        name: "Barbarian",
+        assetRef: "agents/heroes/Barbarian.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Finder", "Navigator"],
+        isDecor: false,
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_8",
+      label: "Rogue Human",
+      image: agent8,
+      payload: {
+        tag: "agent",
+        name: "Rogue Human",
+        assetRef: "agents/heroes/Rogue.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Navigator", "Collector"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
