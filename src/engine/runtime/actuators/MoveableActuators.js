@@ -24,7 +24,7 @@ export default function moveAdapter(action, position, rotation, agentId) {
 
   let vx = 0;
   let vz = 0;
-  print("Speed: ", speed);
+
   switch (action) {
     case "move_up":
       vx = Rx * speed;

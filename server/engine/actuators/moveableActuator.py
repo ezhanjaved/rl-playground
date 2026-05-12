@@ -18,7 +18,6 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
     vx, vy = 0.0, 0.0
     wz = 0.0
 
-    print("Speed: ", speed)
     match action:
         case "move_up":
             vx = Rx * float(speed)
