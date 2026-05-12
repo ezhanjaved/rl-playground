@@ -2,7 +2,7 @@ import { useSceneStore } from "../../../stores/useSceneStore";
 import { getForwardVectorFromYaw } from "../../utility/rotationCal";
 export default function moveAdapter(action, position, rotation, agentId) {
   const { bodies, entities } = useSceneStore.getState();
-  const speed = entities[agentId]?.settings?.speed ?? 1;
+  const speed = entities[agentId]?.settings?.speed ?? 2.0;
   const body = bodies[agentId];
 
   if (!body) {
@@ -18,13 +18,13 @@ export default function moveAdapter(action, position, rotation, agentId) {
     };
   }
 
-  const turnSpeed = 0.05;
+  const turnSpeed = 0.1;
   let [rx, ry, rz] = rotation;
   const { x: Rx, z: Rz } = getForwardVectorFromYaw(ry);
 
   let vx = 0;
   let vz = 0;
-
+  print("Speed: ", speed);
   switch (action) {
     case "move_up":
       vx = Rx * speed;

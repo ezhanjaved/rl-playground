@@ -24,10 +24,13 @@ export async function sendServer() {
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify(data),
       },
     );

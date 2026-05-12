@@ -16,7 +16,10 @@ export async function uploadEnv(setMessage, setInfoModal) {
       `${import.meta.env.VITE_API_BASE_URL}/template/export-template`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify(body),
       },
     );

@@ -8,7 +8,7 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
     if not body_exist(bullet_id, client):
         return
 
-    turnSpeed = 0.05
+    turnSpeed = 0.1 * 60.0  # To compensate for Rapier instant rot
 
     _, quat = p.getBasePositionAndOrientation(bullet_id, physicsClientId=client)
     rot = p.getEulerFromQuaternion(quat, physicsClientId=client)
@@ -18,6 +18,7 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
     vx, vy = 0.0, 0.0
     wz = 0.0
 
+    print("Speed: ", speed)
     match action:
         case "move_up":
             vx = Rx * float(speed)

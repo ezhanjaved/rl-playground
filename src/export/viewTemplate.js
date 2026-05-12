@@ -12,7 +12,10 @@ export async function viewEnvs(setEnvList) {
       `${import.meta.env.VITE_API_BASE_URL}/template/view-templates`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify(body),
       },
     );

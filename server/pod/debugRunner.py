@@ -20,3 +20,4 @@ def debugRunner(id):
 # debugRunner("5db58168-e6dc-4fbc-8068-50feebe09892") DEPOSIT/COLLECTOR - DEPOSIT BEHIND & RIGHT - COLLECTOR LEFT & AHEAD
 # debugRunner("04bfd79b-2f03-453c-834c-8cf47e8686cc") DEPOSIT/COLLECTOR IN STRAIGHT LINE
 # debugRunner("ce546b59-62ae-4ff2-a036-55b3ad5d965c")
+# debugRunner("ecb62be7-fd2b-4498-bed1-cba38b065dd9")

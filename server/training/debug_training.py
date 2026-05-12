@@ -1,3 +1,5 @@
+from random import random
+
 from server.engine.controller.heuristic.finderMoveable import heuristic_controller
 from server.engine.controller.randomController import (
     random_controller,
@@ -10,7 +12,7 @@ def debugPipeline(scenario, runTimeState, uid):
     env = SimulationEnv(scenario, runTimeState)
 
     num_episodes = 1
-    max_steps_per_episode = 500
+    max_steps_per_episode = 5000
 
     for episode in range(num_episodes):
         print(f"\n=== Episode Number: {episode} ===")
@@ -18,7 +20,7 @@ def debugPipeline(scenario, runTimeState, uid):
         print("Initial Obs: ", obs)
 
         for step in range(max_steps_per_episode):
-            actions = heuristic_controller(obs, runTimeState)
+            actions = random_controller(obs, runTimeState)
             obs, reward, terminated, truncated, info = env.step(actions)
 
             print(f"  Step {step} | Action taken: {actions}")

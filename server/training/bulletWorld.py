@@ -1,3 +1,5 @@
+import time
+
 import pybullet as p
 import pybullet_data
 
@@ -74,11 +76,12 @@ class PyBulletWorld:
 
         return bullet_id
 
-    def step_simulation(self, steps=2):
+    def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
+            # time.sleep(1 / 60)
 
-    def settle(self, steps=2):
+    def settle(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
 
