@@ -68,6 +68,8 @@ class PyBulletWorld:
             bullet_id = self.spawn_deposit(
                 positionEntity, rotationEntity, colliderEntity
             )
+        elif entity.tag == "generic":
+            pass
         else:
             raise ValueError(
                 f"spawn() received unknown entity tag '{entity.tag}' "
