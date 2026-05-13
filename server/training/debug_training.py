@@ -12,7 +12,7 @@ def debugPipeline(scenario, runTimeState, uid):
     env = SimulationEnv(scenario, runTimeState)
 
     num_episodes = 1
-    max_steps_per_episode = 5000
+    max_steps_per_episode = 50
 
     for episode in range(num_episodes):
         print(f"\n=== Episode Number: {episode} ===")

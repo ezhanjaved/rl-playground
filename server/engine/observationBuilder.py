@@ -69,7 +69,9 @@ def distance_in_direction(position, rotation, direction_angle_offset, bucket):
         target_pos = entity.position
         bullet_pos = positionSwap(target_pos)
 
-        dx = bullet_pos[0] - position[0]
+        dx = -(
+            bullet_pos[0] - position[0]
+        )  # Added negative sign to match with Rapier convention
         dy = bullet_pos[1] - position[1]
         dist = math.sqrt(dx * dx + dy * dy)
         if dist > max_range or dist == 0.0:
@@ -106,7 +108,9 @@ def nearestDistance(position, rotation, bucket, mode):
             # PyBullet Y = depth axis (Three.js Z)
             d = abs(position[1] - bullet_pos[1])
         elif mode == "delta-x":
-            dx = bullet_pos[0] - position[0]
+            dx = -(
+                bullet_pos[0] - position[0]
+            )  # Added negative sign to match with Rapier convention
             dy = bullet_pos[1] - position[1]
             theta = rotation[2]
             d = math.cos(theta) * dx + math.sin(theta) * dy
