@@ -6,7 +6,8 @@ def finderActuator(action, agentData, entities, indexOfAction):
         return
     if action != "interact":
         agentData.last_action = action
-        agentData.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agentData.capabilities:
+            agentData.state_space["last_action_index"] = indexOfAction
         return
     pos = agentData.position
     found, distance, radius = getNearestTargetInfo(pos, entities, "target")
@@ -17,5 +18,6 @@ def finderActuator(action, agentData, entities, indexOfAction):
 
     agentData.last_action = action
     agentData.state_space["targetReached"] = targetReached
-    agentData.state_space["last_action_index"] = indexOfAction
+    if "TemporalMemory" in agentData.capabilities:
+        agentData.state_space["last_action_index"] = indexOfAction
     return

@@ -18,28 +18,32 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
         if not targetObj:
             agent.last_action = action
-            agent.state_space["last_action_index"] = indexOfAction
+            if "TemporalMemory" in agent.capabilities:
+                agent.state_space["last_action_index"] = indexOfAction
             agent.state_space["lastPickSuccess"] = False
             return
 
         if targetObj:
             if agent.state_space["holding"]:
                 agent.last_action = action
-                agent.state_space["last_action_index"] = indexOfAction
+                if "TemporalMemory" in agent.capabilities:
+                    agent.state_space["last_action_index"] = indexOfAction
                 agent.state_space["lastPickSuccess"] = False
                 return
             elif not agent.state_space["holding"]:
                 bulletId = eM[targetObj.id]
                 p.removeBody(bulletId, physicsClientId=client)
                 agent.last_action = action
-                agent.state_space["last_action_index"] = indexOfAction
+                if "TemporalMemory" in agent.capabilities:
+                    agent.state_space["last_action_index"] = indexOfAction
                 agent.state_space["holding"] = True
                 agent.state_space["lastPickSuccess"] = True
                 del entities[targetObj.id]
             return
         else:
             agent.last_action = action
-            agent.state_space["last_action_index"] = indexOfAction
+            if "TemporalMemory" in agent.capabilities:
+                agent.state_space["last_action_index"] = indexOfAction
             agent.state_space["lastPickSuccess"] = True
             return
 
@@ -85,13 +89,15 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
         )
 
         agent.last_action = action
-        agent.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
         agent.state_space["holding"] = False
         agent.state_space["lastPickSuccess"] = False
         return
     else:
         agent.last_action = action
-        agent.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
         agent.state_space["lastPickSuccess"] = False
         return
 

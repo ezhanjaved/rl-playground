@@ -157,6 +157,7 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      // --- (TemporalMemory) ---
       case "last_action": {
         const idx = stateSpace?.last_action_index ?? 0;
         const totalActions = agent?.action_space?.length ?? 1;

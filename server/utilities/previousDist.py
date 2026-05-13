@@ -14,11 +14,13 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
     if last_action not in ["move_up", "move_right", "move_left", "idle"]:
         agent = entities[agent_id]
         agent.last_action = last_action
-        agent.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
         return
 
     new_state_space = dict(agent.state_space)
-    new_state_space["last_action_index"] = indexOfAction
+    if "TemporalMemory" in agent.capabilities:
+        agent.state_space["last_action_index"] = indexOfAction
 
     for cap in capabilities:
         match cap:

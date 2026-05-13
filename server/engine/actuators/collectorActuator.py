@@ -17,7 +17,8 @@ def collectorActuator(action, agent, entities, eM, client, indexOfAction):
 
         if not targetObj:
             agent.last_action = action
-            agent.state_space["last_action_index"] = indexOfAction
+            if "TemporalMemory" in agent.capabilities:
+                agent.state_space["last_action_index"] = indexOfAction
             agent.state_space["lastPickSuccess"] = False
             return
 
@@ -25,10 +26,11 @@ def collectorActuator(action, agent, entities, eM, client, indexOfAction):
         updatedNum = numberItemsCollected + 1
 
         agent.last_action = action
-        agent.state_space["last_action_index"] = indexOfAction
         agent.state_space["lastItemCollected"] = targetObj.tag
         agent.state_space["items_collected"] = updatedNum
         agent.state_space["lastPickSuccess"] = True
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
 
         bullet_Id = eM[targetObj.id]
         p.removeBody(bullet_Id, physicsClientId=client)

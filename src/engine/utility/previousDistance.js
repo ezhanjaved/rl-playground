@@ -14,10 +14,8 @@ export default function previousDistanceCorrection(
   let value = null;
   let best = null;
   let newStateSpace = { ...agent.state_space };
-
   const action_space = agent?.action_space; //array of actions
   const indexOfAction = getIndexOfObs(action_space, last_action);
-  newStateSpace.last_action_index = indexOfAction;
 
   capabilities.forEach((cap) => {
     switch (cap) {
@@ -67,6 +65,10 @@ export default function previousDistanceCorrection(
         if (value < best) {
           newStateSpace.previous_distance_deposit = value;
         }
+        break;
+
+      case "TemporalMemory":
+        newStateSpace.last_action_index = indexOfAction;
         break;
     }
   });

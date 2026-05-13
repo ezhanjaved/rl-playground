@@ -9,7 +9,8 @@ def depositActuator(action, agent_data, entities, indexOfAction):
 
     if action != "deposit":
         agent.last_action = action
-        agent.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
         return
 
     found, distance, radius = getNearestTargetInfo(agent.position, entities, "deposit")
@@ -18,7 +19,8 @@ def depositActuator(action, agent_data, entities, indexOfAction):
 
     if not found or distance > radius:
         agent.last_action = action
-        agent.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
         agent.state_space["lastDepositSuccess"] = False
         agent.state_space["nearDeposit"] = is_near_deposit
         return
@@ -31,7 +33,8 @@ def depositActuator(action, agent_data, entities, indexOfAction):
 
     if not holding_item and collected_items == 0:
         agent.last_action = action
-        agent.state_space["last_action_index"] = indexOfAction
+        if "TemporalMemory" in agent.capabilities:
+            agent.state_space["last_action_index"] = indexOfAction
         agent.state_space["lastDepositSuccess"] = False
         agent.state_space["nearDeposit"] = is_near_deposit
         return
@@ -51,7 +54,8 @@ def depositActuator(action, agent_data, entities, indexOfAction):
     previous_deposit = agent.state_space.get("items_deposited", 0)
 
     agent.last_action = action
-    agent.state_space["last_action_index"] = indexOfAction
+    if "TemporalMemory" in agent.capabilities:
+        agent.state_space["last_action_index"] = indexOfAction
 
     agent.state_space["items_deposited"] = previous_deposit + items_just_deposited
     agent.state_space["nearDeposit"] = is_near_deposit

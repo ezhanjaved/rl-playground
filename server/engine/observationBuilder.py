@@ -178,6 +178,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "agent_rotation_y":
                 constructed_obs.append(rotation[2] / math.pi)
 
+            # --- (TemporalMemory) ---
             case "last_action":
                 idx = state_space.get("last_action_index", 0)
                 total_actions = (
