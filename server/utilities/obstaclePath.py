@@ -8,8 +8,8 @@ def obstacleAvoid(pos, rot, obstaclePos):
     [ox, oy, _] = swappedPos
     [rx, ry, rz] = rot
 
-    dx = abs(ox - ax)
-    dy = abs(oy - ay)
+    dx = -(ox - ax)  # X flip for coordinate convention
+    dy = oy - ay
 
     lookahead = 3
     agentRad = 0.5
