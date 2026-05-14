@@ -27,9 +27,11 @@ class RewardLoggerCallback(BaseCallback):
         self._episode_count = 0
         self._rollout_count = 0
         self._checkpoint_count = 0
-        self._current_episode_reward = 0.0
         self._all_rewards = []
         self._last_uploaded_checkpoint: str | None = None
+
+        # Track how many ep_info_buffer entries we've already processed
+        self._processed_ep_info_count = 0
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -86,19 +88,22 @@ class RewardLoggerCallback(BaseCallback):
             print(f"Checkpoint upload failed (non-fatal): {e}")
 
     def _on_step(self) -> bool:
-        rewards = self.locals.get("rewards", [])
-        dones = self.locals.get("dones", [])
+        # ep_info_buffer is a deque populated by SubprocVecEnv whenever an episode ends.
+        # Each entry is a dict with at minimum "r" (episode reward) and "l" (episode length).
+        # This is far more reliable than reading `dones`/`rewards` from self.locals with PPO.
+        ep_info_buffer = self.model.ep_info_buffer
+        if not ep_info_buffer:
+            return True
 
-        if rewards is not None and len(rewards) > 0:
-            self._current_episode_reward += float(np.mean(rewards))
+        new_entries = list(ep_info_buffer)[self._processed_ep_info_count :]
+        if not new_entries:
+            return True
 
-        if dones is not None and len(dones) > 0 and any(dones):
-            n_done = int(np.sum(dones))
+        for ep_info in new_entries:
+            ep_reward = ep_info.get("r", 0.0)
             prev_count = self._episode_count
-            self._episode_count += n_done
-
-            for _ in range(n_done):
-                self._all_rewards.append(self._current_episode_reward)
+            self._episode_count += 1
+            self._all_rewards.append(float(ep_reward))
 
             if self._episode_count // self.log_every_n > prev_count // self.log_every_n:
                 smoothed = float(np.mean(self._all_rewards[-10:]))
@@ -106,7 +111,7 @@ class RewardLoggerCallback(BaseCallback):
                     {
                         "current_episode": self._episode_count,
                         "current_timestep": self.num_timesteps,
-                        "last_episode_reward": round(self._current_episode_reward, 4),
+                        "last_episode_reward": round(float(ep_reward), 4),
                         "smoothed_reward": round(smoothed, 4),
                         "status": "training",
                     }
@@ -118,7 +123,7 @@ class RewardLoggerCallback(BaseCallback):
             ):
                 self._flush()
 
-            self._current_episode_reward = 0.0
+        self._processed_ep_info_count += len(new_entries)
 
         return True
 

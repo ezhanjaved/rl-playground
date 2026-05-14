@@ -18,6 +18,7 @@ import {
   StateEqualsToNode,
   CompareStateNode,
   IsDistanceLessNode,
+  IsDistanceMoreNode,
   NumericObsNode,
   BoolObsNode,
   IsDeltaXLessNode,
@@ -42,6 +43,7 @@ export function BehaviorGraphEditor() {
   const nodeTypes = {
     OnStepNode: OnStepNode,
     IsDistanceLessNode: IsDistanceLessNode,
+    IsDistanceMoreNode: IsDistanceMoreNode,
     IsDeltaXLessNode: IsDeltaXLessNode,
     IsDeltaZPosNode: IsDeltaZPosNode,
     OnEpisodeStartNode: OnEpisodeStartNode,

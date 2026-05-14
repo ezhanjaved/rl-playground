@@ -277,6 +277,62 @@ def visitNode(node_id, graph, ctx):
             visitNode(chosen_edge.target, graph, ctx)
         return
 
+    elif node_data.type == "IsDistanceMoreNode":
+        entity_one = node_data.data.get("entityOne")
+        entity_two = node_data.data.get("entityTwo")
+
+        is_agent_1 = entity_one == "Agent"
+        is_agent_2 = entity_two == "Agent"
+
+        if is_agent_1 == is_agent_2:
+            return
+
+        capabilities = ctx["facts"].get("capabilities", [])
+        has_holder = "Holder" in capabilities
+        has_collector = "Collector" in capabilities
+        has_depositor = "Depositor" in capabilities
+
+        distance_more = False
+        tolerance = 0.2
+        buckets = ctx["buckets"]
+
+        def diff_cal(bucket_key, state_key):
+            nonlocal distance_more
+            agent_pos = ctx["facts"]["position"]
+            agent_rot = ctx["facts"]["rotation"]
+            previous_distance = ctx["facts"]["state_space"].get(state_key)
+            current_distance, _ = nearestDistance(
+                agent_pos, agent_rot, buckets[bucket_key], "both"
+            )
+            if current_distance is not None and previous_distance is not None:
+                if current_distance > previous_distance + tolerance:
+                    distance_more = True
+
+        if entity_two == "Target Object":
+            diff_cal("target", "previous_distance_target")
+
+        if entity_two == "Non-State Object":
+            diff_cal("obstacle", "previous_distance_obstacle")
+
+        elif entity_two == "Pickable Object":
+            if has_holder:
+                diff_cal("pickable", "previous_distance_pickable")
+            elif has_collector:
+                diff_cal("collectable", "previous_distance_collect")
+            else:
+                return
+
+        elif entity_two == "Deposit Object":
+            if has_depositor:
+                diff_cal("deposit", "previous_distance_deposit")
+            else:
+                return
+
+        chosen_edge = _find_bool_edge(node_id, graph, distance_more)
+        if chosen_edge:
+            visitNode(chosen_edge.target, graph, ctx)
+        return
+
     elif node_data.type == "IsDeltaXLessNode":
         DELTA_X_CHECK = 0.05
         delta_x = False

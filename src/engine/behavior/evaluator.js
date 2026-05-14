@@ -426,6 +426,91 @@ function visitNode(NodeId, graph, ctxObj) {
     return;
   }
 
+  if (currentNodeData.type === "IsDistanceMoreNode") {
+    let distanceMore = false;
+    let tolerance = 0.2;
+
+    const entityOne = currentNodeData.data.entityOne;
+    const entityTwo = currentNodeData.data.entityTwo;
+    const isAgent1 = entityOne === "Agent";
+    const isAgent2 = entityTwo === "Agent";
+
+    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
+    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
+    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
+    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
+
+    const targetPredicate = (e) =>
+      e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
+    const pickablePredicate = (e) =>
+      e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
+    const collectPredicate = (e) =>
+      e.isCollectable === true ||
+      e.isCollectable === "true" ||
+      e.isCollectable === 1;
+    const depositPredicate = (e) =>
+      e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
+    const obstaclePredicate = (e) =>
+      e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
+
+    const diffCal = (predicate, key) => {
+      const agentCurrentPos = ctxObj?.facts?.position;
+      const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
+      const { entities } = useSceneStore.getState();
+      const rotation = ctxObj?.facts?.rotation;
+      const { min: currentDistance } = nearestDistance(
+        agentCurrentPos,
+        rotation,
+        predicate,
+        "both",
+        entities,
+      );
+
+      if (
+        currentDistance !== null &&
+        currentDistance > previousDistance + tolerance
+      ) {
+        distanceMore = true;
+      }
+    };
+
+    if (entityTwo === "Target Object") {
+      diffCal(targetPredicate, "previous_distance_target");
+    }
+
+    if (entityTwo === "Non-State Object") {
+      diffCal(obstaclePredicate, "previous_distance_obstacle");
+    }
+
+    if (entityTwo === "Pickable Object") {
+      if (hasHolder) {
+        diffCal(pickablePredicate, "previous_distance_pickable");
+      } else if (hasCollector) {
+        diffCal(collectPredicate, "previous_distance_collect");
+      } else {
+        return;
+      }
+    }
+
+    if (entityTwo === "Deposit Object") {
+      if (hasDepositor) {
+        diffCal(depositPredicate, "previous_distance_deposit");
+      } else {
+        return;
+      }
+    }
+
+    const edges = findEdges(NodeId, graph);
+    const chosenEdge = edges.find((e) =>
+      distanceMore
+        ? e.sourceHandle?.toLowerCase().includes("true")
+        : e.sourceHandle?.toLowerCase().includes("false"),
+    );
+    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    return;
+  }
+
   if (currentNodeData.type === "NumericObsNode") {
     const operations = {
       "Less Than": (a, b) => a < b,

@@ -36,6 +36,13 @@ export function BehaviorGraphPanel() {
       },
     },
     {
+      id: "is-distance-more-node",
+      payload: {
+        data: { label: "IsDistanceMore", entityOne: null, entityTwo: null },
+        type: "IsDistanceMoreNode",
+      },
+    },
+    {
       id: "is-delta-x-less-node",
       payload: {
         data: { label: "IsDeltaXLess", entityOne: null, entityTwo: null },
