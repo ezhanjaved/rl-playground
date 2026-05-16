@@ -30,18 +30,17 @@ class RewardLoggerCallback(BaseCallback):
         self._all_rewards = []
         self._last_uploaded_checkpoint: str | None = None
 
-        # Track how many ep_info_buffer entries we've already processed
-        self._total_episodes_seen = 0
+        # Tracks how many ep_info_buffer entries we've already processed.
+        # Updated in _on_step so we catch new episodes before the buffer can rotate.
+        self._prev_ep_info_len = 0
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
 
     def _buffer(self, data: dict):
-        """Merge data into the pending buffer (latest value wins)."""
         self._pending.update(data)
 
     def _flush(self):
-        """Write the buffered data to Supabase and clear the buffer."""
         if not self._pending:
             return
         update_model(
@@ -53,11 +52,6 @@ class RewardLoggerCallback(BaseCallback):
         self._pending.clear()
 
     def _upload_latest_checkpoint(self):
-        """
-        Find the most recently written checkpoint in checkpoint_dir,
-        upload it to the bucket, and update the DB checkpoints counter.
-        Skips if the latest checkpoint was already uploaded.
-        """
         try:
             checkpoints = sorted(
                 [f for f in os.listdir(self.checkpoint_dir) if f.endswith(".zip")]
@@ -88,23 +82,21 @@ class RewardLoggerCallback(BaseCallback):
             print(f"Checkpoint upload failed (non-fatal): {e}")
 
     def _on_step(self) -> bool:
+        # Process new episodes as they land in ep_info_buffer, before the
+        # deque can rotate and lose entries (maxlen=100).
+        current_len = len(self.model.ep_info_buffer)
+        if current_len > self._prev_ep_info_len:
+            new_entries = list(self.model.ep_info_buffer)[self._prev_ep_info_len :]
+            for ep_info in new_entries:
+                self._episode_count += 1
+                self._all_rewards.append(float(ep_info.get("r", 0.0)))
+            self._prev_ep_info_len = current_len
         return True
 
     def _on_rollout_end(self) -> None:
         self._rollout_count += 1
 
-        ep_info_buffer = self.model.ep_info_buffer
-        total_seen = self.model._episode_num
-        # Use buffer length delta instead of _episode_num
-        new_count = total_seen - self._total_episodes_seen
-
-        if new_count > 0:
-            new_entries = ep_info_buffer[-min(new_count, len(ep_info_buffer)) :]
-            for ep_info in new_entries:
-                self._episode_count += 1
-                self._all_rewards.append(float(ep_info.get("r", 0.0)))
-
-            self._total_episodes_seen = total_seen  # always moves forward
+        if self._all_rewards:
             smoothed = float(np.mean(self._all_rewards[-10:]))
             self._buffer(
                 {
@@ -116,7 +108,6 @@ class RewardLoggerCallback(BaseCallback):
                 }
             )
 
-        # --- Rollout buffer stats ---
         buf = self.model.rollout_buffer
         data = {
             "rollout_count": self._rollout_count,
