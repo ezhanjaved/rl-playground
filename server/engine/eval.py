@@ -1,3 +1,5 @@
+from profile import run
+
 from server.engine.observationBuilder import (
     collect_predicate,
     deposit_predicate,
@@ -11,6 +13,7 @@ from server.engine.observationBuilder import (
 
 def evaluator(aid, agentObs, agentObsAfter, graph, config, runTimeSnap):
     entities = runTimeSnap.entities
+    currentEpisodeStep = runTimeSnap.step_count
     if not entities or not graph or not config:
         return 0, False, False, {}
 
@@ -41,6 +44,7 @@ def evaluator(aid, agentObs, agentObsAfter, graph, config, runTimeSnap):
         "postObsVector": postAgentObs,
         "ent": entities,
         "buckets": entity_buckets,
+        "current_episode_step": currentEpisodeStep,
     }
 
     start = None
@@ -101,8 +105,12 @@ def visitNode(node_id, graph, ctx):
         return
 
     elif node_data.type == "TruncateEpisodeNode":
-        ctx["truncated"] = True
-        ctx["_stop"] = True
+        maxSteps = node_data.data.get("maxSteps", 500)
+        maxSteps = int(maxSteps)
+        current_steps = ctx["current_episode_step"]
+        if current_steps >= maxSteps:
+            ctx["truncated"] = True
+            ctx["_stop"] = True
         return
 
     elif node_data.type == "StateEqualsToNode":

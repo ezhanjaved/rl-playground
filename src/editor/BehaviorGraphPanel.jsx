@@ -145,7 +145,7 @@ export function BehaviorGraphPanel() {
     {
       id: "truncate-episode-node",
       payload: {
-        data: { label: "TruncateEp" },
+        data: { label: "TruncateEp", maxSteps: 100 },
         type: "TruncateEpisodeNode",
       },
     },

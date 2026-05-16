@@ -50,6 +50,7 @@ class EnvironmentCore:
 
     def compute_reward(self, obsBefore, obsAfter):  # will call it to calculate reward
         runtimeSnap = self.runtime
+        self.runtime.step_count += 1
         for aid, agent_obs in obsBefore.items():
             graph = runtimeSnap.graph_per_agent[aid]
             config = runtimeSnap.assignment_by_agent[aid]

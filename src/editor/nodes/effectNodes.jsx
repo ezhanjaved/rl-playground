@@ -30,13 +30,24 @@ export function EndEpisodeNode({ data, id }) {
 export function TruncateEpisodeNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
   const deleteNode = useGraphStore((s) => s.deleteNode);
+  const updateNode = useGraphStore((s) => s.updateNode);
+
+  function updateValue(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, maxSteps: Number(e.target.value) },
+    });
+  }
 
   return (
     <div
       onDoubleClick={() => deleteNode(activeGraphId, id)}
-      className="event-node"
+      className="conditional-node"
+      style={{ width: "250px" }}
     >
       <span className="node-heading">{data?.label ?? "Truncate Episode"}</span>
+      <label>Number of Max Steps</label>
+      <input type="number" value={data?.maxSteps ?? 0} onChange={updateValue} />
+
       <Handle
         type="target"
         position={Position.Left}
