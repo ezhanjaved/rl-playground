@@ -4,7 +4,7 @@ import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
 
 from server.path_config import MODEL_DIR
 from server.storage.uploadModel import downloadLatestCheckpoint
@@ -76,6 +76,14 @@ class SingleAgentTrainer:
             start_method="spawn",
         )
 
+        vec_env = VecNormalize(
+            vec_env,
+            norm_obs=False,  # obs already normalized to [-1,1]
+            norm_reward=True,  # ← this fixes the value_loss explosion
+            clip_reward=10.0,  # ← clips extreme terminal rewards
+            gamma=self.gamma,
+        )
+
         checkpoint_dir = (
             MODEL_DIR / f"model_training_{self.training_id}" / "checkpoints"
         )
@@ -85,6 +93,14 @@ class SingleAgentTrainer:
         checkpoint_path = downloadLatestCheckpoint(self.training_id, checkpoint_dir)
         if checkpoint_path is not None:
             print(f"Resuming from checkpoint: {checkpoint_path}")
+            # Load VecNormalize stats alongside checkpoint
+            vecnorm_path = str(checkpoint_path).replace(".zip", "_vecnormalize.pkl")
+            if os.path.exists(vecnorm_path):
+                vec_env = VecNormalize.load(vecnorm_path, vec_env)
+                print(f"VecNormalize stats restored from {vecnorm_path}")
+            else:
+                print("No VecNormalize stats found, starting normalizer fresh.")
+
             self.model = PPO.load(str(checkpoint_path), env=vec_env)
             try:
                 stem = checkpoint_path.stem
@@ -122,7 +138,7 @@ class SingleAgentTrainer:
             save_path=str(checkpoint_dir),
             name_prefix=f"checkpoint_{self.training_id}",
             save_replay_buffer=False,
-            save_vecnormalize=False,
+            save_vecnormalize=True,
         )
 
         reward_callback = RewardLoggerCallback(

@@ -88,65 +88,45 @@ class RewardLoggerCallback(BaseCallback):
             print(f"Checkpoint upload failed (non-fatal): {e}")
 
     def _on_step(self) -> bool:
-        # ep_info_buffer is a deque populated by SubprocVecEnv whenever an episode ends.
-        # Each entry is a dict with at minimum "r" (episode reward) and "l" (episode length).
-        # This is far more reliable than reading `dones`/`rewards` from self.locals with PPO.
-        ep_info_buffer = self.model.ep_info_buffer
-        if not ep_info_buffer:
-            return True
-
-        total_seen = self.model._episode_num  # incremented by SB3 internally
-        new_count = total_seen - self._last_episode_num
-
-        if new_count <= 0:
-            return True
-
-        # Grab only the tail — the most recent `new_count` entries
-        new_entries = list(ep_info_buffer)[-new_count:]
-        if not new_entries:
-            return True
-
-        for ep_info in new_entries:
-            ep_reward = ep_info.get("r", 0.0)
-            prev_count = self._episode_count
-            self._episode_count += 1
-            self._all_rewards.append(float(ep_reward))
-
-            if self._episode_count // self.log_every_n > prev_count // self.log_every_n:
-                smoothed = float(np.mean(self._all_rewards[-10:]))
-                self._buffer(
-                    {
-                        "current_episode": self._episode_count,
-                        "current_timestep": self.num_timesteps,
-                        "last_episode_reward": round(float(ep_reward), 4),
-                        "smoothed_reward": round(smoothed, 4),
-                        "status": "training",
-                    }
-                )
-
-                self._flush()
-
-        self._last_episode_num = total_seen
         return True
 
     def _on_rollout_end(self) -> None:
         self._rollout_count += 1
+
+        ep_info_buffer = self.model.ep_info_buffer
+        total_seen = self.model._episode_num
+        new_count = total_seen - self._last_episode_num
+
+        if new_count > 0:
+            new_entries = list(ep_info_buffer)[-min(new_count, len(ep_info_buffer)) :]
+            for ep_info in new_entries:
+                ep_reward = ep_info.get("r", 0.0)
+                self._episode_count += 1
+                self._all_rewards.append(float(ep_reward))
+
+            self._last_episode_num = total_seen
+            smoothed = float(np.mean(self._all_rewards[-10:]))
+            self._buffer(
+                {
+                    "current_episode": self._episode_count,
+                    "current_timestep": self.num_timesteps,
+                    "last_episode_reward": round(float(self._all_rewards[-1]), 4),
+                    "smoothed_reward": round(smoothed, 4),
+                    "status": "training",
+                }
+            )
+
+        # --- Rollout buffer stats ---
         buf = self.model.rollout_buffer
-
-        advantages = buf.advantages.flatten()
-        returns = buf.returns.flatten()
-        values = buf.values.flatten()
-        rewards = buf.rewards.flatten()
-
-        kv = self.model.logger.name_to_value
         data = {
             "rollout_count": self._rollout_count,
-            "mean_advantage": round(float(np.mean(advantages)), 4),
-            "mean_return": round(float(np.mean(returns)), 4),
-            "mean_value": round(float(np.mean(values)), 4),
-            "mean_rollout_reward": round(float(np.mean(rewards)), 4),
+            "mean_advantage": round(float(np.mean(buf.advantages.flatten())), 4),
+            "mean_return": round(float(np.mean(buf.returns.flatten())), 4),
+            "mean_value": round(float(np.mean(buf.values.flatten())), 4),
+            "mean_rollout_reward": round(float(np.mean(buf.rewards.flatten())), 4),
         }
 
+        kv = self.model.logger.name_to_value
         for key, col in [
             ("train/clip_fraction", "clip_fraction"),
             ("train/entropy_loss", "entropy_loss"),
@@ -159,9 +139,7 @@ class RewardLoggerCallback(BaseCallback):
                 data[col] = round(float(val), 4)
 
         self._buffer(data)
-
         self._flush()
-
         self._upload_latest_checkpoint()
 
     def _on_training_end(self) -> None:
