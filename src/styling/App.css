@@ -104,6 +104,14 @@
     color: #000;
 }
 
+.conditional-node input {
+    border: 1.5px dashed #000;
+    border-radius: 20px;
+    padding: 5px;
+    margin-top: 5px;
+    font-size: 15px;
+}
+
 .setting {
     display: flex;
     flex-direction: column;

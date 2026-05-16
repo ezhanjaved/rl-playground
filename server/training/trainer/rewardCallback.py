@@ -31,8 +31,7 @@ class RewardLoggerCallback(BaseCallback):
         self._last_uploaded_checkpoint: str | None = None
 
         # Track how many ep_info_buffer entries we've already processed
-        self._processed_ep_info_count = 0
-        self._last_known_len = 0
+        self._last_episode_num = 0
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -96,12 +95,13 @@ class RewardLoggerCallback(BaseCallback):
         if not ep_info_buffer:
             return True
 
-        current_len = len(ep_info_buffer)
-        new_count = current_len - self._last_known_len
+        total_seen = self.model._episode_num  # incremented by SB3 internally
+        new_count = total_seen - self._last_episode_num
+
         if new_count <= 0:
-            self._last_known_len = current_len
             return True
 
+        # Grab only the tail — the most recent `new_count` entries
         new_entries = list(ep_info_buffer)[-new_count:]
         if not new_entries:
             return True
@@ -124,14 +124,9 @@ class RewardLoggerCallback(BaseCallback):
                     }
                 )
 
-            if (
-                self._episode_count // self.flush_every_n_episodes
-                > prev_count // self.flush_every_n_episodes
-            ):
                 self._flush()
 
-        self._processed_ep_info_count += len(new_entries)
-        self._last_known_len = current_len
+        self._last_episode_num = total_seen
         return True
 
     def _on_rollout_end(self) -> None:
