@@ -19,6 +19,8 @@ class AssignmentConfig:
     batch: int
     epoch: int
     n_steps: int
+    target_kl: float
+    ent_coeff: float
 
 
 @dataclass

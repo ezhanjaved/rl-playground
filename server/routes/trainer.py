@@ -125,7 +125,6 @@ async def fetch_models(data: RunModel):
         user_id = data.dict()["user_uid"]
         print("User ID: ", user_id)
         models = fetchModels(user_id, "models", "user_id")
-        print("Models:", models)
         return {"message": "models for this user", "status": 1, "models": models}
     except Exception as exceptionMsg:
         print("An error occured")

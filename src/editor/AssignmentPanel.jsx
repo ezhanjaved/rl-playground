@@ -6,6 +6,8 @@ import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { trainingLoop } from "../engine/runtime/trainingLoop";
 import { sendServer } from "../export/sendToServer";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
 
 const modalOverlayStyle = {
   position: "fixed",
@@ -443,6 +445,8 @@ const PPOSection = ({ setThree }) => {
   const [epoch, setEpoch] = useState(10);
   const [n_steps, setnSteps] = useState(2048);
   const [timesteps, setTimesteps] = useState(10000);
+  const [kl, setKL] = useState(0.03);
+  const [ent_coeff, setEntCf] = useState(0.01);
 
   useEffect(() => {
     setThree({
@@ -453,8 +457,20 @@ const PPOSection = ({ setThree }) => {
       batch,
       epoch,
       n_steps,
+      kl,
+      ent_coeff,
     });
-  }, [timesteps, clipRange, gaeLambda, valLossCf, batch, epoch, n_steps]);
+  }, [
+    timesteps,
+    clipRange,
+    gaeLambda,
+    valLossCf,
+    batch,
+    epoch,
+    n_steps,
+    kl,
+    ent_coeff,
+  ]);
 
   return (
     <div className="section">
@@ -514,6 +530,18 @@ const PPOSection = ({ setThree }) => {
             value={n_steps}
             type="number"
             onChange={(e) => setnSteps(Number(e.target.value))}
+          />
+          <label htmlFor="">Target KL</label>
+          <input
+            value={kl}
+            type="number"
+            onChange={(e) => setKL(Number(e.target.value))}
+          />
+          <label htmlFor="">Entropy Coefficient</label>
+          <input
+            value={ent_coeff}
+            type="number"
+            onChange={(e) => setEntCf(Number(e.target.value))}
           />
         </div>
       )}

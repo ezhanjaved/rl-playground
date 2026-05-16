@@ -32,6 +32,7 @@ class RewardLoggerCallback(BaseCallback):
 
         # Track how many ep_info_buffer entries we've already processed
         self._processed_ep_info_count = 0
+        self._last_known_len = 0
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -95,7 +96,13 @@ class RewardLoggerCallback(BaseCallback):
         if not ep_info_buffer:
             return True
 
-        new_entries = list(ep_info_buffer)[self._processed_ep_info_count :]
+        current_len = len(ep_info_buffer)
+        new_count = current_len - self._last_known_len
+        if new_count <= 0:
+            self._last_known_len = current_len
+            return True
+
+        new_entries = list(ep_info_buffer)[-new_count:]
         if not new_entries:
             return True
 
@@ -124,7 +131,7 @@ class RewardLoggerCallback(BaseCallback):
                 self._flush()
 
         self._processed_ep_info_count += len(new_entries)
-
+        self._last_known_len = current_len
         return True
 
     def _on_rollout_end(self) -> None:

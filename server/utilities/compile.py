@@ -92,6 +92,8 @@ def build_assignmentConfig(config_dict):
         batch=config_dict["batch"],
         epoch=config_dict["epoch"],
         n_steps=config_dict["n_steps"],
+        target_kl=config_dict["kl"],
+        ent_coeff=config_dict["ent_coeff"],
     )
 
 

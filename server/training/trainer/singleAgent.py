@@ -3,6 +3,7 @@ import os
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
+from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from server.path_config import MODEL_DIR
@@ -19,7 +20,8 @@ def make_env(scenario, runtime):
         from server.training.wrappers.gymWrapper import GymWrapper
 
         runtime_copy = copy.deepcopy(runtime)
-        return GymWrapper(SimulationEnv(scenario, runtime_copy), runtime_copy)
+        env = GymWrapper(SimulationEnv(scenario, runtime_copy), runtime_copy)
+        return Monitor(env)
 
     return _init
 
@@ -42,6 +44,8 @@ class SingleAgentTrainer:
         self.batch = self.assignment.batch
         self.epoch = self.assignment.epoch
         self.n_steps = self.assignment.n_steps
+        self.target_kl = self.assignment.target_kl
+        self.ent_coeff = self.assignment.ent_coeff
 
         if self.learning_rate == "Slow":
             self.learning_rate = 1e-4
@@ -101,9 +105,9 @@ class SingleAgentTrainer:
                 clip_range=self.clip_range,
                 vf_coef=self.vf_coef,
                 gamma=self.gamma,
-                ent_coef=0.01,
+                ent_coef=self.ent_coeff,
                 verbose=1,
-                target_kl=0.05,
+                target_kl=self.target_kl,
                 normalize_advantage=True,
             )
 
