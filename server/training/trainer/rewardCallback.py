@@ -31,7 +31,7 @@ class RewardLoggerCallback(BaseCallback):
         self._last_uploaded_checkpoint: str | None = None
 
         # Track how many ep_info_buffer entries we've already processed
-        self._last_episode_num = 0
+        self._total_episodes_seen = 0
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -95,22 +95,22 @@ class RewardLoggerCallback(BaseCallback):
 
         ep_info_buffer = self.model.ep_info_buffer
         total_seen = self.model._episode_num
-        new_count = total_seen - self._last_episode_num
+        # Use buffer length delta instead of _episode_num
+        new_count = total_seen - self._total_episodes_seen
 
         if new_count > 0:
-            new_entries = list(ep_info_buffer)[-min(new_count, len(ep_info_buffer)) :]
+            new_entries = ep_info_buffer[-min(new_count, len(ep_info_buffer)) :]
             for ep_info in new_entries:
-                ep_reward = ep_info.get("r", 0.0)
                 self._episode_count += 1
-                self._all_rewards.append(float(ep_reward))
+                self._all_rewards.append(float(ep_info.get("r", 0.0)))
 
-            self._last_episode_num = total_seen
+            self._total_episodes_seen = total_seen  # always moves forward
             smoothed = float(np.mean(self._all_rewards[-10:]))
             self._buffer(
                 {
                     "current_episode": self._episode_count,
                     "current_timestep": self.num_timesteps,
-                    "last_episode_reward": round(float(self._all_rewards[-1]), 4),
+                    "last_episode_reward": round(self._all_rewards[-1], 4),
                     "smoothed_reward": round(smoothed, 4),
                     "status": "training",
                 }
