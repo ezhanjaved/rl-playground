@@ -30,9 +30,8 @@ class RewardLoggerCallback(BaseCallback):
         self._all_rewards = []
         self._last_uploaded_checkpoint: str | None = None
 
-        # Tracks how many ep_info_buffer entries we've already processed.
-        # Updated in _on_step so we catch new episodes before the buffer can rotate.
         self._prev_ep_info_len = 0
+        self._last_ep_info_entry = None
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -82,15 +81,23 @@ class RewardLoggerCallback(BaseCallback):
             print(f"Checkpoint upload failed (non-fatal): {e}")
 
     def _on_step(self) -> bool:
-        # Process new episodes as they land in ep_info_buffer, before the
-        # deque can rotate and lose entries (maxlen=100).
-        current_len = len(self.model.ep_info_buffer)
+        current_buffer = list(self.model.ep_info_buffer)
+        current_len = len(current_buffer)
+
         if current_len > self._prev_ep_info_len:
-            new_entries = list(self.model.ep_info_buffer)[self._prev_ep_info_len :]
+            new_entries = current_buffer[self._prev_ep_info_len :]
             for ep_info in new_entries:
                 self._episode_count += 1
                 self._all_rewards.append(float(ep_info.get("r", 0.0)))
             self._prev_ep_info_len = current_len
+
+        elif current_len == 100:
+            last_entry = current_buffer[-1] if current_buffer else None
+            if last_entry and last_entry != self._last_ep_info_entry:
+                self._episode_count += 1
+                self._all_rewards.append(float(last_entry.get("r", 0.0)))
+                self._last_ep_info_entry = last_entry
+
         return True
 
     def _on_rollout_end(self) -> None:
@@ -124,6 +131,9 @@ class RewardLoggerCallback(BaseCallback):
             ("train/policy_loss", "policy_loss"),
             ("train/value_loss", "value_loss"),
             ("train/approx_kl", "approx_kl"),
+            ("train/explained_variance", "explained_variance"),
+            ("rollout/ep_rew_mean", "ep_rew_mean"),
+            ("rollout/ep_len_mean", "ep_len_mean"),
         ]:
             val = kv.get(key)
             if val is not None:

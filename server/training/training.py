@@ -22,9 +22,6 @@ class TrainingLoop:
                 runtime=runtime,
             )
         else:
-            # FIX: previously `pass` left self.trainer unset, so calling
-            # train()/save()/load() would raise AttributeError. Raise
-            # immediately with a clear message instead.
             raise NotImplementedError(
                 f"Training loop for env_type '{self.type}' is not yet implemented."
             )

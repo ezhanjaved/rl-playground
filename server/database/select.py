@@ -10,6 +10,20 @@ def fetchModels(uid, table, id):
         return None
 
 
+def fetchExtactModel(model_id):
+    response = (
+        supabase.table("models")
+        .select("total_timestep")
+        .eq("training_id", model_id)  # training id
+        .execute()
+    )
+    if response.data:
+        return response.data
+    else:
+        print("Error:", response)
+        return None
+
+
 def fetchTemplate(uid, type):
     response = (
         supabase.table("templates")

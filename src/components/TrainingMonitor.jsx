@@ -254,6 +254,9 @@ function RolloutStats({ model }) {
     ["Mean return", model.mean_return?.toFixed(2)],
     ["Mean value", model.mean_value?.toFixed(2)],
     ["Clip fraction", model.clip_fraction?.toFixed(4)],
+    ["Explained Variance", model.explained_variance?.toFixed(4)],
+    ["Episode Reward Mean", model.ep_rew_mean?.toFixed(4)],
+    ["Episode Length Mean", model.ep_len_mean?.toFixed(4)],
   ];
   return <StatPanel title="Rollout stats" rows={rows} />;
 }

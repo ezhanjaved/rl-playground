@@ -1,7 +1,6 @@
 def positionSwap(position):
     x, y, z = position
-    scale = 1.0
-    return [-x * scale, z * scale, y]
+    return [-x, z, y]
 
 
 def rotationSwap(quat):

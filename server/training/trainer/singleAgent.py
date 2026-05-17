@@ -6,6 +6,7 @@ from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
 
+from server.database.select import fetchExtactModel
 from server.path_config import MODEL_DIR
 from server.storage.uploadModel import downloadLatestCheckpoint
 from server.training.trainer.rewardCallback import RewardLoggerCallback
@@ -28,6 +29,9 @@ def make_env(scenario, runtime):
 
 class SingleAgentTrainer:
     def __init__(self, training_id, env, assignment, scenario=None, runtime=None):
+        record = fetchExtactModel(training_id)
+        self.already_trained = record.get("total_timestep", 0)
+
         self.env = env
         self.scenario = scenario
         self.runtime = runtime
@@ -78,9 +82,9 @@ class SingleAgentTrainer:
 
         vec_env = VecNormalize(
             vec_env,
-            norm_obs=False,  # obs already normalized to [-1,1]
-            norm_reward=True,  # ← this fixes the value_loss explosion
-            clip_reward=10.0,  # ← clips extreme terminal rewards
+            norm_obs=False,
+            norm_reward=True,
+            clip_reward=10.0,
             gamma=self.gamma,
         )
 
@@ -93,7 +97,6 @@ class SingleAgentTrainer:
         checkpoint_path = downloadLatestCheckpoint(self.training_id, checkpoint_dir)
         if checkpoint_path is not None:
             print(f"Resuming from checkpoint: {checkpoint_path}")
-            # Load VecNormalize stats alongside checkpoint
             vecnorm_path = str(checkpoint_path).replace(".zip", "_vecnormalize.pkl")
             if os.path.exists(vecnorm_path):
                 vec_env = VecNormalize.load(vecnorm_path, vec_env)
@@ -107,25 +110,46 @@ class SingleAgentTrainer:
                 resumed_timesteps = int(stem.split("_steps")[0].split("_")[-1])
                 print(f"Resuming at timestep {resumed_timesteps}")
             except Exception:
-                resumed_timesteps = 0
+                resumed_timesteps = self.already_trained
+
         else:
-            print("No checkpoint found, starting fresh.")
-            self.model = PPO(
-                "MlpPolicy",
-                vec_env,
-                n_steps=self.n_steps,
-                learning_rate=self.learning_rate,
-                n_epochs=self.epoch,
-                batch_size=self.batch,
-                gae_lambda=self.gae_lambda,
-                clip_range=self.clip_range,
-                vf_coef=self.vf_coef,
-                gamma=self.gamma,
-                ent_coef=self.ent_coeff,
-                verbose=1,
-                target_kl=self.target_kl,
-                normalize_advantage=True,
+            final_path = (
+                MODEL_DIR
+                / f"model_training_{self.training_id}"
+                / f"model_{self.training_id}.zip"
             )
+            if final_path.exists():
+                print(
+                    "No checkpoint found, but final model exists — resuming from final."
+                )
+                vecnorm_path = str(final_path).replace(".zip", "_vecnormalize.pkl")
+                if os.path.exists(vecnorm_path):
+                    vec_env = VecNormalize.load(vecnorm_path, vec_env)
+                    print(f"VecNormalize stats restored from {vecnorm_path}")
+                else:
+                    print(
+                        "No VecNormalize stats found for final model, starting normalizer fresh."
+                    )
+                self.model = PPO.load(str(final_path), env=vec_env)
+                resumed_timesteps = self.already_trained
+            else:
+                print("No checkpoint or final model found, starting fresh.")
+                self.model = PPO(
+                    "MlpPolicy",
+                    vec_env,
+                    n_steps=self.n_steps,
+                    learning_rate=self.learning_rate,
+                    n_epochs=self.epoch,
+                    batch_size=self.batch,
+                    gae_lambda=self.gae_lambda,
+                    clip_range=self.clip_range,
+                    vf_coef=self.vf_coef,
+                    gamma=self.gamma,
+                    ent_coef=self.ent_coeff,
+                    verbose=1,
+                    target_kl=self.target_kl,
+                    normalize_advantage=True,
+                )
 
         remaining_timesteps = max(self.timesteps - resumed_timesteps, 0)
         if remaining_timesteps == 0:
@@ -162,6 +186,12 @@ class SingleAgentTrainer:
         os.makedirs(self.model_dir, exist_ok=True)
         save_path = self.model_dir / self.model_file_name
         self.model.save(save_path)
+        vecnorm_path = str(save_path) + "_vecnormalize.pkl"
+        if hasattr(self.model, "get_vec_normalize_env"):
+            venv = self.model.get_vec_normalize_env()
+            if venv is not None:
+                venv.save(vecnorm_path)
+
         return str(save_path) + ".zip"
 
     def load(self, id):

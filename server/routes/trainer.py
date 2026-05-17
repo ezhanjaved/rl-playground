@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from server.celery_app.rl_inference import rl_inference
+from server.celery_app.rl_resume import rl_resume
 from server.celery_app.rl_test import rl_test
 from server.celery_app.rl_trainer import rl_trainer
 from server.database.insert import create_model
@@ -31,6 +32,11 @@ class RequestModel(BaseModel):
 class RunModel(BaseModel):
     user_uid: str
     model_uid: str
+
+
+class ResumeModel(BaseModel):
+    training_id: str
+    additional_steps: int
 
 
 trainer = APIRouter()
@@ -67,8 +73,19 @@ async def getData(data: RequestModel):
     except Exception as exceptionMsg:
         print("An Error Occured")
         traceback.print_exc()
-        # FIX: was returning raw Exception object which FastAPI cannot
-        # serialize and leaks internal details. Cast to str.
+        return {"message": str(exceptionMsg), "status": 0}
+
+
+@trainer.post("/resume-training")
+async def resumeTraining(data: ResumeModel):
+    try:
+        model_id = data.dict()["training_id"]
+        timesteps = data.dict()["additional_steps"]
+        rl_resume.delay(model_id, timesteps)
+        return {"message": "server has the data", "status": 1, "id": model_id}
+    except Exception as exceptionMsg:
+        print("An Error Occured")
+        traceback.print_exc()
         return {"message": str(exceptionMsg), "status": 0}
 
 
@@ -82,7 +99,6 @@ async def getDataDebug(data: RequestModel):
     except Exception as exceptionMsg:
         print("An Error Occured")
         traceback.print_exc()
-        # FIX: same as above
         return {"message": str(exceptionMsg), "status": 0}
 
 
