@@ -4,7 +4,7 @@ export const CAPABILITY_SCHEMAS = {
     actions: ["move_up", "move_left", "move_right", "idle"],
     observations: ["agent_rotation_y"],
     state: {},
-    settings: { speed: 2 },
+    settings: { speed: 4 },
   },
 
   TemporalMemory: {

@@ -148,7 +148,6 @@ async def fetch_models(data: RunModel):
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
-        # FIX: same as above
         return {"message": str(exceptionMsg), "status": 0}
 
 

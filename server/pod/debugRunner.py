@@ -23,3 +23,23 @@ def debugRunner(id):
 
 # debugRunner("ecb62be7-fd2b-4498-bed1-cba38b065dd9")
 # debugRunner("37ed83e7-f56f-4c45-b889-959dec5ba2de")
+# debugRunner("0aaccb0a-fe44-4010-98d8-0576c5e27c96")
+# debugRunner("9dc66623-6d03-41c1-b389-6ae8bdf7790e")
+# debugRunner("807ab3a0-81bd-46d7-b65a-274f0a5813f4")
+# Target
+# debugRunner("55f68420-98c6-47f0-b7c2-f340d4d9fd09")
+# debugRunner("fc578502-612b-4785-bc3c-12e34a332662")
+# debugRunner("8af08027-8e99-4705-86b9-c0e5da63f5f6")
+# debugRunner("e233d3c0-254f-4f25-a4d3-d65d05b10885")
+# debugRunner("ce7210df-0dfd-4f76-a9a9-8654d7f14774")
+# Collector
+# debugRunner("d5b3f1ac-c883-45ec-b63a-51493ec5fcd2")
+# Holder
+# debugRunner("ac3451f6-1fe3-4726-9f2a-52eb56dc8ee4")
+# Deposit
+# debugRunner("14251da6-1fad-4091-9f35-bfa80594f0ee")
+# debugRunner("fd4aee55-74b3-412d-9e16-038cefc7a471")
+# debugRunner("f8660de1-4f44-4516-af49-0f6d5daeb804")
+# # debugRunner("67e2c94f-3fbb-4d52-aca4-c0fa0485a57f")
+# debugRunner("bf850db6-cdda-4fb3-9d0b-fc5ff5dcecb2")
+# debugRunner("7407fc18-8b55-455a-bdcc-8b153a10904c")

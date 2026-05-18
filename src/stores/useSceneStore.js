@@ -2,11 +2,13 @@
 import { create } from "zustand";
 import { addCapabilitySchemas } from "../engine/capabilities/registry";
 import * as THREE from "three";
+import { highestDistance } from "../engine/utility/highestDistance";
 
-export const useSceneStore = create((set, get) => ({
+export const useSceneStore = create((set) => ({
   entities: {},
   assignments: {},
   models: {},
+  highestDistance: null,
   physics: {
     gravity: [0, -9.81, 0],
     timeStep: 1 / 60,
@@ -22,6 +24,16 @@ export const useSceneStore = create((set, get) => ({
   setWorldMounted: (v) => set({ worldMounted: v }),
   envName: null,
   setName: (name) => set({ envName: name }),
+  setHighestDistance: (dist) => set({ highestDistance: dist }),
+
+  setHDinEntities: (dist) =>
+    set((state) => {
+      const highestDistance = dist;
+      return {
+        entities: { ...state.entities, highestDistance: highestDistance },
+      };
+    }),
+
   setEnvName: (name) =>
     set((state) => {
       const envName = name;
@@ -73,12 +85,14 @@ export const useSceneStore = create((set, get) => ({
     set((state) => {
       const id = `entity_${crypto.randomUUID() || Date.now()}`;
       const entity = buildEntitiyFromPartial(partial, id);
+      highestDistance();
       return { entities: { ...state.entities, [id]: entity } };
     }),
 
   addEntityWithId: (id, partial) =>
     set((state) => {
       const entity = buildEntitiyFromPartial(partial, id);
+      highestDistance();
       return { entities: { ...state.entities, [id]: entity } };
     }),
 
@@ -86,6 +100,7 @@ export const useSceneStore = create((set, get) => ({
     set((state) => {
       const existing = state.entities[id] || {}; //We used id to get entity details and saved it in existing
       const entity = { ...existing, ...updated }; //We are merging existing entity with updated details
+      highestDistance();
       return { entities: { ...state.entities, [id]: entity } }; //Here we are updating the entities object with new entity details
     }),
 
@@ -93,6 +108,7 @@ export const useSceneStore = create((set, get) => ({
     set((state) => {
       const newEntities = { ...state.entities }; //Create a copy of existing entities
       delete newEntities[id]; //Delete the entity with given id from the copied object
+      highestDistance();
       return { entities: newEntities }; //Update the state with the new entities object
     }),
 

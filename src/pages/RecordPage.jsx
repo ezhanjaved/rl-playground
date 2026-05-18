@@ -35,13 +35,6 @@ const COLUMNS = [
       item.total_timestep != null ? item.total_timestep.toLocaleString() : "—",
   },
   {
-    key: "reward_final",
-    label: "Final reward",
-    width: "12%",
-    render: (item) =>
-      item.reward_final != null ? Number(item.reward_final).toFixed(2) : "—",
-  },
-  {
     key: "error",
     label: "Error",
     render: (item) =>

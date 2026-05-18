@@ -21,7 +21,10 @@ def make_env(scenario, runtime):
         from server.training.wrappers.gymWrapper import GymWrapper
 
         runtime_copy = copy.deepcopy(runtime)
-        env = GymWrapper(SimulationEnv(scenario, runtime_copy), runtime_copy)
+        env = GymWrapper(
+            SimulationEnv(scenario, runtime_copy),
+            runtime_copy,
+        )
         return Monitor(env)
 
     return _init

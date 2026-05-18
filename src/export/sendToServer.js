@@ -5,7 +5,7 @@ import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useAuthStore } from "../stores/useAuthStore";
 
 export async function sendServer() {
-  const { entities, assignments } = useSceneStore.getState();
+  const { entities, assignments, highestDistance } = useSceneStore.getState();
   const { graphs } = useGraphStore.getState();
   const { modelName, envType, timesteps } = useRunTimeStore.getState();
   const { user } = useAuthStore.getState();
@@ -17,6 +17,7 @@ export async function sendServer() {
     modelName,
     envType,
     timesteps,
+    highestDistance: highestDistance,
   };
   console.log("Body: " + JSON.stringify(data, null, 2));
   // const empty = emptyRoutine(data);

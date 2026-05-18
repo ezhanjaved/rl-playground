@@ -9,7 +9,6 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
         return
 
     turnSpeed = 0.1 * 60.0  # To compensate for Rapier instant rot
-
     _, quat = p.getBasePositionAndOrientation(bullet_id, physicsClientId=client)
     rot = p.getEulerFromQuaternion(quat, physicsClientId=client)
     yaw = getYaw(rot)

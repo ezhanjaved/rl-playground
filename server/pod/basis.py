@@ -19,7 +19,7 @@ def basis(uid):
         scenarioObject, agent_list, graphs_per_agent
     )  # form a runtime obj that will mutate while training
     if mode == "debug":
-        print("Entering Debuging Mode")
+        print("Entering Debugging Mode")
         debugPipeline(scenarioObject, runTimeState, uid)
         return
     else:

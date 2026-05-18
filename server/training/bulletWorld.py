@@ -1,9 +1,11 @@
-import time
+import copy
+import random
 
 import pybullet as p
 import pybullet_data
 
 from server.engine.actuators.mainActuator import process_action
+from server.utilities.distance3D import distance3D
 from server.utilities.positionSwap import positionSwap, rotationSwap
 
 
@@ -26,9 +28,57 @@ class PyBulletWorld:
         p.loadURDF("plane.urdf", physicsClientId=self.client)
 
     def spawn_entities(self, entities_config):
+        # if mode == "Random":
+        #     entities_config = self.randomize_entities(entities_config, highestDistance)
+
         for entity in entities_config:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
+
+    def randomize_entities(self, entConfig, highestDistance):
+
+        entConfig = copy.deepcopy(entConfig)
+
+        agentConfig = None
+
+        for entity in entConfig:
+            if entity.tag == "agent":
+                agentConfig = entity
+                break
+
+        if agentConfig is None:
+            return entConfig
+
+        agentRandomPos = self.random_position(agentConfig.position)
+        agentConfig.position = agentRandomPos
+
+        for obj in entConfig:
+            if obj.tag == "agent":
+                continue
+
+            success = False
+            max_attempts = 100
+
+            for _ in range(max_attempts):
+                objRandomPos = self.random_position(obj.position)
+
+                dist = distance3D(agentRandomPos, objRandomPos)
+
+                if 2.0 < dist < highestDistance:
+                    obj.position = objRandomPos
+                    success = True
+                    break
+
+            if not success:
+                print(f"Failed to randomize {obj.id}")
+
+        return entConfig
+
+    def random_position(self, position):
+        x = random.uniform(-20, 20)
+        z = random.uniform(-20, 20)
+        y = position[1]
+        return [x, y, z]
 
     def get_entity_state(self, entity_id):
         bullet_id = self.entity_mapping[entity_id]

@@ -39,7 +39,6 @@ export default function runTimeloop(entities) {
 
     if (isDecor || !entity.action_space || isPickable || isTarget || isDeposit)
       return;
-
     const observation_space = buildObsSpace(entity);
     console.log("Obs: " + observation_space);
     const action_space = entity.action_space;

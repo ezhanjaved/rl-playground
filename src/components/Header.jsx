@@ -61,6 +61,7 @@ const Header = () => {
   const envName = useSceneStore((state) => state.envName);
   const setEnviorName = useSceneStore((state) => state.setName);
   const setEnvName = useSceneStore((state) => state.setEnvName);
+  const hd = useSceneStore((state) => state.highestDistance);
 
   const [envList, setEnvList] = useState([]);
   const [graphList, setGraphList] = useState([]);
@@ -292,6 +293,14 @@ const Header = () => {
           >
             <FaFileExport />
           </span>
+          {/* <span
+            style={{
+              display: visibility === 1 ? "flex" : "none",
+              cursor: "pointer",
+            }}
+          >
+            {"Highest Distance: " + hd}
+          </span>*/}
           {user && (
             <span
               style={{ cursor: "pointer" }}
