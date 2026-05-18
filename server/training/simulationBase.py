@@ -10,7 +10,11 @@ class SimulationEnv:
     def reset(self):
         self.core.reset()
         self.world.load()
-        self.world.spawn_entities(self.core.runtime.entities.values())
+        self.world.spawn_entities(
+            self.core.runtime.entities.values(),
+            self.core.runtime.highest_dist,
+            self.core.runtime.spawn_mode,
+        )
         self.world.settle()
         self.core.sync_state_from_world(self.world)
         obs = self.core.get_observation()

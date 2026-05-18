@@ -447,6 +447,7 @@ const PPOSection = ({ setThree }) => {
   const [timesteps, setTimesteps] = useState(10000);
   const [kl, setKL] = useState(0.03);
   const [ent_coeff, setEntCf] = useState(0.01);
+  const { setEnvMode, envMode } = useRunTimeStore.getState();
 
   useEffect(() => {
     setThree({
@@ -543,6 +544,27 @@ const PPOSection = ({ setThree }) => {
             type="number"
             onChange={(e) => setEntCf(Number(e.target.value))}
           />
+          <label htmlFor="">Object Spawn Mode</label>
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+            <label>
+              <input
+                checked={envMode === "Random"}
+                onChange={(e) => setEnvMode(e.target.value)}
+                type="radio"
+                value="Random"
+              />{" "}
+              Random{" "}
+            </label>
+            <label>
+              <input
+                checked={envMode === "Fixed"}
+                onChange={(e) => setEnvMode(e.target.value)}
+                type="radio"
+                value="Fixed"
+              />{" "}
+              Fixed{" "}
+            </label>
+          </div>
         </div>
       )}
     </div>

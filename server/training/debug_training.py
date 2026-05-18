@@ -9,8 +9,8 @@ def debugPipeline(scenario, runTimeState, uid):
     print("MODEL ID: ", uid)
     env = SimulationEnv(scenario, runTimeState)
 
-    num_episodes = 1
-    max_steps_per_episode = 2000
+    num_episodes = 5
+    max_steps_per_episode = 500
 
     for episode in range(num_episodes):
         print(f"\n=== Episode Number: {episode} ===")
@@ -18,7 +18,6 @@ def debugPipeline(scenario, runTimeState, uid):
         print("Initial Obs: ", obs)
 
         for step in range(max_steps_per_episode):
-            t1 = time.time()
             actions = random_controller(obs, runTimeState)
             obs, reward, terminated, truncated, info = env.step(actions)
 

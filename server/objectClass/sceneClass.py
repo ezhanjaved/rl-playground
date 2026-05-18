@@ -2,6 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Union
 
+from server.database.select import fetchExtactModel
 from server.objectClass.assignmentClass import Assignment
 from server.objectClass.entitiesClass import Agent, Object
 from server.objectClass.graphClass import Graph
@@ -41,11 +42,22 @@ class TrainingState:
 
     info: dict[str, dict] = field(default_factory=dict)
 
+    highest_dist: float = 0.0
+    spawn_mode: str = "Fixed"
 
-def make_runtime_state(scenario, agents_ids, graphPerAgent):
+
+def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
+    record = fetchExtactModel(tId)
+    highestDist: float = 0.0
+    spawnMode: str = "Fixed"
+    if record != None:
+        highestDist = record.get("highest_dist", 0.0)
+        spawnMode = record.get("spawn_mode", "Fixed")
     return TrainingState(
         entities=deepcopy(scenario.entities),
         assignment_by_agent=deepcopy(scenario.assignments),
         graph_per_agent=graphPerAgent,
         agents_ids=agents_ids,
+        highest_dist=highestDist,
+        spawn_mode=spawnMode,
     )

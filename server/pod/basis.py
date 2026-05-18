@@ -16,7 +16,7 @@ def basis(uid):
         scenarioObject, agent_list
     )  # extract the graphs for agents by their id
     runTimeState = make_runtime_state(
-        scenarioObject, agent_list, graphs_per_agent
+        scenarioObject, agent_list, graphs_per_agent, uid
     )  # form a runtime obj that will mutate while training
     if mode == "debug":
         print("Entering Debugging Mode")

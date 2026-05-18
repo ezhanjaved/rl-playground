@@ -25,15 +25,6 @@ export const useSceneStore = create((set) => ({
   envName: null,
   setName: (name) => set({ envName: name }),
   setHighestDistance: (dist) => set({ highestDistance: dist }),
-
-  setHDinEntities: (dist) =>
-    set((state) => {
-      const highestDistance = dist;
-      return {
-        entities: { ...state.entities, highestDistance: highestDistance },
-      };
-    }),
-
   setEnvName: (name) =>
     set((state) => {
       const envName = name;

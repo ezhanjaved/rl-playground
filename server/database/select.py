@@ -13,10 +13,12 @@ def fetchModels(uid, table, id):
 def fetchExtactModel(model_id):
     response = (
         supabase.table("models")
-        .select("total_timestep, highest_distance, spawn_mode")
-        .eq("training_id", model_id)  # training id
+        .select("total_timestep, highest_dist, spawn_mode")
+        .eq("training_id", str(model_id))  # training id
+        .single()
         .execute()
     )
+    print(response)
     if response.data:
         return response.data
     else:

@@ -60,6 +60,8 @@ async def getData(data: RequestModel):
         user_uid = data.dict()["user_uid"]
         timesteps = data.dict()["timesteps"]
         model_name = data.dict()["modelName"]
+        highestDistance = data.dict()["highestDistance"]
+        spawnMode = data.dict()["spawnMode"]
         config_path = uploadConfig(path)
         create_model(
             {
@@ -69,6 +71,8 @@ async def getData(data: RequestModel):
                 "name": model_name,
                 "algorithm": "PPO",
                 "total_timestep": timesteps,
+                "highest_dist": highestDistance,
+                "spawn_mode": spawnMode,
             },
             "models",
         )
@@ -98,7 +102,25 @@ async def getDataDebug(data: RequestModel):
     try:
         model_id = str(uuid.uuid4())
         path = json_handler(model_id, data.dict())
+        user_uid = data.dict()["user_uid"]
+        timesteps = data.dict()["timesteps"]
+        model_name = data.dict()["modelName"]
+        highestDistance = data.dict()["highestDistance"]
+        spawnMode = data.dict()["spawnMode"]
         config_path = uploadConfig(path)
+        create_model(
+            {
+                "training_id": model_id,
+                "config_path": config_path,
+                "user_id": user_uid,
+                "name": model_name,
+                "algorithm": "PPO",
+                "total_timestep": timesteps,
+                "highest_dist": highestDistance,
+                "spawn_mode": spawnMode,
+            },
+            "models",
+        )
         return {"message": "server has the data", "status": 1, "id": model_id}
     except Exception as exceptionMsg:
         print("An Error Occured")
