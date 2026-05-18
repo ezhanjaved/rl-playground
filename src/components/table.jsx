@@ -1,9 +1,12 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import "../styling/table.css";
+import { deleteModel } from "../export/deleteModel";
 import {
   ChevronLeft,
   ChevronRight,
   Eye,
   RotateCcw,
+  Trash2,
   X,
   Zap,
 } from "lucide-react";
@@ -155,219 +158,93 @@ function RetrainModal({ item, onClose, onConfirm }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <style>{`
-        .rtm-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.45);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          animation: rtm-fade-in 0.15s ease;
-        }
-        @keyframes rtm-fade-in {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        .rtm-modal {
-          background: #fff;
-          border-radius: 14px;
-          width: 100%;
-          max-width: 400px;
-          margin: 16px;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08);
-          animation: rtm-slide-up 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-          overflow: hidden;
-        }
-        @keyframes rtm-slide-up {
-          from { opacity: 0; transform: translateY(12px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
+function DeleteConfirmModal({ item, onClose, onConfirm }) {
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
-        /* Header */
-        .rtm-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 18px 20px 14px;
-          border-bottom: 1px solid #f0f0f0;
-        }
-        .rtm-header-left {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .rtm-icon-wrap {
-          width: 34px;
-          height: 34px;
-          border-radius: 8px;
-          background: #ede9fe;
-          color: #7c3aed;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .rtm-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: #111;
-          margin: 0;
-          line-height: 1.3;
-        }
-        .rtm-subtitle {
-          font-size: 12px;
-          color: #9ca3af;
-          margin: 2px 0 0;
-        }
-        .rtm-close-btn {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
-          border: none;
-          background: transparent;
-          color: #9ca3af;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background 0.15s, color 0.15s;
-        }
-        .rtm-close-btn:hover {
-          background: #f4f4f5;
-          color: #374151;
-        }
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm(item);
+      onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        /* Body */
-        .rtm-body {
-          padding: 18px 20px 4px;
-        }
-        .rtm-label {
-          display: block;
-          font-size: 12px;
-          font-weight: 500;
-          color: #6b7280;
-          margin-bottom: 8px;
-          letter-spacing: 0.02em;
-          text-transform: uppercase;
-        }
-        .rtm-input-row {
-          position: relative;
-        }
-        .rtm-input {
-          width: 100%;
-          box-sizing: border-box;
-          height: 40px;
-          border: 1.5px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 0 12px;
-          font-size: 14px;
-          color: #111;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
-          background: #fafafa;
-        }
-        .rtm-input:focus {
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-          background: #fff;
-        }
-        .rtm-input--error {
-          border-color: #ef4444;
-        }
-        .rtm-input--error:focus {
-          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-        }
-        /* Hide number input arrows */
-        .rtm-input::-webkit-inner-spin-button,
-        .rtm-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-        .rtm-input[type=number] { -moz-appearance: textfield; }
+  return (
+    <div
+      className="rtm-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="rtm-modal dcm-modal">
+        {/* Header */}
+        <div className="rtm-header">
+          <div className="rtm-header-left">
+            <div className="rtm-icon-wrap dcm-icon-wrap">
+              <Trash2 size={16} />
+            </div>
+            <div>
+              <h3 className="rtm-title">Delete Model</h3>
+              <p className="rtm-subtitle">
+                {item.name ?? item.model_name ?? "Model"}
+              </p>
+            </div>
+          </div>
+          <button
+            className="rtm-close-btn"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
-        .rtm-chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-top: 10px;
-        }
-        .rtm-chip {
-          height: 26px;
-          padding: 0 10px;
-          border-radius: 999px;
-          border: 1.5px solid #e5e7eb;
-          background: #fff;
-          font-size: 11.5px;
-          color: #6b7280;
-          cursor: pointer;
-          transition: border-color 0.15s, color 0.15s, background 0.15s;
-          font-weight: 500;
-        }
-        .rtm-chip:hover:not(:disabled) {
-          border-color: #7c3aed;
-          color: #7c3aed;
-          background: #f5f3ff;
-        }
-        .rtm-chip--active {
-          border-color: #7c3aed !important;
-          color: #7c3aed !important;
-          background: #f5f3ff !important;
-        }
-        .rtm-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+        {/* Body */}
+        <div className="rtm-body dcm-body">
+          <p className="dcm-message">
+            Are you sure you want to delete this model? This action{" "}
+            <strong>cannot be undone</strong>.
+          </p>
+        </div>
 
-        .rtm-error {
-          font-size: 12px;
-          color: #ef4444;
-          margin: 8px 0 0;
-        }
-
-        /* Footer */
-        .rtm-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-          padding: 16px 20px 18px;
-        }
-        .rtm-btn {
-          height: 36px;
-          padding: 0 16px;
-          border-radius: 8px;
-          border: none;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          transition: background 0.15s, opacity 0.15s;
-        }
-        .rtm-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-        .rtm-btn--cancel {
-          background: #f4f4f5;
-          color: #374151;
-        }
-        .rtm-btn--cancel:hover:not(:disabled) { background: #e4e4e7; }
-        .rtm-btn--confirm {
-          background: #7c3aed;
-          color: #fff;
-        }
-        .rtm-btn--confirm:hover:not(:disabled) { background: #6d28d9; }
-
-        /* Spinner */
-        .rtm-spinner {
-          width: 14px;
-          height: 14px;
-          border: 2px solid rgba(255,255,255,0.35);
-          border-top-color: #fff;
-          border-radius: 50%;
-          animation: rtm-spin 0.6s linear infinite;
-          display: inline-block;
-        }
-        @keyframes rtm-spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+        {/* Footer */}
+        <div className="rtm-footer">
+          <button
+            className="rtm-btn rtm-btn--cancel"
+            onClick={onClose}
+            disabled={loading}
+          >
+            No, Cancel
+          </button>
+          <button
+            className="rtm-btn dcm-btn--delete"
+            onClick={handleConfirm}
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="rtm-spinner dcm-spinner" />
+            ) : (
+              <>
+                <Trash2 size={14} />
+                Yes, Delete
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -450,6 +327,12 @@ export function Table({
 }) {
   const [openMenu, setOpenMenu] = useState(null);
   const [retrainItem, setRetrainItem] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
+
+  // Filter out final_reward column
+  const filteredColumns = columns.filter(
+    (col) => col.key.toLowerCase() !== "final_reward",
+  );
 
   const {
     setShowLoadingModal,
@@ -496,8 +379,7 @@ export function Table({
     if (onRetrain) {
       return onRetrain(item, additionalSteps);
     }
-    const training_id =
-      typeof keyField === "function" ? keyField(item) : item[keyField];
+    const training_id = item.training_id;
     const res = await fetch(
       `${import.meta.env.VITE_API_BASE_URL}/trainer/resume-training`,
       {
@@ -516,6 +398,11 @@ export function Table({
       const body = await res.json().catch(() => ({}));
       throw new Error(body?.message || `Server error ${res.status}`);
     }
+  };
+
+  const handleDelete = async (item) => {
+    const training_id = item.training_id;
+    await deleteModel(training_id);
   };
 
   const isTrainable = (item) => {
@@ -558,7 +445,7 @@ export function Table({
             <table className="rl-table">
               <thead className="rl-thead">
                 <tr>
-                  {columns.map((col) => {
+                  {filteredColumns.map((col) => {
                     const isBadge = badgeKeys.includes(col.key.toLowerCase());
                     return (
                       <th
@@ -575,6 +462,7 @@ export function Table({
                   })}
                   {actions && <th className="rl-th rl-action-cell">Action</th>}
                   {actions && <th className="rl-th rl-action-cell">Retrain</th>}
+                  {actions && <th className="rl-th rl-action-cell">Delete</th>}
                 </tr>
               </thead>
 
@@ -583,7 +471,7 @@ export function Table({
                   <SkeletonTheme baseColor="#f4f4f5" highlightColor="#e4e4e7">
                     {Array.from({ length: skeletonRows }).map((_, rowIdx) => (
                       <tr key={rowIdx}>
-                        {columns.map((col) => (
+                        {filteredColumns.map((col) => (
                           <td key={col.key} className="rl-td">
                             <Skeleton
                               height={14}
@@ -608,6 +496,13 @@ export function Table({
                                 borderRadius={8}
                               />
                             </td>
+                            <td className="rl-td rl-action-cell">
+                              <Skeleton
+                                height={28}
+                                width={28}
+                                borderRadius={8}
+                              />
+                            </td>
                           </>
                         )}
                       </tr>
@@ -616,7 +511,7 @@ export function Table({
                 ) : data.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={columns.length + (actions ? 2 : 0)}
+                      colSpan={filteredColumns.length + (actions ? 3 : 0)}
                       style={{
                         padding: "48px",
                         textAlign: "center",
@@ -633,7 +528,7 @@ export function Table({
                     const trainable = isTrainable(item);
                     return (
                       <tr key={id} className="rl-tr">
-                        {columns.map((col) => {
+                        {filteredColumns.map((col) => {
                           const isBadge = badgeKeys.includes(
                             col.key.toLowerCase(),
                           );
@@ -717,6 +612,22 @@ export function Table({
                             </div>
                           </td>
                         )}
+                        {actions && (
+                          <td className="rl-td rl-action-cell">
+                            <div className="rl-action-wrapper">
+                              <button
+                                className="action-btn-delete"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteItem(item);
+                                }}
+                                title="Delete Model"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })
@@ -735,31 +646,13 @@ export function Table({
         />
       )}
 
-      <style>{`
-        .action-btn-retrain {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          border: 1.5px solid #e5e7eb;
-          background: #fff;
-          color: #7c3aed;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
-        }
-        .action-btn-retrain:hover:not(.disabled):not(:disabled) {
-          background: #f5f3ff;
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
-        }
-        .action-btn-retrain.disabled,
-        .action-btn-retrain:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-      `}</style>
+      {deleteItem && (
+        <DeleteConfirmModal
+          item={deleteItem}
+          onClose={() => setDeleteItem(null)}
+          onConfirm={handleDelete}
+        />
+      )}
     </>
   );
 }

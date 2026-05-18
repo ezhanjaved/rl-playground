@@ -4,8 +4,10 @@ from typing import Any, Dict
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from server.database.delete import delete_entry
 from server.database.insert import create_template
 from server.database.select import checkTemplateExists, fetchTemplate
+from server.storage.deleteModel import delete_template
 from server.storage.downloadModel import downloadTemplate
 from server.storage.uploadModel import upload_template
 from server.utilities.loader import json_template_loader, json_template_saver
@@ -27,6 +29,11 @@ class ExportReq(TemplateReq):
 
 class ViewReq(TemplateReq):
     pass
+
+
+class DeleteReq(BaseModel):
+    user_uid: str
+    path: str
 
 
 template = APIRouter()
@@ -97,4 +104,21 @@ async def fetch_models(data: ViewReq):
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
+        return {"message": str(exceptionMsg), "status": 0}
+
+
+@template.post("/delete_template")
+async def delete_templates(data: DeleteReq):
+    try:
+        user_id = data.dict()["user_uid"]
+        path = data.dict()["path"]
+        storageDelete = delete_template(path)
+        if storageDelete:
+            databaseDelete = delete_entry(path, "path", "templates", user_id)
+            if databaseDelete:
+                return {"message": "template is deleted", "status": 1}
+    except Exception as exceptionMsg:
+        print("An error occured")
+        traceback.print_exc()
+        # FIX: same as above
         return {"message": str(exceptionMsg), "status": 0}

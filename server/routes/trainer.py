@@ -9,10 +9,12 @@ from server.celery_app.rl_inference import rl_inference
 from server.celery_app.rl_resume import rl_resume
 from server.celery_app.rl_test import rl_test
 from server.celery_app.rl_trainer import rl_trainer
+from server.database.delete import delete_entry
 from server.database.insert import create_model
 from server.database.select import fetchModels
 from server.pod.debugRunner import debugRunner
 from server.pod.jwt_token.generateJWT import create_access_token
+from server.storage.deleteModel import delete_model
 from server.storage.uploadModel import uploadConfig
 from server.utilities.fetchEnt import fetchEnt
 from server.utilities.loader import json_handler
@@ -27,6 +29,8 @@ class RequestModel(BaseModel):
     modelName: str
     envType: str
     timesteps: int
+    highestDistance: float
+    spawnMode: str
 
 
 class RunModel(BaseModel):
@@ -131,7 +135,6 @@ async def run_the_model(data: RunModel):
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
-        # FIX: same as above
         return {"message": str(exceptionMsg), "status": 0}
 
 
@@ -146,4 +149,20 @@ async def fetch_models(data: RunModel):
         print("An error occured")
         traceback.print_exc()
         # FIX: same as above
+        return {"message": str(exceptionMsg), "status": 0}
+
+
+@trainer.post("/delete_model")
+async def delete_models(data: RunModel):
+    try:
+        user_id = data.dict()["user_uid"]
+        id = data.dict()["model_uid"]
+        storageDelete = delete_model(id)
+        if storageDelete:
+            databaseDelete = delete_entry(id, "training_id", "models", user_id)
+            if databaseDelete:
+                return {"message": "model is deleted", "status": 1}
+    except Exception as exceptionMsg:
+        print("An error occured")
+        traceback.print_exc()
         return {"message": str(exceptionMsg), "status": 0}
