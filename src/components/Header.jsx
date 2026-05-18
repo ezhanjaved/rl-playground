@@ -7,7 +7,7 @@ import {
   FaArrowRight,
   FaShieldAlt,
   FaFileSignature,
-  FaListUl,
+  FaCross,
   FaSignOutAlt,
   FaPlay,
   FaFileImport,
@@ -25,6 +25,7 @@ import { validateGraphWithStore } from "../editor/nodes/validateGraph";
 import { uploadEnv, uploadGraph } from "../export/exportTemplate";
 import { viewEnvs, viewGraphs } from "../export/viewTemplate";
 import { importEnv, importGraph } from "../export/importTemplate";
+import { deleteTemplate } from "../export/deleteTemplate";
 
 const Header = () => {
   const location = useLocation();
@@ -61,14 +62,15 @@ const Header = () => {
   const envName = useSceneStore((state) => state.envName);
   const setEnviorName = useSceneStore((state) => state.setName);
   const setEnvName = useSceneStore((state) => state.setEnvName);
-  const hd = useSceneStore((state) => state.highestDistance);
 
   const [envList, setEnvList] = useState([]);
   const [graphList, setGraphList] = useState([]);
+  const [allTemplates, setTemplates] = useState([]);
   const [currentPath, setPath] = useState(null);
 
   const [eModal, seteModel] = useState(false);
   const [iModal, setiModel] = useState(false);
+  const [dModal, setdModel] = useState(false);
   const [infoModal, setInfoModal] = useState(false);
   const [exportInfo, setMessage] = useState(null);
 
@@ -88,6 +90,8 @@ const Header = () => {
     if (user?.id && envList.length === 0 && graphList.length === 0) {
       getTemplateData();
     }
+    const combined = [...graphList, ...envList];
+    setTemplates(combined);
   }, [user]);
 
   const getTemplateData = async () => {
@@ -144,6 +148,26 @@ const Header = () => {
               Yes
             </button>
             <button onClick={() => seteModel(false)}>No</button>
+          </div>
+        </div>
+      )}
+      {dModal && (
+        <div className="template-modal">
+          <h2>Do you want to delete this template</h2>
+          <span>
+            <strong>Template: </strong>
+            {currentPath}
+          </span>
+          <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+            <button
+              onClick={() => {
+                deleteTemplate(currentPath);
+                setdModel(false);
+              }}
+            >
+              Yes
+            </button>
+            <button onClick={() => setdModel(false)}>No</button>
           </div>
         </div>
       )}
@@ -207,6 +231,25 @@ const Header = () => {
                 Update
               </button>
             </div>
+          )}
+          {visibility === 0 && (
+            <div className="template-picker">
+              <select onChange={(e) => setPath(e.target.value)}>
+                {allTemplates.map((env) => (
+                  <option value={env.path}>{env.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {visibility === 0 && (
+            <span
+              style={{
+                cursor: "pointer",
+              }}
+              onClick={() => setdModel(true)}
+            >
+              <FaTimes />
+            </span>
           )}
           {setting && visibility === 1 && (
             <div className="setting-pop-up">
@@ -293,14 +336,6 @@ const Header = () => {
           >
             <FaFileExport />
           </span>
-          {/* <span
-            style={{
-              display: visibility === 1 ? "flex" : "none",
-              cursor: "pointer",
-            }}
-          >
-            {"Highest Distance: " + hd}
-          </span>*/}
           {user && (
             <span
               style={{ cursor: "pointer" }}
