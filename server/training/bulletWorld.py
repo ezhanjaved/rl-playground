@@ -1,6 +1,5 @@
 import copy
 import random
-import time
 
 import pybullet as p
 import pybullet_data
@@ -38,7 +37,7 @@ class PyBulletWorld:
 
     def randomize_entities(self, entConfigCopy, highestDistance):
 
-        entConfigCopy = copy.deepcopy(entConfig)
+        # entConfigCopy = copy.deepcopy(entConfigCopy)
 
         agentConfig = None
 
