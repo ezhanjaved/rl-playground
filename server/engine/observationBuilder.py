@@ -88,6 +88,40 @@ def distance_in_direction(position, rotation, direction_angle_offset, bucket):
     return min_dist / max_range  # normalised 0-1
 
 
+def get_target_direction_obs(
+    target_obj_pos,
+    position,
+    rotation,
+):
+
+    world_dx = -(
+        target_obj_pos[0] - position[0]
+    )  # Negated DX because of Rapier convention - at the time of spawn DX is negated so we have to negate again to make it normalized
+    world_dz = target_obj_pos[1] - position[1]
+
+    theta = rotation[2] if len(rotation) > 2 else 0.0
+    cos_t = math.cos(theta)
+    sin_t = math.sin(theta)
+
+    # Agent-local target position
+    local_side = cos_t * world_dx - sin_t * world_dz
+    local_depth = sin_t * world_dx + cos_t * world_dz
+
+    angle_to_target = math.atan2(local_side, local_depth)
+
+    side_signal = math.sin(angle_to_target)
+    depth_signal = math.cos(angle_to_target)
+    return {
+        "side_signal": side_signal,  # + left, - right
+        "depth_signal": depth_signal,  # + forward, - behind
+        "angle_to_target": angle_to_target,
+        "local_side": local_side,
+        "local_depth": local_depth,
+        "world_dx": world_dx,
+        "world_dz": world_dz,
+    }
+
+
 def nearestDistance(position, rotation, bucket, mode):
     min_dist = float("inf")
     min_pos = []
@@ -108,17 +142,11 @@ def nearestDistance(position, rotation, bucket, mode):
             # PyBullet Y = depth axis (Three.js Z)
             d = abs(position[1] - bullet_pos[1])
         elif mode == "delta-x":
-            dx = -(
-                bullet_pos[0] - position[0]
-            )  # Added negative sign to match with Rapier convention
-            dy = bullet_pos[1] - position[1]
-            theta = rotation[2]
-            d = math.cos(theta) * dx + math.sin(theta) * dy
+            obs = get_target_direction_obs(bullet_pos, position, rotation)
+            d = obs["side_signal"]
         elif mode == "delta-z":
-            dx = bullet_pos[0] - position[0]
-            dy = bullet_pos[1] - position[1]
-            theta = rotation[2]
-            d = -math.sin(theta) * dx + math.cos(theta) * dy
+            obs = get_target_direction_obs(bullet_pos, position, rotation)
+            d = obs["depth_signal"]
         else:
             continue
 

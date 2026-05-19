@@ -65,6 +65,29 @@ export function distanceInDirection(
   return minDist / maxRange; // normalized 0-1
 }
 
+const getTargetDirectionObs = (targetObjPos, position, rotation) => {
+  const worldDx = targetObjPos[0] - position[0];
+  const worldDz = targetObjPos[2] - position[2];
+
+  const theta = rotation[1] ?? 0;
+
+  const cos = Math.cos(theta);
+  const sin = Math.sin(theta);
+
+  const localSide = cos * worldDx - sin * worldDz;
+  const localDepth = sin * worldDx + cos * worldDz;
+
+  const angleToTarget = Math.atan2(localSide, localDepth);
+
+  return {
+    sideSignal: Math.sin(angleToTarget), // + left, - right
+    depthSignal: Math.cos(angleToTarget), // + forward, - behind
+    angleToTarget,
+    localSide,
+    localDepth,
+  };
+};
+
 export function nearestDistance(position, rotation, predicate, mode, entities) {
   let minDist = Infinity;
   let minPos = [];
@@ -84,15 +107,13 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
     } else if (mode === "z") {
       d = Math.abs(position?.[2] - targetObjPos?.[2]);
     } else if (mode === "x-delta") {
-      const dx = targetObjPos?.[0] - position?.[0];
-      const dz = targetObjPos?.[2] - position?.[2];
-      const theta = rotation?.[1] ?? 0;
-      d = Math.cos(theta) * dx + Math.sin(theta) * dz;
+      const obs = getTargetDirectionObs(targetObjPos, position, rotation);
+      console.log("Side:", obs.sideSignal > 0 ? "Left" : "Right");
+      d = obs.sideSignal;
     } else if (mode === "z-delta") {
-      const dx = targetObjPos?.[0] - position?.[0];
-      const dz = targetObjPos?.[2] - position?.[2];
-      const theta = rotation?.[1] ?? 0;
-      d = -Math.sin(theta) * dx + Math.cos(theta) * dz;
+      const obs = getTargetDirectionObs(targetObjPos, position, rotation);
+      console.log("Orientation:", obs.depthSignal > 0 ? "Forward" : "Behind");
+      d = obs.depthSignal;
     }
 
     if (Number.isFinite(d) && d < minDist) {

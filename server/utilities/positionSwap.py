@@ -5,4 +5,4 @@ def positionSwap(position):
 
 def rotationSwap(quat):
     x, y, z, w = quat
-    return [-x, z, y, w]
+    return [x, z, y, w]
