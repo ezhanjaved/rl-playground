@@ -98,43 +98,40 @@ class SingleAgentTrainer:
 
         resumed_timesteps = 0
         checkpoint_path = downloadLatestCheckpoint(self.training_id, checkpoint_dir)
-        if checkpoint_path is not None:
-            print(f"Resuming from checkpoint: {checkpoint_path}")
-            vecnorm_path = str(checkpoint_path).replace(".zip", "_vecnormalize.pkl")
+        final_path = (
+            MODEL_DIR
+            / f"model_training_{self.training_id}"
+            / f"model_{self.training_id}.zip"
+        )
+        if final_path.exists():
+            print("Final model exists — resuming from final.")
+            vecnorm_path = str(final_path).replace(".zip", "_vecnormalize.pkl")
             if os.path.exists(vecnorm_path):
                 vec_env = VecNormalize.load(vecnorm_path, vec_env)
                 print(f"VecNormalize stats restored from {vecnorm_path}")
             else:
-                print("No VecNormalize stats found, starting normalizer fresh.")
-
-            self.model = PPO.load(str(checkpoint_path), env=vec_env)
-            try:
-                stem = checkpoint_path.stem
-                resumed_timesteps = int(stem.split("_steps")[0].split("_")[-1])
-                print(f"Resuming at timestep {resumed_timesteps}")
-            except Exception:
-                resumed_timesteps = self.already_trained
-
-        else:
-            final_path = (
-                MODEL_DIR
-                / f"model_training_{self.training_id}"
-                / f"model_{self.training_id}.zip"
-            )
-            if final_path.exists():
                 print(
-                    "No checkpoint found, but final model exists — resuming from final."
+                    "No VecNormalize stats found for final model, starting normalizer fresh."
                 )
-                vecnorm_path = str(final_path).replace(".zip", "_vecnormalize.pkl")
+            self.model = PPO.load(str(final_path), env=vec_env)
+            resumed_timesteps = self.already_trained
+        else:
+            if checkpoint_path is not None:
+                print(f"Resuming from checkpoint: {checkpoint_path}")
+                vecnorm_path = str(checkpoint_path).replace(".zip", "_vecnormalize.pkl")
                 if os.path.exists(vecnorm_path):
                     vec_env = VecNormalize.load(vecnorm_path, vec_env)
                     print(f"VecNormalize stats restored from {vecnorm_path}")
                 else:
-                    print(
-                        "No VecNormalize stats found for final model, starting normalizer fresh."
-                    )
-                self.model = PPO.load(str(final_path), env=vec_env)
-                resumed_timesteps = self.already_trained
+                    print("No VecNormalize stats found, starting normalizer fresh.")
+
+                self.model = PPO.load(str(checkpoint_path), env=vec_env)
+                try:
+                    stem = checkpoint_path.stem
+                    resumed_timesteps = int(stem.split("_steps")[0].split("_")[-1])
+                    print(f"Resuming at timestep {resumed_timesteps}")
+                except Exception:
+                    resumed_timesteps = self.already_trained
             else:
                 print("No checkpoint or final model found, starting fresh.")
                 self.model = PPO(
