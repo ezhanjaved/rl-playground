@@ -33,7 +33,6 @@ export function distanceInDirection(
   const ry = rotation?.[1] ?? 0;
   const angle = ry + directionAngleOffset;
 
-  // Forward vector for this direction
   const Fx = Math.sin(angle);
   const Fz = Math.cos(angle);
 

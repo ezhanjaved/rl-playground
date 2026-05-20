@@ -12,10 +12,10 @@ def resume(uid: str, additional_steps: int):
     scenarioObject = compiler(uid)
     agent_list = extract_agent_list(scenarioObject)
     graphs_per_agent = extact_graph_per_agent(scenarioObject, agent_list)
-    runTimeState = make_runtime_state(scenarioObject, agent_list, graphs_per_agent)
+    runTimeState = make_runtime_state(scenarioObject, agent_list, graphs_per_agent, uid)
 
     record = fetchExtactModel(uid)
-    already_trained = record.get("total_timestep", 0)
+    already_trained: int = record.get("total_timestep", 0)
     target_timesteps = already_trained + additional_steps
 
     agent_id = runTimeState.agents_ids[0]
