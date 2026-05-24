@@ -29,6 +29,7 @@ class PyBulletWorld:
         p.loadURDF("plane.urdf", physicsClientId=self.client)
 
     def spawn_entities(self, entities_config, highestDistance, spawn_mode):
+        entities_config = copy.deepcopy(list(entities_config))
         if spawn_mode == "Random":
             entities_config = self.randomize_entities(entities_config, highestDistance)
 
@@ -36,9 +37,7 @@ class PyBulletWorld:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
 
-    def randomize_entities(self, entConfig, highestDistance):
-
-        entConfigCopy = copy.deepcopy(entConfig)
+    def randomize_entities(self, entConfigCopy, highestDistance):
 
         agentConfig = None
 
@@ -132,7 +131,7 @@ class PyBulletWorld:
     def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
-            # time.sleep(1 / 60)
+            time.sleep(1 / 60)
 
     def settle(self, steps=2):
         for _ in range(steps):

@@ -4,6 +4,8 @@ from server.training.enviornmentBase import EnvironmentCore
 
 class SimulationEnv:
     def __init__(self, scenario, runtime_state):
+        # runtime is mutable config
+        # scenario is immutable
         self.core = EnvironmentCore(scenario, runtime_state)  # Logic handling
         self.world = PyBulletWorld()  # Physics handling
 
