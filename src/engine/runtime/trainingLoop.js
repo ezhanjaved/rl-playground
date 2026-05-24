@@ -136,7 +136,7 @@ export async function trainingLoop(experimentId) {
           reward,
           done: stepDone,
           nextObs,
-        } = envSet(actionPicked, agent, obsVector);
+        } = envSet(actionPicked, agent, obsVector, step);
         console.log(
           "Reward Computed In This Step: " +
             reward +

@@ -57,7 +57,7 @@ const RecordPage = () => {
   const fetchModels = async () => {
     if (!user?.id) return;
 
-    const url = `https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/trainer/fetch_models`;
+    const url = `${import.meta.env.VITE_API_BASE_URL}/trainer/fetch_models`;
     try {
       const response = await fetch(url, {
         method: "POST",

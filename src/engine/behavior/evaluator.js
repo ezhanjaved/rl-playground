@@ -2,7 +2,7 @@ import { useSceneStore } from "../../stores/useSceneStore";
 import { useGraphStore } from "../../stores/useGraphStore";
 import buildObsSpace, { nearestDistance } from "../runtime/observationBuilder";
 
-export default function BehaviorGraphEval(agentId, preObs) {
+export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
   const { assignments, entities } = useSceneStore.getState();
   const { graphs } = useGraphStore.getState();
 
@@ -18,9 +18,9 @@ export default function BehaviorGraphEval(agentId, preObs) {
 
   let ctxObj = {
     reward: 0,
-    done: false,
+    terminated: false,
     truncated: false,
-    _stop: false, // internal traversal-stop flag, separate from done/truncated
+    _stop: false,
     facts: {
       position: agent.position,
       rotation: agent.rotation,
@@ -33,16 +33,17 @@ export default function BehaviorGraphEval(agentId, preObs) {
     stepCount: 0,
     visitedNodes,
     config,
-    preObs, //pre action obs passed as parameter
+    preObs,
     postObs,
+    currentEpisodeStep,
   };
 
   const start = graph.nodes.find((e) => e.type === "OnStepNode");
-  if (!start) return { reward: 0, done: false };
+  if (!start) return { reward: 0, terminated: false };
   visitNode(start.id, graph, ctxObj);
   return {
     reward: ctxObj.reward,
-    done: ctxObj.done,
+    terminated: ctxObj.terminated,
     truncated: ctxObj.truncated,
   };
 }
@@ -67,14 +68,18 @@ function visitNode(NodeId, graph, ctxObj) {
   }
 
   if (currentNodeData.type === "EndEpisodeNode") {
-    ctxObj.done = true;
+    ctxObj.terminated = true;
     ctxObj._stop = true;
     return;
   }
 
   if (currentNodeData.type === "TruncateEpisodeNode") {
-    ctxObj.truncated = true;
-    ctxObj._stop = true;
+    const maxSteps = parseInt(currentNodeData.data?.maxSteps ?? 500);
+    const currentSteps = ctxObj.currentEpisodeStep;
+    if (currentSteps >= maxSteps) {
+      ctxObj.truncated = true;
+      ctxObj._stop = true;
+    }
     return;
   }
 
@@ -396,9 +401,7 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if (entityTwo === "Non-State Object") {
       diffCal(obstaclePredicate, "previous_distance_obstacle");
-    }
-
-    if (entityTwo === "Pickable Object") {
+    } else if (entityTwo === "Pickable Object") {
       if (hasHolder) {
         diffCal(pickablePredicate, "previous_distance_pickable");
       } else if (hasCollector) {
@@ -406,9 +409,7 @@ function visitNode(NodeId, graph, ctxObj) {
       } else {
         return;
       }
-    }
-
-    if (entityTwo === "Deposit Object") {
+    } else if (entityTwo === "Deposit Object") {
       if (hasDepositor) {
         diffCal(depositPredicate, "previous_distance_deposit");
       } else {
@@ -481,9 +482,7 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if (entityTwo === "Non-State Object") {
       diffCal(obstaclePredicate, "previous_distance_obstacle");
-    }
-
-    if (entityTwo === "Pickable Object") {
+    } else if (entityTwo === "Pickable Object") {
       if (hasHolder) {
         diffCal(pickablePredicate, "previous_distance_pickable");
       } else if (hasCollector) {
@@ -491,9 +490,7 @@ function visitNode(NodeId, graph, ctxObj) {
       } else {
         return;
       }
-    }
-
-    if (entityTwo === "Deposit Object") {
+    } else if (entityTwo === "Deposit Object") {
       if (hasDepositor) {
         diffCal(depositPredicate, "previous_distance_deposit");
       } else {
