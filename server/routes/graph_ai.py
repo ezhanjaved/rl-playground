@@ -11,7 +11,7 @@ from pydantic import BaseModel
 graph_ai = APIRouter()
 
 CHUTES_API_URL = "https://llm.chutes.ai/v1/chat/completions"
-DEEPSEEK_MODEL = "deepseek-ai/DeepSeek-V3.1-TEE"
+DEEPSEEK_MODEL = "deepseek-ai/DeepSeek-V3.2-TEE"
 
 GRAPH_AI_SYSTEM_PROMPT = """You are an expert AI assistant embedded in SnapGraph — a visual node-based behavior graph editor used to design reward functions for reinforcement learning agents.
 

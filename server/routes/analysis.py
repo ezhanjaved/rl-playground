@@ -16,7 +16,7 @@ from server.utilities.loader import json_loader
 analysis = APIRouter()
 
 CHUTES_API_URL = "https://llm.chutes.ai/v1/chat/completions"
-DEEPSEEK_MODEL = "deepseek-ai/DeepSeek-V3.1-TEE"
+DEEPSEEK_MODEL = "deepseek-ai/DeepSeek-V3.2-TEE"
 # deepseek-ai/DeepSeek-V3-0324-TEE
 ANALYSIS_SYSTEM_PROMPT = """You are an expert reinforcement learning engineer analyzing a trained RL model.
 You have deep knowledge of PPO (Proximal Policy Optimization) and reward shaping.
