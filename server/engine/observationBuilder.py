@@ -207,9 +207,14 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "last_action":
                 idx = state_space.get("last_action_index", 0)
                 total_actions = (
-                    len(agentData.action_space) if agentData.action_space else 1
+                    len(agentData.action_space) if agentData.actisson_space else 1
                 )
                 constructed_obs.append(idx / max(total_actions - 1, 1))
+
+            case "last_action_counter":
+                constructed_obs.append(
+                    min(float(state_space.get("last_action_counter", 0)) / 10.0, 1.0)
+                )
 
             # --- (Navigator) ---
             case "delta_x_to_obstacle":

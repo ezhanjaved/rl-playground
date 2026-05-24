@@ -187,7 +187,8 @@ export default function buildObsSpace(agent) {
       }
 
       case "last_action_counter": {
-        const idx = stateSpace?.last_action_counter ?? 0;
+        let idx = stateSpace?.last_action_counter ?? 0;
+        idx = Math.min(idx / 10.0, 1.0);
         constructedObs.push(idx);
         break;
       }

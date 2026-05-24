@@ -1,26 +1,35 @@
 import math
 
 
-def previousDistanceCorrection(entities, obs, last_action, agent):
+def previousDistanceCorrection(entities, obs, current_action, agent):
     capabilities = agent.capabilities
 
     actionSpace = agent.action_space
-    indexOfAction = actionSpace.index(last_action)
+    indexOfAction = actionSpace.index(current_action)
 
     agent_id = agent.id
     obs_space = agent.observation_space
+    new_state_space = dict(agent.state_space)
 
     # previous distance should be updated only when agent has did an action from MOVEABLE ability - interact/collect does not reduce distance
-    if last_action not in ["move_up", "move_right", "move_left", "idle"]:
+    if current_action not in ["move_up", "move_right", "move_left", "idle"]:
         agent = entities[agent_id]
-        agent.last_action = last_action
         if "TemporalMemory" in agent.capabilities:
-            agent.state_space["last_action_index"] = indexOfAction
+            new_state_space["last_action_index"] = indexOfAction
+            if agent.last_action == current_action:
+                new_state_space["last_action_counter"] += 1
+            else:
+                new_state_space["last_action_counter"] = 1
+        agent.last_action = current_action
+        agent.state_space = new_state_space
         return
 
-    new_state_space = dict(agent.state_space)
     if "TemporalMemory" in agent.capabilities:
-        agent.state_space["last_action_index"] = indexOfAction
+        new_state_space["last_action_index"] = indexOfAction
+        if agent.last_action == current_action:
+            new_state_space["last_action_counter"] += 1
+        else:
+            new_state_space["last_action_counter"] = 1
 
     for cap in capabilities:
         match cap:
@@ -61,7 +70,7 @@ def previousDistanceCorrection(entities, obs, last_action, agent):
                         new_state_space["previous_distance_deposit"] = obs[index]
 
     agent = entities[agent_id]
-    agent.last_action = last_action
+    agent.last_action = current_action
     agent.state_space = new_state_space
 
 

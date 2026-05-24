@@ -8,46 +8,54 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
     agentPos = agentData.position
     capabilities = agentData.capabilities
     agent = entities[agentData.id]
+    new_state_space = dict(agentData.state_space)
 
     # if an agent is not Holder but system has picked action that is of holder do not do anything - ignore it
     if "Holder" not in capabilities:
         return
 
+    if "TemporalMemory" in capabilities:
+        new_state_space["last_action_index"] = indexOfAction
+        if agentData.last_action == action:
+            new_state_space["last_action_counter"] += 1
+        else:
+            new_state_space["last_action_counter"] = 1
+
     if action == "pick":
         pickRadius = 1.5  # Engine Defined - Not User
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
         if not targetObj:
+            new_state_space["lastPickSuccess"] = False
+            # Update to RUNTIME
             agent.last_action = action
-            if "TemporalMemory" in agent.capabilities:
-                agent.state_space["last_action_index"] = indexOfAction
-            agent.state_space["lastPickSuccess"] = False
+            agent.state_space = new_state_space
             return
 
         if targetObj:
             if agent.state_space["holding"]:
+                new_state_space["lastPickSuccess"] = False
+                # Update to RUNTIME
                 agent.last_action = action
-                if "TemporalMemory" in agent.capabilities:
-                    agent.state_space["last_action_index"] = indexOfAction
-                agent.state_space["lastPickSuccess"] = False
+                agent.state_space = new_state_space
                 return
             elif not agent.state_space["holding"]:
                 bulletId = eM[targetObj.id]
                 p.removeBody(bulletId, physicsClientId=client)
+                new_state_space["holding"] = True
+                new_state_space["lastPickSuccess"] = True
+                # Update to RUNTIME
                 agent.last_action = action
-                if "TemporalMemory" in agent.capabilities:
-                    agent.state_space["last_action_index"] = indexOfAction
-                agent.state_space["holding"] = True
-                agent.state_space["lastPickSuccess"] = True
+                agent.state_space = new_state_space
                 del entities[targetObj.id]
             return
-        else:
+
+    if action == "drop":
+        if not new_state_space["holding"]:
+            new_state_space["lastPickSuccess"] = False
             agent.last_action = action
-            if "TemporalMemory" in agent.capabilities:
-                agent.state_space["last_action_index"] = indexOfAction
-            agent.state_space["lastPickSuccess"] = True
+            agent.state_space = new_state_space
             return
 
-    if action == "drop" and agent.state_space["holding"]:
         [wx, wy, wz] = agentData.position
         wx += 2
         wy += 2
@@ -87,18 +95,11 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
             isCollectable=droppedObj["isCollectable"],
             isTarget=droppedObj["isTarget"],
         )
-
+        new_state_space["holding"] = False
+        new_state_space["lastPickSuccess"] = False
+        # Update to RUNTIME
         agent.last_action = action
-        if "TemporalMemory" in agent.capabilities:
-            agent.state_space["last_action_index"] = indexOfAction
-        agent.state_space["holding"] = False
-        agent.state_space["lastPickSuccess"] = False
-        return
-    else:
-        agent.last_action = action
-        if "TemporalMemory" in agent.capabilities:
-            agent.state_space["last_action_index"] = indexOfAction
-        agent.state_space["lastPickSuccess"] = False
+        agent.state_space = new_state_space
         return
 
 
