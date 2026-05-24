@@ -123,6 +123,29 @@ def get_target_direction_obs(
 
 
 def nearestDistance(position, rotation, bucket, mode):
+    # For delta modes, we first find the nearest entity by 3D distance,
+    # then return its directional signal. This ensures "delta to nearest"
+    # semantics rather than "most extreme delta across all entities".
+    if mode in ("delta-x", "delta-z"):
+        min_dist = float("inf")
+        nearest_bullet_pos = None
+        nearest_target_pos = None
+        for entity in bucket:
+            target_pos = entity.position
+            bullet_pos = positionSwap(target_pos)
+            d = distance3D(position, bullet_pos)
+            if not math.isfinite(d):
+                continue
+            if d < min_dist:
+                min_dist = d
+                nearest_bullet_pos = bullet_pos
+                nearest_target_pos = target_pos
+        if nearest_bullet_pos is None:
+            return 1.0, []
+        obs = get_target_direction_obs(nearest_bullet_pos, position, rotation)
+        signal = obs["side_signal"] if mode == "delta-x" else obs["depth_signal"]
+        return signal, nearest_target_pos
+
     min_dist = float("inf")
     min_pos = []
     found = False
@@ -134,17 +157,10 @@ def nearestDistance(position, rotation, bucket, mode):
         if mode == "both":
             d = distance3D(position, bullet_pos)
         elif mode == "x":
-            # Both converted to PyBullet space for consistency
             d = abs(position[0] - bullet_pos[0])
         elif mode == "y":
             # PyBullet Y = depth axis (Three.js Z)
             d = abs(position[1] - bullet_pos[1])
-        elif mode == "delta-x":
-            obs = get_target_direction_obs(bullet_pos, position, rotation)
-            d = obs["side_signal"]
-        elif mode == "delta-z":
-            obs = get_target_direction_obs(bullet_pos, position, rotation)
-            d = obs["depth_signal"]
         else:
             continue
 
@@ -207,7 +223,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "last_action":
                 idx = state_space.get("last_action_index", 0)
                 total_actions = (
-                    len(agentData.action_space) if agentData.actisson_space else 1
+                    len(agentData.action_space) if agentData.action_space else 1
                 )
                 constructed_obs.append(idx / max(total_actions - 1, 1))
 

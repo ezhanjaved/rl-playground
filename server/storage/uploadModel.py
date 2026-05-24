@@ -13,6 +13,12 @@ def uploadModel(path, id):
     return f"{BUCKET}/{model_folder}/{model_name}"
 
 
+def uploadNorm(path, id):
+    model_folder = f"model_training_{id}"
+    norm_name = f"model_{id}_vecnormalize.pkl"
+    s3.upload_file(path, BUCKET, f"{model_folder}/{norm_name}")
+
+
 def upload_template(path, template_name):
     s3.upload_file(path, "templates", template_name)
     return template_name

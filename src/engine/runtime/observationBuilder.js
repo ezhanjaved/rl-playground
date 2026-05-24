@@ -88,6 +88,33 @@ const getTargetDirectionObs = (targetObjPos, position, rotation) => {
 };
 
 export function nearestDistance(position, rotation, predicate, mode, entities) {
+  // For delta modes, find the nearest entity by 3D distance first,
+  // then return its directional signal. Mirrors Python observationBuilder.py.
+  if (mode === "x-delta" || mode === "z-delta") {
+    let minDist = Infinity;
+    let nearestPos = null;
+    let found = false;
+
+    for (const entity of Object.values(entities)) {
+      if (!entity || !predicate(entity)) continue;
+      const targetObjPos = entity?.position ?? [0, 0, 0];
+      const d = distance3D(position, targetObjPos);
+      if (Number.isFinite(d) && d < minDist) {
+        minDist = d;
+        nearestPos = targetObjPos;
+        found = true;
+      }
+    }
+
+    if (!found) {
+      return { min: 1.0, minPos: [] };
+    }
+
+    const obs = getTargetDirectionObs(nearestPos, position, rotation);
+    const signal = mode === "x-delta" ? obs.sideSignal : obs.depthSignal;
+    return { min: Math.fround(signal), minPos: nearestPos };
+  }
+
   let minDist = Infinity;
   let minPos = [];
   let found = false;
@@ -100,20 +127,11 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
     let d;
 
     if (mode === "both") {
-      d = distance3D(position, targetObjPos);
-      d = Math.fround(d);
+      d = Math.fround(distance3D(position, targetObjPos));
     } else if (mode === "x") {
       d = Math.abs(position?.[0] - targetObjPos?.[0]);
     } else if (mode === "z") {
       d = Math.abs(position?.[2] - targetObjPos?.[2]);
-    } else if (mode === "x-delta") {
-      const obs = getTargetDirectionObs(targetObjPos, position, rotation);
-      console.log("Side:", obs.sideSignal > 0 ? "Left" : "Right");
-      d = Math.fround(obs.sideSignal);
-    } else if (mode === "z-delta") {
-      const obs = getTargetDirectionObs(targetObjPos, position, rotation);
-      console.log("Orientation:", obs.depthSignal > 0 ? "Forward" : "Behind");
-      d = Math.fround(obs.depthSignal);
     }
 
     if (Number.isFinite(d) && d < minDist) {

@@ -36,9 +36,9 @@ class PyBulletWorld:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
 
-    def randomize_entities(self, entConfigCopy, highestDistance):
+    def randomize_entities(self, entConfig, highestDistance):
 
-        # entConfigCopy = copy.deepcopy(entConfigCopy)
+        entConfigCopy = copy.deepcopy(entConfig)
 
         agentConfig = None
 

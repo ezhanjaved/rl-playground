@@ -13,6 +13,15 @@ def downloadModel(id):
     return f"{file_name} is downloaded from the bucket to {download_model_path}"
 
 
+def downloadNorm(id):
+    file_name = f"model_training_{id}/model_{id}_vecnormalize.pkl"
+    download_model_path = MODEL_DIR
+    full_path = download_model_path / file_name
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    s3.download_file("rl-models", file_name, str(full_path))
+    return f"{file_name} is downloaded from the bucket to {download_model_path}"
+
+
 def downloadTemplate(name):
     file_name = name
     download_template_path = TEMPLATE_PATH

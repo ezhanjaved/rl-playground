@@ -2,7 +2,7 @@ import traceback
 
 from server.database.update import update_model, update_status
 from server.pod.basis import basis
-from server.storage.uploadModel import uploadModel
+from server.storage.uploadModel import uploadModel, uploadNorm
 from server.utilities.callWebhook import call_webhook_for_training
 
 
@@ -14,7 +14,10 @@ def trainingPod(uid: str):
         trainer.train()
         update_status(uid, "training is complete", "models", "training_id")
         local_path = trainer.save()
-        s3Path = uploadModel(local_path, uid)
+        model_path = local_path + ".zip"
+        s3Path = uploadModel(model_path, uid)
+        vec_path = local_path + "_vecnormalize.pkl"
+        uploadNorm(vec_path, uid)
         update_status(uid, "model is saved", "models", "training_id")
         call_webhook_for_training(uid, s3Path)
         update_status(uid, "completed", "models", "training_id")

@@ -192,7 +192,7 @@ class SingleAgentTrainer:
             if venv is not None:
                 venv.save(vecnorm_path)
 
-        return str(save_path) + ".zip"
+        return str(save_path)
 
     def load(self, id):
         model_file_name = f"model_{id}"
