@@ -4,6 +4,18 @@ import { getIndexOfObs } from "../../utility/getIndex";
 export default function collectorAdapter(action, agent, actionSpace) {
   const { updateEntity, entities, deleteEntity } = useSceneStore.getState();
   const indexOfAction = getIndexOfObs(actionSpace, action);
+  const capabilities = agent.capabilities;
+  let newStateSpace = { ...agent.state_space };
+
+  if (capabilities.includes("TemporalMemory")) {
+    newStateSpace.last_action_index = indexOfAction;
+    if (agent.last_action === action) {
+      newStateSpace.last_action_counter += 1;
+    } else {
+      newStateSpace.last_action_counter = 1;
+    }
+  }
+
   if (action === "collect") {
     const pickRadius = 1.5; //Engine Defined - Not User
     const targetObj = nearbyPickable(
@@ -12,16 +24,12 @@ export default function collectorAdapter(action, agent, actionSpace) {
       pickRadius,
       agent.capabilities,
     );
-    console.log("Target Obj: " + targetObj);
 
     if (!targetObj) {
+      newStateSpace.lastPickSuccess = false;
       updateEntity(agent.id, {
         last_action: action,
-        state_space: {
-          ...agent.state_space,
-          last_action_index: indexOfAction,
-          lastPickSuccess: false,
-        },
+        state_space: newStateSpace,
       });
       return;
     }
@@ -30,15 +38,12 @@ export default function collectorAdapter(action, agent, actionSpace) {
       console.log("Collecting!");
       const numberOfPickedItems = agent?.state_space?.items_collected;
       const updatedNumber = numberOfPickedItems + 1;
+      newStateSpace.items_collected = updatedNumber;
+      newStateSpace.lastPickSuccess = true;
+      newStateSpace.lastItemCollected = targetObj.tag;
       updateEntity(agent.id, {
         last_action: action,
-        state_space: {
-          ...agent.state_space,
-          last_action_index: indexOfAction,
-          lastItemCollected: targetObj.tag,
-          items_collected: updatedNumber,
-          lastPickSuccess: true,
-        },
+        state_space: newStateSpace,
       });
       deleteEntity(targetObj.id); //Remove item from env - it is collected now!
       return;

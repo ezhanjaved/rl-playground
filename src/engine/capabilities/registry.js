@@ -2,15 +2,15 @@
 export const CAPABILITY_SCHEMAS = {
   Moveable: {
     actions: ["move_up", "move_left", "move_right", "idle"],
-    observations: ["agent_rotation_y"],
+    observations: [],
     state: {},
     settings: { speed: 4 },
   },
 
   TemporalMemory: {
     actions: [],
-    observations: ["last_action"],
-    state: { last_action_index: 0 },
+    observations: ["last_action", "last_action_counter"],
+    state: { last_action_index: 0, last_action_counter: 0 },
   },
 
   Navigator: {

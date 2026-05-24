@@ -4,7 +4,7 @@ import { convertRot } from "./rotationCal";
 export default function previousDistanceCorrection(
   obs_space,
   agent,
-  last_action,
+  current_action,
   position,
   rotation,
 ) {
@@ -15,7 +15,7 @@ export default function previousDistanceCorrection(
   let best = null;
   let newStateSpace = { ...agent.state_space };
   const action_space = agent?.action_space; //array of actions
-  const indexOfAction = getIndexOfObs(action_space, last_action);
+  const indexOfAction = getIndexOfObs(action_space, current_action);
 
   capabilities.forEach((cap) => {
     switch (cap) {
@@ -69,13 +69,19 @@ export default function previousDistanceCorrection(
 
       case "TemporalMemory":
         newStateSpace.last_action_index = indexOfAction;
+        //if current action is same as last was we will increment counter.
+        if (current_action === agent.last_action) {
+          newStateSpace.last_action_counter += 1;
+        } else {
+          newStateSpace.last_action_counter = 1;
+        }
         break;
     }
   });
 
   const quat = convertRot(rotation);
   updateEntity(agent.id, {
-    last_action,
+    last_action: current_action,
     position,
     rotation,
     quatRotation: quat ? [quat.x, quat.y, quat.z, quat.w] : [0, 0, 0, 1],

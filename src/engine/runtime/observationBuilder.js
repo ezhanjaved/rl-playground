@@ -101,6 +101,7 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
 
     if (mode === "both") {
       d = distance3D(position, targetObjPos);
+      d = Math.fround(d);
     } else if (mode === "x") {
       d = Math.abs(position?.[0] - targetObjPos?.[0]);
     } else if (mode === "z") {
@@ -108,11 +109,11 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
     } else if (mode === "x-delta") {
       const obs = getTargetDirectionObs(targetObjPos, position, rotation);
       console.log("Side:", obs.sideSignal > 0 ? "Left" : "Right");
-      d = obs.sideSignal;
+      d = Math.fround(obs.sideSignal);
     } else if (mode === "z-delta") {
       const obs = getTargetDirectionObs(targetObjPos, position, rotation);
       console.log("Orientation:", obs.depthSignal > 0 ? "Forward" : "Behind");
-      d = obs.depthSignal;
+      d = Math.fround(obs.depthSignal);
     }
 
     if (Number.isFinite(d) && d < minDist) {
@@ -182,6 +183,12 @@ export default function buildObsSpace(agent) {
         const idx = stateSpace?.last_action_index ?? 0;
         const totalActions = agent?.action_space?.length ?? 1;
         constructedObs.push(idx / Math.max(totalActions - 1, 1));
+        break;
+      }
+
+      case "last_action_counter": {
+        const idx = stateSpace?.last_action_counter ?? 0;
+        constructedObs.push(idx);
         break;
       }
 

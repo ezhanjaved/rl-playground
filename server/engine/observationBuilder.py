@@ -126,13 +126,11 @@ def nearestDistance(position, rotation, bucket, mode):
     min_dist = float("inf")
     min_pos = []
     found = False
-
     for entity in bucket:
         target_pos = entity.position  # Three.js space [x, z, y] // Euler [x,y,z]
         bullet_pos = positionSwap(
             target_pos
-        )  # PyBullet space [x, y, z] // Quanterion [x,y,z,w]
-
+        )  # PyBullet space [-x, y, z] // Quanterion [x,z,y,w]
         if mode == "both":
             d = distance3D(position, bullet_pos)
         elif mode == "x":
@@ -187,7 +185,6 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
     state_space = agentData.state_space
     position = agentData.position  # PyBullet space (x, y_depth, z_up)
     rotation = agentData.rotation  # PyBullet Euler angles
-
     if entity_buckets is None:
         entity_buckets = partition_entities(runTimeSnapShot)
 

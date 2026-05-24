@@ -27,7 +27,7 @@ def actionMasking(capabilities):
         "Depositor": ["deposit"],
     }
 
-    ORDER = ["Moveable", "Collector", "Holder", "Finder", "Depositor"]
+    ORDER = ["Moveable", "Finder", "Collector", "Holder", "Depositor"]
 
     actions = []
 

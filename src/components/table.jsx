@@ -18,6 +18,8 @@ import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { connectCloudSocket } from "../websocket/ccWebsocket";
 import { clearPending } from "../engine/runtime/controllers/ppoState";
 import { queueAction } from "../engine/runtime/actionQueue";
+import applyAction from "../engine/runtime/actuators/applyAction";
+import { useSceneStore } from "../stores/useSceneStore";
 
 function RetrainModal({ item, onClose, onConfirm }) {
   const [steps, setSteps] = useState("");
@@ -341,13 +343,34 @@ export function Table({
     setModeltoReady,
   } = useRunTimeStore.getState();
 
+  const { entities } = useSceneStore.getState();
+
   const handleModelReady = useCallback(
     (podUrl) => {
       setModeltoReady(true);
       setModeltoLoading(false);
-      connectCloudSocket(podUrl, (action, id) => {
-        queueAction(action, id);
-        clearPending(id);
+      connectCloudSocket(podUrl, (action, id, actionSeq) => {
+        const { inferenceMode, setWaitingForAction } =
+          useRunTimeStore.getState();
+
+        if (inferenceMode === "lockstep") {
+          const agent = entities[id];
+          if (!agent) {
+            setWaitingForAction(agent.id, false);
+            return;
+          }
+
+          console.log("Lockstep action:", actionSeq, action);
+
+          applyAction(action, agent, []);
+          setWaitingForAction(agent.id, false);
+          return;
+        }
+
+        if (inferenceMode === "on-cloud") {
+          queueAction(action, id);
+          clearPending(id);
+        }
       });
     },
     [setModeltoReady],

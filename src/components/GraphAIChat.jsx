@@ -111,7 +111,7 @@ function Message({ msg }) {
 
 export default function GraphAIChat({
   agentCapabilities = [],
-  apiPath = `${import.meta.env.VITE_API_BASE_URL}/api/graph-ai/chat`,
+  apiPath = `${import.meta.env.VITE_API_BASE_URL}/graph-ai/chat`,
 }) {
   const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState("");
@@ -158,7 +158,10 @@ export default function GraphAIChat({
     try {
       const res = await fetch(apiPath, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         signal: abortRef.current.signal,
         body: JSON.stringify({
           messages: history,

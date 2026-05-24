@@ -1,6 +1,6 @@
-from server.engine.controller.heuristic.finderMoveable import heuristic_controller
 from server.engine.controller.randomController import (
     random_controller,
+    scripted_controller,
 )
 from server.training.simulationBase import SimulationEnv
 
@@ -9,8 +9,8 @@ def debugPipeline(scenario, runTimeState, uid):
     print("MODEL ID: ", uid)
     env = SimulationEnv(scenario, runTimeState)
 
-    num_episodes = 5
-    max_steps_per_episode = 500
+    num_episodes = 1
+    max_steps_per_episode = 7
 
     for episode in range(num_episodes):
         print(f"\n=== Episode Number: {episode} ===")

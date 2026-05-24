@@ -7,6 +7,17 @@ export default function holderAdapter(action, entity, actionSpace) {
     useSceneStore.getState();
   const freshEntity = entities[entity.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
+  const capabilities = freshEntity.capabilities;
+  let newStateSpace = { ...freshEntity.state_space };
+
+  if (capabilities.includes("TemporalMemory")) {
+    newStateSpace.last_action_index = indexOfAction;
+    if (freshEntity.last_action === action) {
+      newStateSpace.last_action_counter += 1;
+    } else {
+      newStateSpace.last_action_counter = 1;
+    }
+  }
 
   if (action === "pick") {
     const pickRadius = 1.5;
@@ -19,26 +30,20 @@ export default function holderAdapter(action, entity, actionSpace) {
 
     // Nothing nearby to pick
     if (!targetObj) {
+      newStateSpace.lastPickSuccess = false;
       updateEntity(entity.id, {
         last_action: action,
-        state_space: {
-          ...freshEntity.state_space,
-          last_action_index: indexOfAction,
-          lastPickSuccess: false,
-        },
+        state_space: newStateSpace,
       });
       return;
     }
 
     // Already holding something
     if (freshEntity.state_space.holding) {
+      newStateSpace.lastPickSuccess = false;
       updateEntity(entity.id, {
         last_action: action,
-        state_space: {
-          ...freshEntity.state_space,
-          last_action_index: indexOfAction,
-          lastPickSuccess: false,
-        },
+        state_space: newStateSpace,
       });
       return;
     }
@@ -46,15 +51,13 @@ export default function holderAdapter(action, entity, actionSpace) {
     // Successful pick
     deleteEntity(targetObj.id);
     console.log("Picking Item");
+    newStateSpace.lastPickSuccess = true;
+    newStateSpace.holding = true;
+    newStateSpace.heldItemAssetRef = targetObj.assetRef;
+
     updateEntity(entity.id, {
       last_action: action,
-      state_space: {
-        ...freshEntity.state_space,
-        last_action_index: indexOfAction,
-        holding: true,
-        heldItemAssetRef: targetObj.assetRef,
-        lastPickSuccess: true,
-      },
+      state_space: newStateSpace,
     });
     return;
   }
@@ -62,13 +65,10 @@ export default function holderAdapter(action, entity, actionSpace) {
   if (action === "drop") {
     // Not holding anything
     if (!freshEntity.state_space.holding) {
+      newStateSpace.lastPickSuccess = false;
       updateEntity(entity.id, {
         last_action: action,
-        state_space: {
-          ...freshEntity.state_space,
-          last_action_index: indexOfAction,
-          lastPickSuccess: false,
-        },
+        state_space: newStateSpace,
       });
       return;
     }
@@ -86,15 +86,12 @@ export default function holderAdapter(action, entity, actionSpace) {
     };
 
     addEntity(droppedObj);
+    newStateSpace.lastPickSuccess = false;
+    newStateSpace.holding = false;
+    newStateSpace.heldItemAssetRef = null;
     updateEntity(entity.id, {
       last_action: action,
-      state_space: {
-        ...freshEntity.state_space,
-        last_action_index: indexOfAction,
-        holding: false,
-        heldItemAssetRef: null,
-        lastPickSuccess: false,
-      },
+      state_space: newStateSpace,
     });
   }
 }

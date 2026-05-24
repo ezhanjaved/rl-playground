@@ -8,6 +8,7 @@ import React from "react";
 import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore.js";
 import runTimeloop from "../engine/runtime/runtimeLoop.js";
+import stepTimeLoop from "../engine/runtime/steptimeLoop.js";
 export let lastPointerWorldPos = [0, 0, 0];
 export let orbitControlsRef = null;
 import { useCanvasSetting } from "../stores/useCanvasSetting.js";
@@ -31,10 +32,16 @@ export default function CanvasPad() {
 
   function SimulationLoop() {
     useFrame(() => {
-      const { playing, training } = useRunTimeStore.getState();
-      if (!playing && !training) return;
-
+      const { playing, training, inferenceMode } = useRunTimeStore.getState();
       const { entities } = useSceneStore.getState();
+
+      if (inferenceMode === "lockstep-") {
+        if (!playing || training) return;
+        stepTimeLoop(entities);
+        return;
+      }
+
+      if (!playing && !training) return;
       runTimeloop(entities);
     });
   }

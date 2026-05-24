@@ -14,6 +14,11 @@ class PyBulletWorld:
     def __init__(self):
         self.client = None
         self.entity_mapping = {}
+        self.debug_axis_ids = []
+        self.debug_label_ids = []
+
+        # Turn this off if you do not want coordinate helpers in the PyBullet GUI.
+        self.debug_coordinates = True
 
     def load(self):
         if self.client is not None:
@@ -28,6 +33,10 @@ class PyBulletWorld:
         p.setTimeStep(1 / 60, physicsClientId=self.client)
         p.loadURDF("plane.urdf", physicsClientId=self.client)
 
+        if self.debug_coordinates:
+            self.draw_world_axes()
+            self.reset_debug_camera()
+
     def spawn_entities(self, entities_config, highestDistance, spawn_mode):
         if spawn_mode == "Random":
             entities_config = self.randomize_entities(entities_config, highestDistance)
@@ -35,6 +44,153 @@ class PyBulletWorld:
         for entity in entities_config:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
+
+            if self.debug_coordinates and bullet_id is not None:
+                self.draw_entity_debug(entity, bullet_id)
+
+    def draw_world_axes(self, axis_length=10):
+        """Draw PyBullet world axes in the GUI.
+
+        PyBullet coordinate convention used here:
+            +X = right
+            +Y = forward/ahead
+            +Z = up
+        """
+        self.debug_axis_ids.clear()
+        self.debug_label_ids.clear()
+
+        # Axis lines: X red, Y green, Z blue.
+        self.debug_axis_ids.append(
+            p.addUserDebugLine(
+                [0, 0, 0],
+                [axis_length, 0, 0],
+                [1, 0, 0],
+                lineWidth=4,
+                lifeTime=0,
+                physicsClientId=self.client,
+            )
+        )
+        self.debug_axis_ids.append(
+            p.addUserDebugLine(
+                [0, 0, 0],
+                [0, axis_length, 0],
+                [0, 1, 0],
+                lineWidth=4,
+                lifeTime=0,
+                physicsClientId=self.client,
+            )
+        )
+        self.debug_axis_ids.append(
+            p.addUserDebugLine(
+                [0, 0, 0],
+                [0, 0, axis_length],
+                [0, 0, 1],
+                lineWidth=4,
+                lifeTime=0,
+                physicsClientId=self.client,
+            )
+        )
+
+        # Negative ground axes are useful for left/back debugging.
+        self.debug_axis_ids.append(
+            p.addUserDebugLine(
+                [0, 0, 0],
+                [-axis_length, 0, 0],
+                [1, 0.4, 0.4],
+                lineWidth=2,
+                lifeTime=0,
+                physicsClientId=self.client,
+            )
+        )
+        self.debug_axis_ids.append(
+            p.addUserDebugLine(
+                [0, 0, 0],
+                [0, -axis_length, 0],
+                [0.4, 1, 0.4],
+                lineWidth=2,
+                lifeTime=0,
+                physicsClientId=self.client,
+            )
+        )
+
+        self.add_debug_label(
+            f"+X right [{axis_length}, 0, 0]",
+            [axis_length + 0.5, 0, 0.3],
+            color=[1, 0, 0],
+        )
+        self.add_debug_label(
+            f"-X left [-{axis_length}, 0, 0]",
+            [-axis_length - 3.0, 0, 0.3],
+            color=[1, 0.4, 0.4],
+        )
+        self.add_debug_label(
+            f"+Y ahead [0, {axis_length}, 0]",
+            [0, axis_length + 0.5, 0.3],
+            color=[0, 1, 0],
+        )
+        self.add_debug_label(
+            f"-Y back [0, -{axis_length}, 0]",
+            [0, -axis_length - 1.5, 0.3],
+            color=[0.4, 1, 0.4],
+        )
+        self.add_debug_label(
+            f"+Z up [0, 0, {axis_length}]",
+            [0, 0, axis_length + 0.5],
+            color=[0, 0, 1],
+        )
+        self.add_debug_label(
+            "Origin [0, 0, 0]",
+            [0.3, 0.3, 0.3],
+            color=[1, 1, 1],
+        )
+
+    def add_debug_label(self, text, pos, color=None, text_size=1.2):
+        if color is None:
+            color = [1, 1, 1]
+
+        label_id = p.addUserDebugText(
+            text,
+            pos,
+            textColorRGB=color,
+            textSize=text_size,
+            lifeTime=0,
+            physicsClientId=self.client,
+        )
+        self.debug_label_ids.append(label_id)
+        return label_id
+
+    def draw_entity_debug(self, entity, bullet_id):
+        """Add a label and height marker for each spawned entity."""
+        pos, quat = p.getBasePositionAndOrientation(
+            bullet_id, physicsClientId=self.client
+        )
+        x, y, z = pos
+
+        # Vertical marker from ground to entity center.
+        p.addUserDebugLine(
+            [x, y, 0],
+            [x, y, z + 0.75],
+            [1, 1, 0],
+            lineWidth=2,
+            lifeTime=0,
+            physicsClientId=self.client,
+        )
+
+        label = (
+            f"{entity.tag} | id={entity.id}\n"
+            f"client pos={list(entity.position)}\n"
+            f"bullet pos=[{x:.3f}, {y:.3f}, {z:.3f}]"
+        )
+        self.add_debug_label(label, [x, y, z + 1.0], color=[1, 1, 0], text_size=1.0)
+
+    def reset_debug_camera(self):
+        p.resetDebugVisualizerCamera(
+            cameraDistance=35,
+            cameraYaw=45,
+            cameraPitch=-60,
+            cameraTargetPosition=[0, 0, 0],
+            physicsClientId=self.client,
+        )
 
     def randomize_entities(self, entConfigCopy, highestDistance):
 
@@ -132,7 +288,7 @@ class PyBulletWorld:
     def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
-            # time.sleep(1 / 60)
+            time.sleep(1 / 60)
 
     def settle(self, steps=2):
         for _ in range(steps):

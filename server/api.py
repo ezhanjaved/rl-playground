@@ -17,15 +17,19 @@ from server.websocket.broadcast import ConnectionManager
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://ureterointestinal-leilani-unspiritualised.ngrok-free.dev",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(trainer, prefix="/trainer")
-app.include_router(analysis, prefix="/api/analysis")
-app.include_router(graph_ai, prefix="/api/graph-ai")
+app.include_router(analysis, prefix="/analysis")
+app.include_router(graph_ai, prefix="/graph-ai")
 app.include_router(template, prefix="/template")
 
 

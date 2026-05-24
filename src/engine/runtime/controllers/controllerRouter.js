@@ -5,6 +5,7 @@ import { qLearningAct } from "./policyController";
 import { PPOController } from "./ppoController";
 
 export default function ControllerRouter(
+  seq,
   observation_space,
   agentId,
   action_space,
@@ -34,7 +35,7 @@ export default function ControllerRouter(
   }
 
   if (hasPPO) {
-    PPOController(observation_space, agentId);
+    PPOController(seq, observation_space, agentId);
     return null;
   }
 

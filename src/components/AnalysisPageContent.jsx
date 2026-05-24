@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "../styling/AnalysisPageContent.css";
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/api/analysis`;
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/analysis`;
 
 function InsightDot({ type }) {
   return (
@@ -263,7 +263,10 @@ export default function AnalysisPageContent({ trainingId }) {
     try {
       const res = await fetch(`${API_BASE}/${trainingId}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         signal: abortRef.current.signal,
         body: JSON.stringify({
           message: msg,

@@ -36,6 +36,27 @@ export const useRunTimeStore = create((set, get) => ({
   setModeltoLoading: (value) => set({ isModelLoading: value }),
   setModeltoReady: (value) => set({ isModelReady: value }),
 
+  inferenceMode: "lockstep",
+  setInferenceMode: (value) => set({ inferenceMode: value }),
+
+  seq: {},
+  setSeq: (id, value) =>
+    set((state) => ({
+      seq: {
+        ...state.seq,
+        [id]: value,
+      },
+    })),
+
+  waitingForAction: {},
+  setWaitingForAction: (id, value) =>
+    set((state) => ({
+      waitingForAction: {
+        ...state.waitingForAction,
+        [id]: value,
+      },
+    })),
+
   clearExperiment: (id) =>
     set((state) => {
       const currentExp = { ...state.experiments };

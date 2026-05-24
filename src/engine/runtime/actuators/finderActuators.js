@@ -6,27 +6,32 @@ export default function finderAdapter(action, agent, actionSpace) {
   const { updateEntity, entities } = useSceneStore.getState();
   const freshAgent = entities[agent.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
+  const capabilities = freshAgent.capabilities;
+  let newStateSpace = { ...freshAgent.state_space };
+
+  if (capabilities.includes("TemporalMemory")) {
+    newStateSpace.last_action_index = indexOfAction;
+    if (freshAgent.last_action === action) {
+      newStateSpace.last_action_counter += 1;
+    } else {
+      newStateSpace.last_action_counter = 1;
+    }
+  }
 
   if (action !== "interact") {
     updateEntity(agent.id, {
       last_action: action,
-      state_space: {
-        ...freshAgent.state_space,
-        last_action_index: indexOfAction,
-      },
+      state_space: newStateSpace,
     });
     return;
   }
 
   const info = getNearestTargetInfo(agent.position, entities, "isTarget");
   const targetReached = info?.found && info?.distance <= info?.radius;
+  newStateSpace.targetReached = targetReached;
 
   updateEntity(agent.id, {
     last_action: action,
-    state_space: {
-      ...freshAgent.state_space,
-      last_action_index: indexOfAction,
-      targetReached,
-    },
+    state_space: newStateSpace,
   });
 }

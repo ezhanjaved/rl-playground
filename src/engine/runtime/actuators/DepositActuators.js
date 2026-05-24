@@ -6,13 +6,22 @@ export default function depositAdapter(action, ent, actionSpace) {
   const { updateEntity, entities } = useSceneStore.getState();
   const agent = entities[ent.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
+  const capabilities = agent.capabilities;
+  let newStateSpace = { ...agent.state_space };
+
+  if (capabilities.includes("TemporalMemory")) {
+    newStateSpace.last_action_index = indexOfAction;
+    if (agent.last_action === action) {
+      newStateSpace.last_action_counter += 1;
+    } else {
+      newStateSpace.last_action_counter = 1;
+    }
+  }
+
   if (action !== "deposit") {
     updateEntity(agent.id, {
       last_action: action,
-      state_space: {
-        ...agent.state_space,
-        last_action_index: indexOfAction,
-      },
+      state_space: newStateSpace,
     });
     return;
   }
@@ -22,14 +31,11 @@ export default function depositAdapter(action, ent, actionSpace) {
 
   // Not near deposit zone
   if (!targetReached) {
+    newStateSpace.lastDepositSuccess = false;
+    newStateSpace.nearDeposit = targetReached;
     updateEntity(agent.id, {
       last_action: action,
-      state_space: {
-        ...agent.state_space,
-        last_action_index: indexOfAction,
-        lastDepositSuccess: false,
-        nearDeposit: targetReached,
-      },
+      state_space: newStateSpace,
     });
     return;
   }
@@ -43,20 +49,17 @@ export default function depositAdapter(action, ent, actionSpace) {
 
   // Near deposit but nothing to deposit
   if (!holdingItem && collectedItems === 0) {
+    newStateSpace.lastDepositSuccess = false;
+    newStateSpace.nearDeposit = targetReached;
     updateEntity(agent.id, {
       last_action: action,
-      state_space: {
-        ...agent.state_space,
-        last_action_index: indexOfAction,
-        lastDepositSuccess: false,
-        nearDeposit: targetReached,
-      },
+      state_space: newStateSpace,
     });
     return;
   }
 
   // Successful deposit
-  let newStateFragment = { ...agent.state_space };
+  let newStateFragment = { ...newStateSpace };
   let itemsJustDeposited = 0;
 
   if (holdingItem) {
@@ -78,15 +81,12 @@ export default function depositAdapter(action, ent, actionSpace) {
     itemsJustDeposited += collectedItems;
   }
 
-  updateEntity(agent.id, {
-    last_action: action,
-    state_space: {
-      ...newStateFragment,
-      last_action_index: indexOfAction,
-      lastDepositSuccess: true,
-      nearDeposit: targetReached,
-      items_deposited:
-        (agent?.state_space?.items_deposited ?? 0) + itemsJustDeposited,
-    },
-  });
+  newStateFragment.lastDepositSuccess = true;
+  newStateFragment.nearDeposit = targetReached;
+  ((newStateFragment.items_deposited =
+    (agent?.state_space?.items_deposited ?? 0) + itemsJustDeposited),
+    updateEntity(agent.id, {
+      last_action: action,
+      state_space: newStateFragment,
+    }));
 }

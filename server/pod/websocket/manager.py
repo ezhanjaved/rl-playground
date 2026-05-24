@@ -20,7 +20,6 @@ class ConnectionManager:
 
     async def predict_action(self, obs: list, capability: list):
         obs = np.array(obs, dtype=np.float32)
-        print("Obs After Conversion: ", obs)
         actions, _ = actionMasking(capability)
         action_predicted, _ = model.predict(obs, deterministic=True)
         return actionTranslator(action_predicted, actions)
@@ -39,6 +38,7 @@ async def websocket_endpoint(websocket: WebSocket):
             token = data["jwt_token"]
             agent_id = data["agentId"]
             capability = data["cap"]
+            seq = data["seq"]
             status = verify_token(token)
             if status:
                 print(f"Received: {data}", flush=True)
@@ -47,6 +47,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 print(f"Sent: {action}", flush=True)
                 await websocket.send_json(
                     {
+                        "seq": seq,
                         "action": action,
                         "session_id": data["session_token"],
                         "agent_id": agent_id,
