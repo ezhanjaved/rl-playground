@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { addCapabilitySchemas } from "../engine/capabilities/registry";
 import * as THREE from "three";
 import { highestDistance } from "../engine/utility/highestDistance";
+import { useRunTimeStore } from "./useRunTimeStore";
 
 export const useSceneStore = create((set) => ({
   entities: {},
@@ -115,7 +116,8 @@ const buildEntitiyFromPartial = (partial, id) => {
     addCapabilitySchemas(type);
   const euler = new THREE.Euler(...(partial.rotation || [0, 0, 0]));
   const quat = new THREE.Quaternion().setFromEuler(euler);
-
+  useRunTimeStore.getState().setSeq(id, 0);
+  useRunTimeStore.getState().setWaitingForAction(id, false);
   let entity = {
     id: id,
     tag: partial.tag || "generic",

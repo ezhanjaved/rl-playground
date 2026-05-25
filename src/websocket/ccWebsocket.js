@@ -14,7 +14,7 @@ export function connectCloudSocket(podUrl, onAction) {
   socket.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-
+      console.log("Data: ", JSON.stringify(data, null, 2));
       if (data.action && data.agent_id && onActionCallback) {
         onActionCallback(data.action, data.agent_id, data.seq);
       }

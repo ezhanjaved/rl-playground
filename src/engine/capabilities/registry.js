@@ -2,7 +2,7 @@
 export const CAPABILITY_SCHEMAS = {
   Moveable: {
     actions: ["move_up", "move_left", "move_right", "idle"],
-    observations: [],
+    observations: ["agent_rotation_y"],
     state: {},
     settings: { speed: 4 },
   },

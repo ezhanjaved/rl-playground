@@ -343,8 +343,6 @@ export function Table({
     setModeltoReady,
   } = useRunTimeStore.getState();
 
-  const { entities } = useSceneStore.getState();
-
   const handleModelReady = useCallback(
     (podUrl) => {
       setModeltoReady(true);
@@ -352,9 +350,13 @@ export function Table({
       connectCloudSocket(podUrl, (action, id, actionSeq) => {
         const { inferenceMode, setWaitingForAction } =
           useRunTimeStore.getState();
+        const { entities } = useSceneStore.getState();
 
         if (inferenceMode === "lockstep") {
-          const agent = entities[id];
+          console.log("ENT: ", entities);
+          const agent = entities?.[id];
+          console.log("ID: ", id);
+          console.log("Agent: ", agent);
           if (!agent) {
             setWaitingForAction(agent.id, false);
             return;

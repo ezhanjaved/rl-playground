@@ -41,9 +41,8 @@ export default function stepTimeLoop(entities) {
       return;
 
     const observation_space = buildObsSpace(entity);
-
     const wFa = waitingForAction[entity.id];
-    if (!wFa) return;
+    if (wFa === true) return;
 
     const sequence = seq[entity.id];
     const nextSeq = sequence + 1;
@@ -62,7 +61,7 @@ export default function stepTimeLoop(entities) {
       session_token,
       jwt_token,
       entity.id,
-      entity.action_space,
+      entity.capabilities,
     );
   });
 }
