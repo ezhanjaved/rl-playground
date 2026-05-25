@@ -121,7 +121,6 @@ export async function trainingLoop(experimentId) {
         console.log("Step Number: " + step);
 
         const obsVector = buildObsSpace(agent);
-        console.log("OBS Vector created during step: " + obsVector);
         const actionSpace = agent.action_space;
         const actionPicked = ControllerRouter(
           obsVector,
@@ -131,7 +130,6 @@ export async function trainingLoop(experimentId) {
           qTable,
           "training",
         );
-        console.log("Action Picked by Controller during step: " + actionPicked);
         const {
           reward,
           done: stepDone,
