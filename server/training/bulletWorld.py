@@ -21,7 +21,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.GUI)
+        self.client = p.connect(p.DIRECT)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -131,7 +131,7 @@ class PyBulletWorld:
     def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
-            time.sleep(1 / 60)
+            # time.sleep(1 / 60)
 
     def settle(self, steps=2):
         for _ in range(steps):

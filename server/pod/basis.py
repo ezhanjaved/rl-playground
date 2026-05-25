@@ -5,7 +5,7 @@ from server.training.training import TrainingLoop
 from server.utilities.compile import compiler
 from server.utilities.extractor import extact_graph_per_agent, extract_agent_list
 
-mode = "debug"
+mode = "not debug"
 
 
 def basis(uid):
