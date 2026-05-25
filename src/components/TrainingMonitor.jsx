@@ -9,6 +9,10 @@ export default function TrainingMonitor({ trainingId }) {
   const setModel = useTrainingStore((s) => s.setModel);
   const rewardHistory = useTrainingStore((s) => s.rewardHistory);
   const pushReward = useTrainingStore((s) => s.pushReward);
+  const epRewMeanHistory = useTrainingStore((s) => s.epRewMeanHistory);
+  const pushEpRewMean = useTrainingStore((s) => s.pushEpRewMean);
+  const epLenMeanHistory = useTrainingStore((s) => s.epLenMeanHistory);
+  const pushEpLenMean = useTrainingStore((s) => s.pushEpLenMean);
 
   useEffect(() => {
     supabase
@@ -20,11 +24,12 @@ export default function TrainingMonitor({ trainingId }) {
         if (data) {
           setModel(data);
           if (data.last_episode_reward != null) {
-            pushReward({
-              ep: data.current_episode,
-              reward: data.last_episode_reward,
-            });
+            pushReward({ ep: data.current_episode, reward: data.last_episode_reward });
           }
+          if (data.ep_rew_mean != null)
+            pushEpRewMean({ rollout: data.rollout_count, value: data.ep_rew_mean });
+          if (data.ep_len_mean != null)
+            pushEpLenMean({ rollout: data.rollout_count, value: data.ep_len_mean });
         }
       });
 
@@ -41,11 +46,12 @@ export default function TrainingMonitor({ trainingId }) {
         ({ new: row }) => {
           setModel(row);
           if (row.last_episode_reward != null) {
-            pushReward({
-              ep: row.current_episode,
-              reward: row.last_episode_reward,
-            });
+            pushReward({ ep: row.current_episode, reward: row.last_episode_reward });
           }
+          if (row.ep_rew_mean != null)
+            pushEpRewMean({ rollout: row.rollout_count, value: row.ep_rew_mean });
+          if (row.ep_len_mean != null)
+            pushEpLenMean({ rollout: row.rollout_count, value: row.ep_len_mean });
         },
       )
       .subscribe();
@@ -69,6 +75,10 @@ export default function TrainingMonitor({ trainingId }) {
       <Header model={model} />
       <MetricCards model={model} smoothed={smoothed} />
       <RewardChart history={rewardHistory} />
+      <div className={styles.grid2}>
+        <EpRewMeanChart history={epRewMeanHistory} />
+        <EpLenMeanChart history={epLenMeanHistory} />
+      </div>
       <div className={styles.grid2}>
         <PPOLosses model={model} />
         <RolloutStats model={model} />
@@ -234,6 +244,89 @@ function RewardChart({ history }) {
           <span className={styles.legendLabel}>Smoothed (10-ep)</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function makeLineChart(ctx, history, keyFn, color, label) {
+  const canvas = ctx.canvas;
+  const W = canvas.width, H = canvas.height;
+  const pad = { top: 12, bottom: 20, left: 38, right: 8 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const vals = history.map(keyFn);
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+  const range = maxV - minV || 1;
+
+  const toX = (i) => pad.left + (i / Math.max(history.length - 1, 1)) * cW;
+  const toY = (v) => pad.top + cH - ((v - minV) / range) * cH;
+
+  ctx.strokeStyle = "rgba(128,128,128,0.12)";
+  ctx.lineWidth = 0.5;
+  [0, 0.5, 1].forEach((t) => {
+    const y = pad.top + cH - t * cH;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + cW, y);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(128,128,128,0.5)";
+    ctx.font = "10px system-ui";
+    const tickVal = minV + t * range;
+    ctx.fillText(tickVal >= 1000 ? (tickVal / 1000).toFixed(1) + "k" : tickVal.toFixed(1), 0, y + 3);
+  });
+
+  // Area fill
+  ctx.beginPath();
+  history.forEach((h, i) =>
+    i === 0 ? ctx.moveTo(toX(i), toY(keyFn(h))) : ctx.lineTo(toX(i), toY(keyFn(h)))
+  );
+  ctx.lineTo(toX(history.length - 1), pad.top + cH);
+  ctx.lineTo(pad.left, pad.top + cH);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, color + "33");
+  grad.addColorStop(1, color + "00");
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = "round";
+  history.forEach((h, i) =>
+    i === 0 ? ctx.moveTo(toX(i), toY(keyFn(h))) : ctx.lineTo(toX(i), toY(keyFn(h)))
+  );
+  ctx.stroke();
+}
+
+function EpRewMeanChart({ history }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    if (!history.length || !canvasRef.current) return;
+    makeLineChart(canvasRef.current.getContext("2d"), history, (h) => h.value, "#F59E0B", "Ep reward mean");
+  }, [history]);
+  return (
+    <div className={styles.panel}>
+      <p className={styles.panelTitle}>Episode reward mean (buffer avg)</p>
+      <canvas ref={canvasRef} width={300} height={120} className={styles.chart} />
+    </div>
+  );
+}
+
+function EpLenMeanChart({ history }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    if (!history.length || !canvasRef.current) return;
+    makeLineChart(canvasRef.current.getContext("2d"), history, (h) => h.value, "#A78BFA", "Ep len mean");
+  }, [history]);
+  return (
+    <div className={styles.panel}>
+      <p className={styles.panelTitle}>Episode length mean (buffer avg)</p>
+      <canvas ref={canvasRef} width={300} height={120} className={styles.chart} />
     </div>
   );
 }

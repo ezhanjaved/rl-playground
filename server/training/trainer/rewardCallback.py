@@ -132,12 +132,18 @@ class RewardLoggerCallback(BaseCallback):
             ("train/value_loss", "value_loss"),
             ("train/approx_kl", "approx_kl"),
             ("train/explained_variance", "explained_variance"),
-            ("rollout/ep_rew_mean", "ep_rew_mean"),
-            ("rollout/ep_len_mean", "ep_len_mean"),
         ]:
             val = kv.get(key)
             if val is not None:
                 data[col] = round(float(val), 4)
+
+        # ep_rew_mean / ep_len_mean are written to the SB3 logger AFTER
+        # _on_rollout_end fires, so name_to_value always returns None here.
+        # Compute them directly from ep_info_buffer instead.
+        ep_buf = list(self.model.ep_info_buffer)
+        if ep_buf:
+            data["ep_rew_mean"] = round(float(np.mean([e["r"] for e in ep_buf])), 4)
+            data["ep_len_mean"] = round(float(np.mean([e["l"] for e in ep_buf])), 4)
 
         self._buffer(data)
         self._flush()
