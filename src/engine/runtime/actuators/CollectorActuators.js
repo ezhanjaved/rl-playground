@@ -17,7 +17,7 @@ export default function collectorAdapter(action, agent, actionSpace) {
   }
 
   if (action === "collect") {
-    const pickRadius = 1.5; //Engine Defined - Not User
+    const pickRadius = 2.0; //Engine Defined - Not User
     const targetObj = nearbyPickable(
       entities,
       agent.position,

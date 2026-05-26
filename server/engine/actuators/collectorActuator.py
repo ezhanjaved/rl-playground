@@ -17,7 +17,7 @@ def collectorActuator(action, agent, entities, eM, client, indexOfAction):
             new_state_space["last_action_counter"] = 1
 
     if action == "collect":
-        pickRadius = 1.5  # Engine Defined - Not User
+        pickRadius = 2.0  # Engine Defined - Not User
         targetObj = nearbyPickable(
             entities, agent.position, pickRadius, agent.capabilities
         )
