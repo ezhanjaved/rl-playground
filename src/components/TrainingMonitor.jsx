@@ -8,11 +8,11 @@ export default function TrainingMonitor({ trainingId }) {
   const model = useTrainingStore((s) => s.model);
   const setModel = useTrainingStore((s) => s.setModel);
   const rewardHistory = useTrainingStore((s) => s.rewardHistory);
-  const pushReward = useTrainingStore((s) => s.pushReward);
+  const setRewardHistory = useTrainingStore((s) => s.setRewardHistory);
   const epRewMeanHistory = useTrainingStore((s) => s.epRewMeanHistory);
-  const pushEpRewMean = useTrainingStore((s) => s.pushEpRewMean);
+  const setEpRewMeanHistory = useTrainingStore((s) => s.setEpRewMeanHistory);
   const epLenMeanHistory = useTrainingStore((s) => s.epLenMeanHistory);
-  const pushEpLenMean = useTrainingStore((s) => s.pushEpLenMean);
+  const setEpLenMeanHistory = useTrainingStore((s) => s.setEpLenMeanHistory);
 
   useEffect(() => {
     supabase
@@ -23,13 +23,12 @@ export default function TrainingMonitor({ trainingId }) {
       .then(({ data }) => {
         if (data) {
           setModel(data);
-          if (data.last_episode_reward != null) {
-            pushReward({ ep: data.current_episode, reward: data.last_episode_reward });
-          }
-          if (data.ep_rew_mean != null)
-            pushEpRewMean({ rollout: data.rollout_count, value: data.ep_rew_mean });
-          if (data.ep_len_mean != null)
-            pushEpLenMean({ rollout: data.rollout_count, value: data.ep_len_mean });
+          if (Array.isArray(data.reward_history))
+            setRewardHistory(data.reward_history);
+          if (Array.isArray(data.ep_rew_mean_history))
+            setEpRewMeanHistory(data.ep_rew_mean_history);
+          if (Array.isArray(data.ep_len_mean_history))
+            setEpLenMeanHistory(data.ep_len_mean_history);
         }
       });
 
@@ -45,13 +44,12 @@ export default function TrainingMonitor({ trainingId }) {
         },
         ({ new: row }) => {
           setModel(row);
-          if (row.last_episode_reward != null) {
-            pushReward({ ep: row.current_episode, reward: row.last_episode_reward });
-          }
-          if (row.ep_rew_mean != null)
-            pushEpRewMean({ rollout: row.rollout_count, value: row.ep_rew_mean });
-          if (row.ep_len_mean != null)
-            pushEpLenMean({ rollout: row.rollout_count, value: row.ep_len_mean });
+          if (Array.isArray(row.reward_history))
+            setRewardHistory(row.reward_history);
+          if (Array.isArray(row.ep_rew_mean_history))
+            setEpRewMeanHistory(row.ep_rew_mean_history);
+          if (Array.isArray(row.ep_len_mean_history))
+            setEpLenMeanHistory(row.ep_len_mean_history);
         },
       )
       .subscribe();
@@ -73,7 +71,11 @@ export default function TrainingMonitor({ trainingId }) {
   return (
     <div className={styles.page}>
       <Header model={model} />
-      <MetricCards model={model} smoothed={smoothed} />
+      <MetricCards
+        model={model}
+        smoothed={smoothed}
+        rewardHistory={rewardHistory}
+      />
       <RewardChart history={rewardHistory} />
       <div className={styles.grid2}>
         <EpRewMeanChart history={epRewMeanHistory} />
@@ -81,7 +83,11 @@ export default function TrainingMonitor({ trainingId }) {
       </div>
       <div className={styles.grid2}>
         <PPOLosses model={model} />
-        <RolloutStats model={model} />
+        <RolloutStats
+          model={model}
+          epRewMeanHistory={epRewMeanHistory}
+          epLenMeanHistory={epLenMeanHistory}
+        />
       </div>
       {progress && <ProgressBar model={model} progress={progress} />}
     </div>
@@ -108,7 +114,10 @@ function Header({ model }) {
   );
 }
 
-function MetricCards({ model, smoothed }) {
+function MetricCards({ model, smoothed, rewardHistory }) {
+  const lastReward = rewardHistory.length
+    ? rewardHistory[rewardHistory.length - 1].reward
+    : null;
   const cards = [
     {
       label: "Episode",
@@ -118,7 +127,7 @@ function MetricCards({ model, smoothed }) {
     { label: "Timesteps", value: fmtK(model.current_timestep), sub: "total" },
     {
       label: "Last reward",
-      value: model.last_episode_reward?.toFixed(2) ?? "—",
+      value: lastReward?.toFixed(2) ?? "—",
       positive: true,
     },
     {
@@ -250,7 +259,8 @@ function RewardChart({ history }) {
 
 function makeLineChart(ctx, history, keyFn, color, label) {
   const canvas = ctx.canvas;
-  const W = canvas.width, H = canvas.height;
+  const W = canvas.width,
+    H = canvas.height;
   const pad = { top: 12, bottom: 20, left: 38, right: 8 };
   const cW = W - pad.left - pad.right;
   const cH = H - pad.top - pad.bottom;
@@ -276,13 +286,19 @@ function makeLineChart(ctx, history, keyFn, color, label) {
     ctx.fillStyle = "rgba(128,128,128,0.5)";
     ctx.font = "10px system-ui";
     const tickVal = minV + t * range;
-    ctx.fillText(tickVal >= 1000 ? (tickVal / 1000).toFixed(1) + "k" : tickVal.toFixed(1), 0, y + 3);
+    ctx.fillText(
+      tickVal >= 1000 ? (tickVal / 1000).toFixed(1) + "k" : tickVal.toFixed(1),
+      0,
+      y + 3,
+    );
   });
 
   // Area fill
   ctx.beginPath();
   history.forEach((h, i) =>
-    i === 0 ? ctx.moveTo(toX(i), toY(keyFn(h))) : ctx.lineTo(toX(i), toY(keyFn(h)))
+    i === 0
+      ? ctx.moveTo(toX(i), toY(keyFn(h)))
+      : ctx.lineTo(toX(i), toY(keyFn(h))),
   );
   ctx.lineTo(toX(history.length - 1), pad.top + cH);
   ctx.lineTo(pad.left, pad.top + cH);
@@ -298,7 +314,9 @@ function makeLineChart(ctx, history, keyFn, color, label) {
   ctx.lineWidth = 1.5;
   ctx.lineJoin = "round";
   history.forEach((h, i) =>
-    i === 0 ? ctx.moveTo(toX(i), toY(keyFn(h))) : ctx.lineTo(toX(i), toY(keyFn(h)))
+    i === 0
+      ? ctx.moveTo(toX(i), toY(keyFn(h)))
+      : ctx.lineTo(toX(i), toY(keyFn(h))),
   );
   ctx.stroke();
 }
@@ -307,12 +325,23 @@ function EpRewMeanChart({ history }) {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (!history.length || !canvasRef.current) return;
-    makeLineChart(canvasRef.current.getContext("2d"), history, (h) => h.value, "#F59E0B", "Ep reward mean");
+    makeLineChart(
+      canvasRef.current.getContext("2d"),
+      history,
+      (h) => h.value,
+      "#F59E0B",
+      "Ep reward mean",
+    );
   }, [history]);
   return (
     <div className={styles.panel}>
       <p className={styles.panelTitle}>Episode reward mean (buffer avg)</p>
-      <canvas ref={canvasRef} width={300} height={120} className={styles.chart} />
+      <canvas
+        ref={canvasRef}
+        width={300}
+        height={120}
+        className={styles.chart}
+      />
     </div>
   );
 }
@@ -321,12 +350,23 @@ function EpLenMeanChart({ history }) {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (!history.length || !canvasRef.current) return;
-    makeLineChart(canvasRef.current.getContext("2d"), history, (h) => h.value, "#A78BFA", "Ep len mean");
+    makeLineChart(
+      canvasRef.current.getContext("2d"),
+      history,
+      (h) => h.value,
+      "#A78BFA",
+      "Ep len mean",
+    );
   }, [history]);
   return (
     <div className={styles.panel}>
       <p className={styles.panelTitle}>Episode length mean (buffer avg)</p>
-      <canvas ref={canvasRef} width={300} height={120} className={styles.chart} />
+      <canvas
+        ref={canvasRef}
+        width={300}
+        height={120}
+        className={styles.chart}
+      />
     </div>
   );
 }
@@ -341,15 +381,21 @@ function PPOLosses({ model }) {
   return <StatPanel title="PPO losses" rows={rows} />;
 }
 
-function RolloutStats({ model }) {
+function RolloutStats({ model, epRewMeanHistory, epLenMeanHistory }) {
+  const lastEpRewMean = epRewMeanHistory.length
+    ? epRewMeanHistory[epRewMeanHistory.length - 1].value
+    : null;
+  const lastEpLenMean = epLenMeanHistory.length
+    ? epLenMeanHistory[epLenMeanHistory.length - 1].value
+    : null;
   const rows = [
     ["Rollout #", model.rollout_count],
     ["Mean return", model.mean_return?.toFixed(2)],
     ["Mean value", model.mean_value?.toFixed(2)],
     ["Clip fraction", model.clip_fraction?.toFixed(4)],
     ["Explained Variance", model.explained_variance?.toFixed(4)],
-    ["Episode Reward Mean", model.ep_rew_mean?.toFixed(4)],
-    ["Episode Length Mean", model.ep_len_mean?.toFixed(4)],
+    ["Episode Reward Mean", lastEpRewMean?.toFixed(4)],
+    ["Episode Length Mean", lastEpLenMean?.toFixed(4)],
   ];
   return <StatPanel title="Rollout stats" rows={rows} />;
 }

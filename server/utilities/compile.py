@@ -76,15 +76,10 @@ def build_assignments(assignment_dict):
 
 def build_assignmentConfig(config_dict):
     return AssignmentConfig(
-        episodeNumber=config_dict["episodeNumber"],
-        maxStepsPerEpisode=config_dict["maxStepsPerEpisode"],
         rewardImp=config_dict["rewardImportance"],
         algorithm=config_dict["algorithm"],
-        explorationStrategy=config_dict["explorationStrategy"],
         learningSpeed=config_dict["learningSpeed"],
         rewardMultiplier=config_dict["rewardMultiplier"],
-        agentSpawnMode=config_dict["agentSpawnMode"],
-        objectSpawnMode=config_dict["objectSpawnMode"],
         timesteps=config_dict["timesteps"],
         clipRange=config_dict["clipRange"],
         gaeLambda=config_dict["gaeLambda"],

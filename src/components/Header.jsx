@@ -285,7 +285,7 @@ const Header = () => {
           <span style={{ display: visibility !== 1 ? "none" : "flex" }}>
             {envName || null}
           </span>
-          {visibility === 1 && (
+          {visibility === 1 && envList && (
             <div className="template-picker">
               <select onChange={(e) => setPath(e.target.value)}>
                 {envList.map((env) => (

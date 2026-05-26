@@ -120,6 +120,7 @@ export default function ControlPanel() {
   const [partOne, setOne] = useState({});
   const [partTwo, setTwo] = useState({});
   const [partThree, setThree] = useState({});
+
   const [algorithm, setAlgorithm] = useState("q-learning");
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -127,7 +128,12 @@ export default function ControlPanel() {
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    setTrainingConfig({ ...partOne, ...partTwo, ...partThree });
+    if (algorithm === "ppo") {
+      setTrainingConfig({ ...partOne, ...partThree });
+    }
+    if (algorithm === "q-learning") {
+      setTrainingConfig({ ...partOne, ...partTwo });
+    }
   }, [partOne, partTwo, partThree]);
 
   const nextFrame = () => new Promise(requestAnimationFrame);
@@ -181,8 +187,8 @@ export default function ControlPanel() {
           algorithm={algorithm}
           setAlgorithm={setAlgorithm}
         />
+        {algorithm === "q-learning" && <QLearningSection setTwo={setTwo} />}
         {algorithm === "ppo" && <PPOSection setThree={setThree} />}
-        <AdvanceSection setTwo={setTwo} />
         <div
           className="training-btn"
           style={{ display: "flex", flexDirection: "row", gap: "5px" }}
@@ -203,32 +209,19 @@ export default function ControlPanel() {
 const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
   const [open, setOpen] = useState(true);
 
-  const [episodeNumber, setEpisodeNumber] = useState(100);
-  const [maxStepsPerEpisode, setMaxEpisodeSteps] = useState(1000);
   const [rewardImportance, setRewardImportance] = useState(0.5);
-  const [explorationStrategy, setExplorationStrategy] = useState("fixed");
   const [learningSpeed, setLearningSpeed] = useState("Medium");
-  const setTimesteps = useRunTimeStore((state) => state.setTimesteps);
+  const [rewardMultiplier, setRewardMultiplier] = useState(1);
+  const { modelName, setModelName, envType, setEnvType } = useRunTimeStore();
 
   useEffect(() => {
-    setTimesteps(episodeNumber * maxStepsPerEpisode);
-
     setOne({
-      episodeNumber,
-      maxStepsPerEpisode,
       rewardImportance,
       algorithm,
-      explorationStrategy,
       learningSpeed,
+      rewardMultiplier,
     });
-  }, [
-    episodeNumber,
-    maxStepsPerEpisode,
-    rewardImportance,
-    algorithm,
-    explorationStrategy,
-    learningSpeed,
-  ]);
+  }, [rewardImportance, algorithm, learningSpeed, rewardMultiplier]);
 
   return (
     <div className="section">
@@ -247,17 +240,11 @@ const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
       </button>
       {open && (
         <div className="setting">
-          <label htmlFor="">Number of Episodes</label>
+          <label htmlFor="">Name of Model</label>
           <input
-            type="number"
-            value={episodeNumber}
-            onChange={(e) => setEpisodeNumber(Number(e.target.value))}
-          />
-          <label htmlFor="">Max Steps Per Episode</label>
-          <input
-            type="number"
-            value={maxStepsPerEpisode}
-            onChange={(e) => setMaxEpisodeSteps(Number(e.target.value))}
+            type="text"
+            value={modelName}
+            onChange={(e) => setModelName(e.target.value)}
           />
           <label htmlFor="">Future Reward Importance</label>
           <input
@@ -275,17 +262,33 @@ const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
             <option value="q-learning">Q Learning</option>
             <option value="ppo">PPO</option>
           </select>
-          <label htmlFor="">Entropy Coefficient</label>
-          <select
-            value={explorationStrategy}
-            onChange={(e) => setExplorationStrategy(e.target.value)}
-            name="exploration"
-            id="exploration"
-          >
-            <option value="fixed">Fixed</option>
-            <option value="decay">Decay</option>
-            <option value="none">None</option>
-          </select>
+          <label htmlFor="">Reward Multiplier</label>
+          <input
+            value={rewardMultiplier}
+            type="number"
+            onChange={(e) => setRewardMultiplier(Number(e.target.value))}
+          />
+          <label htmlFor="">Type of Training</label>
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+            <label>
+              <input
+                checked={envType === "SARL"}
+                onChange={(e) => setEnvType(e.target.value)}
+                type="radio"
+                value="SARL"
+              />{" "}
+              SARL{" "}
+            </label>
+            <label>
+              <input
+                checked={envType === "MARL"}
+                onChange={(e) => setEnvType(e.target.value)}
+                type="radio"
+                value="MARL"
+              />{" "}
+              MARL{" "}
+            </label>
+          </div>
           <label htmlFor="">Learning Rate</label>
           <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
             <label>
@@ -322,20 +325,30 @@ const TrainingSection = ({ setOne, algorithm, setAlgorithm }) => {
   );
 };
 
-const AdvanceSection = ({ setTwo }) => {
+const QLearningSection = ({ setTwo }) => {
   const [open, setOpen] = useState(true);
-  const { modelName, setModelName, envType, setEnvType } = useRunTimeStore();
-  const [rewardMultiplier, setRewardMultiplier] = useState(1);
+
+  const [episodeNumber, setEpisodeNumber] = useState(100);
+  const [maxStepsPerEpisode, setMaxEpisodeSteps] = useState(1000);
   const [agentSpawnMode, setAgentSpawnMode] = useState("Random");
   const [objectSpawnMode, setObjectSpawnMode] = useState("Random");
+  const [explorationStrategy, setExplorationStrategy] = useState("fixed");
 
   useEffect(() => {
     setTwo({
-      rewardMultiplier,
+      episodeNumber,
+      maxStepsPerEpisode,
       agentSpawnMode,
       objectSpawnMode,
+      explorationStrategy,
     });
-  }, [rewardMultiplier, agentSpawnMode, objectSpawnMode]);
+  }, [
+    episodeNumber,
+    maxStepsPerEpisode,
+    agentSpawnMode,
+    objectSpawnMode,
+    explorationStrategy,
+  ]);
 
   return (
     <div className="section">
@@ -346,7 +359,7 @@ const AdvanceSection = ({ setTwo }) => {
       >
         <IoMoonOutline />
         <div className="sectionTitle">
-          <span>Enviorment Setting</span>
+          <span>Q Learning Settings</span>
           <span className="arrowIcon">
             {open ? <IoChevronUp /> : <IoChevronDown />}
           </span>
@@ -354,18 +367,29 @@ const AdvanceSection = ({ setTwo }) => {
       </button>
       {open && (
         <div className="setting">
-          <label htmlFor="">Name of Model</label>
+          <label htmlFor="">Episode Number</label>
           <input
-            type="text"
-            value={modelName}
-            onChange={(e) => setModelName(e.target.value)}
-          />
-          <label htmlFor="">Reward Multiplier</label>
-          <input
-            value={rewardMultiplier}
             type="number"
-            onChange={(e) => setRewardMultiplier(Number(e.target.value))}
+            value={episodeNumber}
+            onChange={(e) => setEpisodeNumber(Number(e.target.value))}
           />
+          <label htmlFor="">Max Step In Episode</label>
+          <input
+            type="number"
+            value={maxStepsPerEpisode}
+            onChange={(e) => setMaxEpisodeSteps(Number(e.target.value))}
+          />
+          <label htmlFor="">Entropy Coefficient</label>
+          <select
+            value={explorationStrategy}
+            onChange={(e) => setExplorationStrategy(e.target.value)}
+            name="exploration"
+            id="exploration"
+          >
+            <option value="fixed">Fixed</option>
+            <option value="decay">Decay</option>
+            <option value="none">None</option>
+          </select>
           <label htmlFor="">Agent Spawn Mode</label>
           <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
             <label>
@@ -408,27 +432,6 @@ const AdvanceSection = ({ setTwo }) => {
               Fixed{" "}
             </label>
           </div>
-          <label htmlFor="">Type of Training</label>
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-            <label>
-              <input
-                checked={envType === "SARL"}
-                onChange={(e) => setEnvType(e.target.value)}
-                type="radio"
-                value="SARL"
-              />{" "}
-              SARL{" "}
-            </label>
-            <label>
-              <input
-                checked={envType === "MARL"}
-                onChange={(e) => setEnvType(e.target.value)}
-                type="radio"
-                value="MARL"
-              />{" "}
-              MARL{" "}
-            </label>
-          </div>
         </div>
       )}
     </div>
@@ -444,7 +447,7 @@ const PPOSection = ({ setThree }) => {
   const [batch, setBatch] = useState(64);
   const [epoch, setEpoch] = useState(10);
   const [n_steps, setnSteps] = useState(2048);
-  const [timesteps, setTimesteps] = useState(10000);
+  const [timesteps, setTimesteps] = useState(1000000);
   const [kl, setKL] = useState(0.03);
   const [ent_coeff, setEntCf] = useState(0.01);
   const { setEnvMode, envMode } = useRunTimeStore.getState();

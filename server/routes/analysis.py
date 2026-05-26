@@ -17,7 +17,6 @@ analysis = APIRouter()
 
 CHUTES_API_URL = "https://llm.chutes.ai/v1/chat/completions"
 DEEPSEEK_MODEL = "deepseek-ai/DeepSeek-V3.2-TEE"
-# deepseek-ai/DeepSeek-V3-0324-TEE
 ANALYSIS_SYSTEM_PROMPT = """You are an expert reinforcement learning engineer analyzing a trained RL model.
 You have deep knowledge of PPO (Proximal Policy Optimization) and reward shaping.
 
@@ -46,7 +45,9 @@ Analyze the provided training data and return a JSON object with this exact stru
   "graphSummary": "One paragraph summary of the reward function and its implications."
 }
 
-Return ONLY valid JSON, no markdown, no preamble. Provide 3-5 insights."""
+Return ONLY valid JSON, no markdown, no preamble. Provide 3-5 insights.
+
+NOTE: Ignore maxStepsPerEpisode from assignments config, actual maxStepsPerEpisode is set in graph using truncation node."""
 
 
 def _get_api_key() -> str:
@@ -56,12 +57,14 @@ def _get_api_key() -> str:
     return api_key
 
 
-def _build_context(model_record: dict, graphs: dict, assignments: dict) -> str:
+def _build_context(
+    model_record: dict, graphs: dict, assignments: dict, entities: dict
+) -> str:
     stats = {
-        "avg_reward": model_record.get("avg_reward"),
-        "avg_ep_length": model_record.get("avg_ep_length"),
+        "avg_reward": model_record.get("ep_rew_mean_scalar"),
+        "avg_ep_length": model_record.get("ep_len_mean_scalar"),
         "total_timesteps": model_record.get("total_timestep"),
-        "entropy": model_record.get("entropy"),
+        "entropy": model_record.get("entropy_loss"),
         "algorithm": model_record.get("algorithm", "PPO"),
         "name": model_record.get("name"),
         "status": model_record.get("status"),
@@ -78,17 +81,21 @@ TRAINING STATISTICS:
 REWARD GRAPH (JSON):
 {graphs}
 
-AGENT CONFIGURATION / ASSIGNMENTS (JSON):
+ASSIGNMENTS (PPO Hyperpatameters) (JSON):
 {assignments}
+
+Entities (Agents & Objects Details) (JSON):
+{entities}
 """
 
 
-def _load_training_files(training_id: str) -> tuple[dict, dict]:
+def _load_training_files(training_id: str) -> tuple[dict, dict, dict]:
     download_from_s3(training_id)
     folder = DATA_DIR / f"model_training_{training_id}"
+    entities = json_loader(folder / "entities.json")
     graphs = json_loader(folder / "graphs.json")
     assignments = json_loader(folder / "assignments.json")
-    return graphs, assignments
+    return entities, graphs, assignments
 
 
 async def _call_deepseek(
@@ -186,9 +193,8 @@ async def get_analysis(training_id: str):
             return {"message": "Model not found", "status": 0}
         model_record = records[0]
 
-        graphs, assignments = _load_training_files(training_id)
-
-        context = _build_context(model_record, graphs, assignments)
+        entities, graphs, assignments = _load_training_files(training_id)
+        context = _build_context(model_record, graphs, assignments, entities)
 
         raw = await _call_deepseek(
             system=INSIGHTS_SYSTEM_PROMPT,
@@ -201,21 +207,20 @@ async def get_analysis(training_id: str):
             raise ValueError("LLM did not return valid JSON")
         llm_data = json.loads(raw[start : end + 1])
 
-        entities = assignments.get("entities", {})
         agent_keys = list(entities.keys()) if isinstance(entities, dict) else []
 
         first_agent = entities.get(agent_keys[0], {}) if agent_keys else {}
         capabilities = first_agent.get("capabilities", [])
-        observations = first_agent.get("observations", [])
-        actions = first_agent.get("actions", [])
+        observations = first_agent.get("observation_space", [])
+        actions = first_agent.get("action_space", [])
 
         return {
             "status": 1,
             "stats": {
-                "avgReward": model_record.get("avg_reward"),
-                "avgEpLength": model_record.get("avg_ep_length"),
+                "avgReward": model_record.get("ep_rew_mean_scalar"),
+                "avgEpLength": model_record.get("ep_len_mean_scalar"),
                 "totalTimesteps": model_record.get("total_timestep"),
-                "entropy": model_record.get("entropy"),
+                "entropy": model_record.get("entropy_loss"),
             },
             "modelMeta": {
                 "name": model_record.get("name"),
@@ -228,7 +233,6 @@ async def get_analysis(training_id: str):
                 "capabilities": capabilities,
                 "observations": observations,
                 "actions": actions,
-                "hyperparams": "γ=0.99 · λ=0.95 · lr=3e-4",
             },
             "rewardGraph": graphs,
             "context": context,

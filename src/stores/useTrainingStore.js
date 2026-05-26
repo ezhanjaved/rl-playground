@@ -8,6 +8,11 @@ export const useTrainingStore = create((set) => ({
 
   setModel: (model) => set({ model }),
 
+  // Bulk replace (used on initial load and realtime full-array updates)
+  setRewardHistory: (arr) => set({ rewardHistory: arr }),
+  setEpRewMeanHistory: (arr) => set({ epRewMeanHistory: arr }),
+  setEpLenMeanHistory: (arr) => set({ epLenMeanHistory: arr }),
+
   pushReward: (entry) =>
     set((s) => ({
       rewardHistory: [...s.rewardHistory.slice(-500), entry],

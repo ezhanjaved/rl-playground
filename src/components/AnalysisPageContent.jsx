@@ -332,6 +332,7 @@ export default function AnalysisPageContent({ trainingId }) {
   }
 
   const d = analysisData;
+  console.log("D: " + JSON.stringify(d, null, 2));
   const { stats, modelMeta, insights, config, rewardGraph } = d;
 
   const rwDelta = rewardDelta(stats?.avgReward);

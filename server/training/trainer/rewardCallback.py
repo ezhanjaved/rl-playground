@@ -30,8 +30,10 @@ class RewardLoggerCallback(BaseCallback):
         self._all_rewards = []
         self._last_uploaded_checkpoint: str | None = None
 
-        self._prev_ep_info_len = 0
-        self._last_ep_info_entry = None
+        # In __init__, replace the scalar tracking with list tracking:
+        self._reward_history: list[dict] = []  # {ep, reward}
+        self._ep_rew_mean_history: list[dict] = []  # {rollout, value}
+        self._ep_len_mean_history: list[dict] = []  # {rollout, value}
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -105,13 +107,19 @@ class RewardLoggerCallback(BaseCallback):
 
         if self._all_rewards:
             smoothed = float(np.mean(self._all_rewards[-10:]))
+            self._reward_history.append(
+                {
+                    "ep": self._episode_count,
+                    "reward": round(self._all_rewards[-1], 4),
+                    "smoothed": round(smoothed, 4),
+                }
+            )
             self._buffer(
                 {
                     "current_episode": self._episode_count,
                     "current_timestep": self.num_timesteps,
-                    "last_episode_reward": round(self._all_rewards[-1], 4),
-                    "smoothed_reward": round(smoothed, 4),
                     "status": "training",
+                    "reward_history": self._reward_history,  # full array every flush
                 }
             )
 
@@ -142,8 +150,16 @@ class RewardLoggerCallback(BaseCallback):
         # Compute them directly from ep_info_buffer instead.
         ep_buf = list(self.model.ep_info_buffer)
         if ep_buf:
-            data["ep_rew_mean"] = round(float(np.mean([e["r"] for e in ep_buf])), 4)
-            data["ep_len_mean"] = round(float(np.mean([e["l"] for e in ep_buf])), 4)
+            rew_mean = round(float(np.mean([e["r"] for e in ep_buf])), 4)
+            len_mean = round(float(np.mean([e["l"] for e in ep_buf])), 4)
+            self._ep_rew_mean_history.append(
+                {"rollout": self._rollout_count, "value": rew_mean}
+            )
+            self._ep_len_mean_history.append(
+                {"rollout": self._rollout_count, "value": len_mean}
+            )
+            data["ep_rew_mean_history"] = self._ep_rew_mean_history
+            data["ep_len_mean_history"] = self._ep_len_mean_history
 
         self._buffer(data)
         self._flush()

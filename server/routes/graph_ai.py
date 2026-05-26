@@ -34,9 +34,16 @@ Moveable is UNIVERSAL — every agent always has it. Other capabilities are opti
 
 Moveable (always present):
   actions:      move_up, move_left, move_right, idle
-  observations: agent_rotation_y, last_action
+  observations: (none)
   state:        last_action_index (int)
-  settings:     speed=2
+  settings:     speed=4
+
+TemporalMemory (optional — action history):
+  actions:      (none)
+  observations: last_action, last_action_counter
+  state:        last_action_index (int), last_action_counter (int)
+  — Gives the agent memory of what it last did and for how many consecutive steps.
+  — Required if any node references last_action or last_action_counter obs keys.
 
 Navigator (optional — obstacle awareness):
   observations: obstacle_forward, obstacle_left, obstacle_right, obstacle_in_path
@@ -113,6 +120,14 @@ IsDistanceLess
   - Uses previous_distance_* state memory to compare.
   - Typical use: dense approach reward — fire a small reward every step agent closes distance.
 
+IsDistanceMore
+  - True if current 3D distance to entityTwo > previous step's distance + 0.2 tolerance (agent is moving away).
+  - Config: entityOne, entityTwo
+  - entityTwo options: Agent | Non-State Object | Pickable Object | Target Object | Deposit Object
+  - Uses previous_distance_* state memory to compare. Tolerance of 0.2 prevents noise-triggering.
+  - Capability constraints: Pickable Object requires Holder or Collector; Deposit Object requires Depositor.
+  - Typical use: penalize the agent when it moves away from a target or pickable; pair with AddReward (negative value).
+
 StateEqualsTo
   - True if agent state key equals a boolean value.
   - Config: capabilities (checkboxes: Finder | Holder | Collector | Depositor), entityState (key), StateStatus (true|false)
@@ -120,9 +135,9 @@ StateEqualsTo
       Finder:    targetReached
       Holder:    holding, lastPickSuccess
       Collector: lastPickSuccess
-      Depositor: nearDeposit
+      Depositor: nearDeposit, lastDepositSuccess
   - Moveable has ZERO state keys. StateEqualsTo CANNOT reference Moveable state.
-  - Typical use: check if agent is holding an item, or if last pick succeeded.
+  - Typical use: check if agent is holding an item, if last pick succeeded, or if last deposit succeeded.
 
 CompareState
   - Compare a numeric state key against a threshold using an operator.
@@ -139,7 +154,7 @@ LastActionIs
   - True if agent's last action matches the configured action AND actionStatus matches.
   - Config: capabilities (checkboxes), entityAction (action name), actionStatus (true|false)
   - ONLY these actions per capability — NO custom or invented action names:
-      Moveable:  move_up, move_down, move_left, move_right, idle
+      Moveable:  move_up, move_left, move_right, idle  (note: move_down does NOT exist)
       Holder:    pick, drop
       Collector: collect
       Depositor: deposit
@@ -151,11 +166,12 @@ NumericObsNode
   - ALL distance obs values are normalized 0.0–1.0 (dist = raw/40.0, items = raw/10.0).
   - Config: obsKey (see list), Operator (Less Than | Higher Than | Less Than Equal To | Higher Than Equal To | Equal To), ObsValue (float 0–1), mode (Pre | Post)
   - mode=Pre uses obs before the action; mode=Post uses obs after the action (default: Pre).
-  - obsKey options: agent_rotation_y, last_action, obstacle_forward, obstacle_left, obstacle_right,
+  - obsKey options: agent_rotation_y, last_action, last_action_counter, obstacle_forward, obstacle_left, obstacle_right,
     dist_to_nearest_target, delta_x_to_target, delta_z_to_target,
     dist_to_nearest_pickable, delta_x_to_pickable, delta_z_to_pickable,
     dist_to_nearest_collectable, delta_x_to_collectable, delta_z_to_collectable, items_collected,
     dist_to_nearest_deposit, delta_x_to_deposit, delta_z_to_deposit, items_deposit
+  - last_action and last_action_counter require TemporalMemory capability.
   - Typical use: fine-grained numeric obs conditions not covered by other nodes.
 
 BoolObsNode
@@ -185,8 +201,10 @@ EndEpisode
   - Use after a goal is reached or a failure condition.
 
 TruncateEpisode
-  - Ends episode as truncated (done=true, truncated=true). Input only.
-  - Use for soft time-limit or off-bounds truncation.
+  - Conditionally ends episode as truncated (truncated=true) only if currentEpisodeStep >= maxSteps config.
+  - If the step threshold has NOT been reached yet, traversal simply stops at this node (no truncation).
+  - Config: maxSteps (number, default 500).
+  - Use to impose a soft step budget that ends the episode once a step count is exceeded.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HARD CONSTRAINTS — NEVER VIOLATE THESE
@@ -209,18 +227,19 @@ that cannot be built in the UI and will confuse the user.
      Collector → previous_distance_collect, items_collected
      Depositor → items_deposited, previous_distance_deposit
 
-2. MOVEABLE HAS NO STATE.
-   Moveable only provides movement actions and agent_rotation_y observation.
-   NEVER reference Moveable in SetState, StateEqualsTo, or CompareState.
+2. MOVEABLE AND TEMPORALMEMORY HAVE NO SETTABLE STATE KEYS.
+   Moveable provides movement actions and agent_rotation_y observation only.
+   TemporalMemory provides last_action and last_action_counter observations only.
+   NEVER reference Moveable or TemporalMemory in StateEqualsTo or CompareState.
    NEVER invent state keys like "lastZigZagDir", "lastDirection", "zigPhase", etc.
 
 3. CAPABILITIES ARE A CLOSED ENUM.
-   Valid capabilities: Moveable, Navigator, Finder, Holder, Collector, Depositor.
+   Valid capabilities: Moveable, TemporalMemory, Navigator, Finder, Holder, Collector, Depositor.
    No other capabilities exist. Never invent new ones.
 
 4. NODE TYPES ARE A CLOSED SET.
    Valid node types: OnEpisodeStart, OnStep, InRadius, IsDeltaXLess, IsDeltaZPos,
-   IsDistanceLess, IsObstacleInPath, StateEqualsTo, CompareState,
+   IsDistanceLess, IsDistanceMore, IsObstacleInPath, StateEqualsTo, CompareState,
    LastActionIs, NumericObsNode, BoolObsNode, AddReward, EndEpisode, TruncateEpisode.
    Never invent new node types.
 
@@ -239,22 +258,25 @@ that cannot be built in the UI and will confuse the user.
 EVALUATION MECHANICS (evaluator.js)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Evaluator starts from OnStepNode each step and walks edges depth-first.
-- Nodes are visited at most once per step (cycle prevention).
+- Nodes are visited at most once per step (cycle prevention). A node visited a second time is silently skipped.
+- The evaluator has an internal step budget of 300 node-visits per simulation step; if exceeded it marks truncated=true and halts.
 - Conditional nodes: follow TRUE or FALSE edge — never both.
 - Chained conditionals (A→B→C all on true path): acts as A AND B AND C.
-- AddReward is pass-through: reward accumulates and execution continues to next node.
-- EndEpisode / TruncateEpisode stop traversal immediately.
-- Distance-comparison node (IsDistanceLess) uses previous_distance_* from state_space — fires when current < previous, meaning agent moved closer this step.
-- InRadius threshold: 1.5 world-units raw distance (not normalized).
-- IsDeltaXLess threshold: 0.05 (angular alignment).
-- IsDeltaZPos threshold: 0.05 (entity must be meaningfully ahead).
+- AddReward is pass-through: reward accumulates and execution continues to the next connected node.
+- EndEpisode stops traversal immediately and sets terminated=true.
+- TruncateEpisode checks whether currentEpisodeStep >= maxSteps. If yes: truncated=true and stops. If no: halts at the node without truncating. It is NOT an unconditional episode terminator.
+- IsDistanceLess fires TRUE when the real-world distance this step is strictly less than the stored previous_distance_* in state. Engine updates previous_distance_* only when a new record low is set.
+- IsDistanceMore fires TRUE when the real-world distance this step exceeds previous_distance_* by more than a 0.2 tolerance. Use to penalize divergence.
+- InRadius threshold: 1.5 world-units raw distance (normalized = 1.5/40.0 ≈ 0.0375).
+- IsDeltaXLess threshold: |delta_x| ≤ 0.05 (agent is well-aligned along X toward target).
+- IsDeltaZPos threshold: delta_z > 0.05 (entity is meaningfully ahead along Z axis).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TRAINING CONFIG CONTEXT (AssignmentPanel.jsx)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Training Settings:
   episodeNumber        — total episodes (e.g. 500–5000)
-  maxStepsPerEpisode   — steps per episode (e.g. 500–2000)
+  maxStepsPerEpisode   — steps per episode (e.g. 1000–2000)
   rewardImportance     — gamma / future reward discount (0–1, e.g. 0.99 for PPO)
   algorithm            — "q-learning" or "ppo"
   explorationStrategy  — "fixed" | "decay" | "none" (entropy coefficient behavior)
@@ -270,8 +292,8 @@ PPO-Specific (only when algorithm = ppo):
   clipRange    default 0.2   — trust-region clip (0.1 for conservative, 0.3 for aggressive)
   gaeLambda    default 0.95  — GAE bias-variance trade-off
   valLossCf    default 0.5   — value loss coefficient
-  batch        default 64    — minibatch size
-  epoch        default 10    — PPO update epochs
+  batch        default 256    — minibatch size
+  epoch        default 8    — PPO update epochs
   n_steps      default 2048  — steps to collect before update
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
