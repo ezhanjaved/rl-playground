@@ -30,8 +30,10 @@ class RewardLoggerCallback(BaseCallback):
         self._all_rewards = []
         self._last_uploaded_checkpoint: str | None = None
 
-        # In __init__, replace the scalar tracking with list tracking:
-        self._reward_history: list[dict] = []  # {ep, reward}
+        self._prev_ep_info_len = 0
+        self._last_ep_info_entry = None
+
+        self._reward_history: list[dict] = []       # {ep, reward, smoothed}
         self._ep_rew_mean_history: list[dict] = []  # {rollout, value}
         self._ep_len_mean_history: list[dict] = []  # {rollout, value}
 
