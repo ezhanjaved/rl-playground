@@ -1020,6 +1020,7 @@ export function NumericObsNode({ data, id }) {
     "dist_to_nearest_collectable",
     "delta_x_to_collectable",
     "delta_z_to_collectable",
+    "items_collected",
     // Depositor
     "dist_to_nearest_deposit",
     "delta_x_to_deposit",

@@ -1,5 +1,3 @@
-from profile import run
-
 from server.engine.observationBuilder import (
     collect_predicate,
     deposit_predicate,
@@ -120,9 +118,10 @@ def visitNode(node_id, graph, ctx):
         value = ctx["facts"]["state_space"].get(key)
         result = value == expected_bool
 
-        chosen_edge = _find_bool_edge(node_id, graph, result)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, result):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "LastActionIsNode":
@@ -130,12 +129,14 @@ def visitNode(node_id, graph, ctx):
         action_status = node_data.data.get("actionStatus")
         expected = action_status is True or str(action_status).lower() == "true"
         current_last_action = ctx["facts"]["last_action"]
+        print("LAST ACTION ", current_last_action)
         value = current_last_action == action_picked
         result = expected == value
 
-        chosen_edge = _find_bool_edge(node_id, graph, result)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, result):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "CompareStateNode":
@@ -166,14 +167,15 @@ def visitNode(node_id, graph, ctx):
             return
 
         result = op_fn(current_state, numeric_value)
-        chosen_edge = _find_bool_edge(node_id, graph, result)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, result):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "InRadiusNode":
         MAX_DIST = 40.0
-        RADIUS_CHECK = 1.5 / MAX_DIST
+        RADIUS_CHECK = 2.0 / MAX_DIST
 
         entity_one = node_data.data.get("entityOne")
         entity_two = node_data.data.get("entityTwo")
@@ -225,9 +227,10 @@ def visitNode(node_id, graph, ctx):
             else:
                 return
 
-        chosen_edge = _find_bool_edge(node_id, graph, in_radius)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, in_radius):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "IsDistanceLessNode":
@@ -280,9 +283,10 @@ def visitNode(node_id, graph, ctx):
             else:
                 return
 
-        chosen_edge = _find_bool_edge(node_id, graph, distance_less)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, distance_less):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "IsDistanceMoreNode":
@@ -336,9 +340,10 @@ def visitNode(node_id, graph, ctx):
             else:
                 return
 
-        chosen_edge = _find_bool_edge(node_id, graph, distance_more)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, distance_more):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "IsDeltaXLessNode":
@@ -401,9 +406,10 @@ def visitNode(node_id, graph, ctx):
             else:
                 return
 
-        chosen_edge = _find_bool_edge(node_id, graph, delta_x)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, delta_x):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "IsDeltaZPosNode":
@@ -466,9 +472,10 @@ def visitNode(node_id, graph, ctx):
             else:
                 return
 
-        chosen_edge = _find_bool_edge(node_id, graph, delta_z)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, delta_z):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "NumericObsNode":
@@ -500,9 +507,10 @@ def visitNode(node_id, graph, ctx):
         if not op_fn:
             return
         result = op_fn(current_val, obs_value)
-        chosen_edge = _find_bool_edge(node_id, graph, result)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, result):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "BoolObsNode":
@@ -523,9 +531,10 @@ def visitNode(node_id, graph, ctx):
             return
         as_bool = current_val is True or current_val == 1
         result = as_bool == expected_bool
-        chosen_edge = _find_bool_edge(node_id, graph, result)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, result):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     elif node_data.type == "IsObstacleInPath":
@@ -564,9 +573,10 @@ def visitNode(node_id, graph, ctx):
             and in_path_bool
         )
 
-        chosen_edge = _find_bool_edge(node_id, graph, is_blocked)
-        if chosen_edge:
+        for chosen_edge in _find_bool_edge(node_id, graph, is_blocked):
             visitNode(chosen_edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
         return
 
     for edge in _find_edges(node_id, graph):
@@ -582,7 +592,4 @@ def _find_edges(node_id, graph):
 def _find_bool_edge(node_id, graph, result):
     edges = _find_edges(node_id, graph)
     match = "true" if result else "false"
-    return next(
-        (e for e in edges if match in str(getattr(e, "sourceHandle", "")).lower()),
-        None,
-    )
+    return [e for e in edges if match in str(getattr(e, "sourceHandle", "")).lower()]

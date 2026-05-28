@@ -22,7 +22,7 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
             new_state_space["last_action_counter"] = 1
 
     if action == "pick":
-        pickRadius = 1.5  # Engine Defined - Not User
+        pickRadius = 2.0  # Engine Defined - Not User
         targetObj = nearbyPickable(entities, agentPos, pickRadius, capabilities)
         if not targetObj:
             new_state_space["lastPickSuccess"] = False
