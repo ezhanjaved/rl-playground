@@ -21,7 +21,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.DIRECT)
+        self.client = p.connect(p.GUI)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -31,15 +31,18 @@ class PyBulletWorld:
     def spawn_entities(self, entities_config, highestDistance, spawn_mode):
         entities_config = copy.deepcopy(list(entities_config))
         if spawn_mode == "Random":
-            entities_config = self.randomize_entities(entities_config, highestDistance)
+            entities_config = self.randomize_entities_open_space(
+                entities_config, highestDistance
+            )
 
         for entity in entities_config:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
 
-    def randomize_entities(self, entConfigCopy, highestDistance):
+    def randomize_entities_open_space(self, entConfigCopy, highestDistance):
 
         agentConfig = None
+        firstRandomizedObjs = {}  # This dict will store the randomized position by type
 
         for entity in entConfigCopy:
             if entity.tag == "agent":
@@ -49,36 +52,66 @@ class PyBulletWorld:
         if agentConfig is None:
             return entConfigCopy
 
-        agentRandomPos = self.random_position(agentConfig.position)
-        agentConfig.position = agentRandomPos
+        agentRandomPos = self.random_position_around(
+            agentConfig.position, min_dist=2.0, max_dist=highestDistance
+        )  # randomized first agent found
+        agentConfig.position = agentRandomPos  # update value in configFile
+        agentId = agentConfig.id  # capture agent id
+        firstRandomizedObjs["agent"] = (
+            agentRandomPos  # add the randomized position in dict by type agent - now all other agents will be spawned with refrence to this!
+        )
 
         for obj in entConfigCopy:
-            if obj.tag == "agent":
+            if obj.id == agentId:  # ignore already randomized agent
                 continue
 
             success = False
             max_attempts = 100
-
             for _ in range(max_attempts):
-                objRandomPos = self.random_position(obj.position)
+                typeOfObj = obj.tag  # capture type of object (target, collectable, deposit, holder, non-state-area)
 
-                dist = distance3D(agentRandomPos, objRandomPos)
-
-                if 2.0 < dist < highestDistance:
-                    obj.position = objRandomPos
-                    success = True
-                    break
+                if typeOfObj not in firstRandomizedObjs:
+                    # First instance - relative to agent
+                    objRandomPos = self.random_position_around(
+                        agentRandomPos, min_dist=2.0, max_dist=highestDistance
+                    )
+                    if objRandomPos:
+                        obj.position = objRandomPos
+                        firstRandomizedObjs[typeOfObj] = objRandomPos
+                        success = True
+                        break
+                else:
+                    # Subsequent - relative to first of same type
+                    refPos = firstRandomizedObjs[typeOfObj]
+                    objRandomPos = self.random_position_around(
+                        refPos, min_dist=2.0, max_dist=highestDistance * 0.75
+                    )
+                    if objRandomPos:
+                        obj.position = objRandomPos
+                        firstRandomizedObjs[typeOfObj] = objRandomPos
+                        success = True
+                        break
 
             if not success:
                 print(f"Failed to randomize {obj.id}")
 
         return entConfigCopy
 
-    def random_position(self, position):
-        x = random.uniform(-20, 20)
-        z = random.uniform(-20, 20)
-        y = position[1]
-        return [x, y, z]
+    def random_position_around(self, center, min_dist, max_dist):
+        for _ in range(100):
+            x = random.uniform(center[0] - max_dist, center[0] + max_dist)
+            z = random.uniform(center[2] - max_dist, center[2] + max_dist)
+            y = center[1]
+
+            dist = distance3D(center, [x, y, z])
+
+            x = max(-20, min(20, x))
+            z = max(-20, min(20, z))
+
+            if min_dist < dist < max_dist:
+                return [x, y, z]
+
+        return None
 
     def get_entity_state(self, entity_id):
         bullet_id = self.entity_mapping[entity_id]
@@ -131,7 +164,7 @@ class PyBulletWorld:
     def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
-            # time.sleep(1 / 60)
+            time.sleep(1 / 60)
 
     def settle(self, steps=2):
         for _ in range(steps):

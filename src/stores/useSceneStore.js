@@ -7,6 +7,7 @@ import { useRunTimeStore } from "./useRunTimeStore";
 
 export const useSceneStore = create((set) => ({
   entities: {},
+  entitiesStats: {},
   assignments: {},
   models: {},
   highestDistance: null,
@@ -78,6 +79,9 @@ export const useSceneStore = create((set) => ({
       const id = `entity_${crypto.randomUUID() || Date.now()}`;
       const entity = buildEntitiyFromPartial(partial, id);
       highestDistance();
+      if (partial.tag === "agent") {
+        useSceneStore.getState().addEntityStat(partial, id);
+      }
       return { entities: { ...state.entities, [id]: entity } };
     }),
 
@@ -85,7 +89,16 @@ export const useSceneStore = create((set) => ({
     set((state) => {
       const entity = buildEntitiyFromPartial(partial, id);
       highestDistance();
+      if (partial.tag === "agent") {
+        useSceneStore.getState().addEntityStat(partial, id);
+      }
       return { entities: { ...state.entities, [id]: entity } };
+    }),
+
+  addEntityStat: (partial, id) =>
+    set((state) => {
+      const entityStat = buildEntityStat(partial);
+      return { entitiesStats: { ...state.entitiesStats, [id]: entityStat } };
     }),
 
   updateEntity: (id, updated) =>
@@ -96,12 +109,27 @@ export const useSceneStore = create((set) => ({
       return { entities: { ...state.entities, [id]: entity } }; //Here we are updating the entities object with new entity details
     }),
 
+  updateEntityStat: (id, updated) =>
+    set((state) => {
+      const existing = state.entitiesStats[id] || {}; //We used id to get entity details and saved it in existing
+      const entity = { ...existing, ...updated }; //We are merging existing entity with updated details
+      return { entitiesStats: { ...state.entitiesStats, [id]: entity } }; //Here we are updating the entities object with new entity details
+    }),
+
   deleteEntity: (id) =>
     set((state) => {
       const newEntities = { ...state.entities }; //Create a copy of existing entities
       delete newEntities[id]; //Delete the entity with given id from the copied object
       highestDistance();
+      useSceneStore.getState().deleteEntityStat(id);
       return { entities: newEntities }; //Update the state with the new entities object
+    }),
+
+  deleteEntityStat: (id) =>
+    set((state) => {
+      const newEntitiesStat = { ...state.entitiesStats }; //Create a copy of existing entities
+      delete newEntitiesStat[id]; //Delete the entity with given id from the copied object
+      return { entitiesStats: newEntitiesStat }; //Update the state with the new entities object
     }),
 
   addModels: (id, modelGLTF) =>
@@ -109,6 +137,23 @@ export const useSceneStore = create((set) => ({
       return { models: { ...state.models, [id]: modelGLTF } };
     }),
 }));
+
+const buildEntityStat = (partial) => {
+  const type = partial.capabilities || [];
+  const { actionSpace, observationsSpace, stateSpace } =
+    addCapabilitySchemas(type);
+  let entity = {
+    tag: partial.tag,
+    capabilities: type,
+    seq: 0,
+    action_space: actionSpace,
+    observation_space: observationsSpace,
+    state_space: stateSpace,
+    observation_vector: [],
+    last_action: partial.last_action || "idle",
+  };
+  return entity;
+};
 
 const buildEntitiyFromPartial = (partial, id) => {
   const type = partial.capabilities || [];

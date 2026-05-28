@@ -450,7 +450,7 @@ const PPOSection = ({ setThree }) => {
   const [timesteps, setTimesteps] = useState(1000000);
   const [kl, setKL] = useState(0.03);
   const [ent_coeff, setEntCf] = useState(0.01);
-  const { setEnvMode, envMode } = useRunTimeStore.getState();
+  const { setEnvMode, envMode, setTimestep } = useRunTimeStore.getState();
 
   useEffect(() => {
     setThree({
@@ -497,7 +497,10 @@ const PPOSection = ({ setThree }) => {
           <input
             value={timesteps}
             type="number"
-            onChange={(e) => setTimesteps(Number(e.target.value))}
+            onChange={(e) => {
+              setTimesteps(Number(e.target.value));
+              setTimestep(Number(e.target.value));
+            }}
           />
           <label htmlFor="">Clip Range</label>
           <input

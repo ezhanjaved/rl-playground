@@ -26,7 +26,7 @@ export async function sendServer() {
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data`,
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
       {
         method: "POST",
         headers: {

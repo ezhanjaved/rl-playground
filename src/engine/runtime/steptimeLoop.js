@@ -2,6 +2,7 @@
 import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
 import buildObsSpace from "./observationBuilder.js";
 import { sendObsToCloud } from "../../websocket/ccWebsocket.js";
+import { useSceneStore } from "../../stores/useSceneStore.js";
 
 export default function stepTimeLoop(entities) {
   const {
@@ -11,11 +12,13 @@ export default function stepTimeLoop(entities) {
     seq,
     setSeq,
     setWaitingForAction,
+    setControllerMode,
     waitingForAction,
   } = useRunTimeStore.getState();
+  const { updateEntityStat } = useSceneStore.getState();
 
   if (!playing || training || !isModelReady) return;
-
+  setControllerMode("Policy (PPO)");
   Object.values(entities).forEach((entity) => {
     const isDecor =
       entity.isDecor === true ||
@@ -39,7 +42,6 @@ export default function stepTimeLoop(entities) {
 
     if (isDecor || !entity.action_space || isPickable || isTarget || isDeposit)
       return;
-
     const observation_space = buildObsSpace(entity);
     const wFa = waitingForAction[entity.id];
     if (wFa === true) return;
@@ -52,9 +54,10 @@ export default function stepTimeLoop(entities) {
 
     const session_token = localStorage.getItem("session_token");
     const jwt_token = localStorage.getItem("jwt_token");
-
-    console.log("Lockstep OBS:", nextSeq, observation_space);
-
+    updateEntityStat(entity.id, {
+      seq: nextSeq,
+      observation_vector: observation_space,
+    });
     sendObsToCloud(
       nextSeq,
       observation_space,

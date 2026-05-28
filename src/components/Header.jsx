@@ -7,7 +7,7 @@ import {
   FaArrowRight,
   FaShieldAlt,
   FaFileSignature,
-  FaCross,
+  FaInfo,
   FaSignOutAlt,
   FaPlay,
   FaFileImport,
@@ -40,6 +40,8 @@ const Header = () => {
   const toggleDebug = useCanvasSetting((state) => state.toggleDebug);
   const changeColor = useCanvasSetting((state) => state.changeColor);
   const pickedColor = useCanvasSetting((state) => state.pickedColor);
+  const setInspectorMode = useCanvasSetting((state) => state.setInspectorMode);
+
   const colors = [
     { name: "purple", gradient: "linear-gradient(135deg, #a855f7, #6366f1)" },
     { name: "orange", gradient: "linear-gradient(135deg, #f97316, #f59e0b)" },
@@ -424,6 +426,15 @@ const Header = () => {
             onClick={() => clearExperiment(currentExpId)}
           >
             <FaTimes />
+          </span>
+          <span
+            style={{
+              display: visibility !== 1 ? "none" : "flex",
+              cursor: "pointer",
+            }}
+            onClick={() => setInspectorMode()}
+          >
+            <FaInfo />
           </span>
           <span
             style={{

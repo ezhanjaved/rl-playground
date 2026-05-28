@@ -12,6 +12,9 @@ export const useRunTimeStore = create((set, get) => ({
   experiments: {}, //This will hold training data - right?
   currentExperimentId: null,
 
+  controllerMode: "Random",
+  setControllerMode: (mode) => set({ controllerMode: mode }),
+
   modalStage: "idle",
   setModalStage: (stage) => set({ modalStage: stage }),
 
@@ -28,7 +31,7 @@ export const useRunTimeStore = create((set, get) => ({
   setEnvMode: (value) => set({ envMode: value }),
 
   timesteps: 0,
-  setTimesteps: (value) => set({ timesteps: value }),
+  setTimestep: (value) => set({ timesteps: value }),
 
   isModelLoading: false,
   isModelReady: false,

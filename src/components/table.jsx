@@ -350,20 +350,17 @@ export function Table({
       connectCloudSocket(podUrl, (action, id, actionSeq) => {
         const { inferenceMode, setWaitingForAction } =
           useRunTimeStore.getState();
-        const { entities } = useSceneStore.getState();
+        const { entities, updateEntityStat } = useSceneStore.getState();
 
         if (inferenceMode === "lockstep") {
-          console.log("ENT: ", entities);
           const agent = entities?.[id];
-          console.log("ID: ", id);
-          console.log("Agent: ", agent);
           if (!agent) {
             setWaitingForAction(agent.id, false);
             return;
           }
-
-          console.log("Lockstep action:", actionSeq, action);
-
+          updateEntityStat(agent.id, {
+            last_action: action,
+          });
           applyAction(action, agent, []);
           setWaitingForAction(agent.id, false);
           return;

@@ -1,4 +1,5 @@
 import "./styling/index.css";
+import { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -20,12 +21,15 @@ import { LoadingModal } from "./components/LoadingModal";
 import { useRunTimeStore } from "./stores/useRunTimeStore";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { GraphAIChatPage } from "./pages/ConversationPage";
+import AgentInspectorWindow from "./components/AgentInspector";
+import { useCanvasSetting } from "./stores/useCanvasSetting";
 
 function App() {
   const initializeAuth = useAuthStore((state) => state.initialize);
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
   const { isModelReady, setShowLoadingModal } = useRunTimeStore();
+  const { inspectorMode, setInspectorMode } = useCanvasSetting();
 
   useEffect(() => {
     if (isModelReady) {
@@ -56,6 +60,10 @@ function App() {
   return (
     <>
       <LoadingModal />
+      <AgentInspectorWindow
+        open={inspectorMode}
+        onClose={() => setInspectorMode()}
+      />
       <Router>
         <Routes>
           <Route

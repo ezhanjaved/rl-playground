@@ -35,7 +35,7 @@ export default function CanvasPad() {
       const { playing, training, inferenceMode } = useRunTimeStore.getState();
       const { entities } = useSceneStore.getState();
 
-      if (inferenceMode === "lockstep") {
+      if (inferenceMode === "lockstepp") {
         if (!playing || training) return;
         stepTimeLoop(entities);
         return;

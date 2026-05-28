@@ -62,7 +62,6 @@ export const CAPABILITY_SCHEMAS = {
       "delta_x_to_collectable",
       "delta_z_to_collectable",
       "items_collected",
-      "lastPickSuccess", // ADD
     ],
     state: {
       lastItemCollected: null,

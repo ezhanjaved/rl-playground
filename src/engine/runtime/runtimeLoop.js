@@ -4,9 +4,10 @@ import buildObsSpace from "./observationBuilder.js";
 import ControllerRouter from "./controllers/controllerRouter.js";
 import applyAction from "./actuators/applyAction.js";
 import { flushActions } from "./actionQueue.js";
-
+import { useSceneStore } from "../../stores/useSceneStore.js";
 export default function runTimeloop(entities) {
   const { playing, training } = useRunTimeStore.getState();
+  const { updateEntityStat } = useSceneStore.getState();
   const { currentExperimentId, isModelReady, seq, setSeq } =
     useRunTimeStore.getState();
 
@@ -42,7 +43,6 @@ export default function runTimeloop(entities) {
       return;
 
     const observation_space = buildObsSpace(entity);
-    console.log("Obs: " + observation_space);
     const action_space = entity.action_space;
     const sequence = seq[entity.id] ?? 0; //Read sequence number from store
     const newSeq = sequence + 1; //increment it
@@ -63,5 +63,10 @@ export default function runTimeloop(entities) {
       applyAction(action, entity, observation_space);
     }
     setSeq(entity.id, newSeq); //set it back in store
+    updateEntityStat(entity.id, {
+      seq: newSeq,
+      last_action: action,
+      observation_vector: observation_space,
+    });
   });
 }

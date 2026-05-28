@@ -3,6 +3,7 @@ import { useSceneStore } from "../../../stores/useSceneStore";
 import randomController from "./randomController";
 import { qLearningAct } from "./policyController";
 import { PPOController } from "./ppoController";
+import { useRunTimeStore } from "../../../stores/useRunTimeStore";
 
 export default function ControllerRouter(
   seq,
@@ -20,9 +21,12 @@ export default function ControllerRouter(
   const hasQLearning = config?.algorithm === "q-learning";
   const hasPPO = isModelReady;
 
+  const { setControllerMode } = useRunTimeStore.getState();
+
   if (!hasQLearning && !hasPPO) return randomController(action_space);
 
   if (hasQLearning && !hasPPO) {
+    setControllerMode("Policy (Q-Learning)");
     return qLearningAct(
       observation_space,
       action_space,
@@ -35,6 +39,7 @@ export default function ControllerRouter(
   }
 
   if (hasPPO) {
+    setControllerMode("Policy (PPO)");
     PPOController(seq, observation_space, agentId);
     return null;
   }
