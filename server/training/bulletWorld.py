@@ -1,7 +1,6 @@
-import copy
 import random
-import time
 
+# import time
 import pybullet as p
 import pybullet_data
 
@@ -21,7 +20,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.GUI)
+        self.client = p.connect(p.DIRECT)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -29,68 +28,57 @@ class PyBulletWorld:
         p.loadURDF("plane.urdf", physicsClientId=self.client)
 
     def spawn_entities(self, entities_config, highestDistance, spawn_mode):
-        entities_config = copy.deepcopy(list(entities_config))
+        # IMPORTANT: must use shallow list — randomize_entities_open_space mutates
+        # entity.position in-place on the original objects so that runtime.entities
+        # stays in sync. deepcopy here would break OBS for all non-agent entities.
+        entities_config = list(entities_config)
         if spawn_mode == "Random":
             entities_config = self.randomize_entities_open_space(
                 entities_config, highestDistance
             )
-
         for entity in entities_config:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
 
     def randomize_entities_open_space(self, entConfigCopy, highestDistance):
 
-        agentConfig = None
-        firstRandomizedObjs = {}  # This dict will store the randomized position by type
+        TAG_PRIORITY = {
+            "agent": 0,
+            "Pickable Object": 1,
+            "Collectible Object": 1,
+            "target": 2,
+            "deposit": 3,
+        }
 
-        for entity in entConfigCopy:
-            if entity.tag == "agent":
-                agentConfig = entity
-                break
+        entConfigCopy = sorted(entConfigCopy, key=lambda e: TAG_PRIORITY.get(e.tag, 99))
 
+        agentConfig = next((e for e in entConfigCopy if e.tag == "agent"), None)
         if agentConfig is None:
             return entConfigCopy
 
         agentRandomPos = self.random_position_around(
             agentConfig.position, min_dist=2.0, max_dist=highestDistance
-        )  # randomized first agent found
-        agentConfig.position = agentRandomPos  # update value in configFile
-        agentId = agentConfig.id  # capture agent id
-        firstRandomizedObjs["agent"] = (
-            agentRandomPos  # add the randomized position in dict by type agent - now all other agents will be spawned with refrence to this!
         )
+        if agentRandomPos is None:
+            return entConfigCopy
+        agentConfig.position = agentRandomPos
+        agentId = agentConfig.id
+        lastPos = agentRandomPos
 
         for obj in entConfigCopy:
-            if obj.id == agentId:  # ignore already randomized agent
+            if obj.id == agentId:
                 continue
 
             success = False
-            max_attempts = 100
-            for _ in range(max_attempts):
-                typeOfObj = obj.tag  # capture type of object (target, collectable, deposit, holder, non-state-area)
-
-                if typeOfObj not in firstRandomizedObjs:
-                    # First instance - relative to agent
-                    objRandomPos = self.random_position_around(
-                        agentRandomPos, min_dist=2.0, max_dist=highestDistance
-                    )
-                    if objRandomPos:
-                        obj.position = objRandomPos
-                        firstRandomizedObjs[typeOfObj] = objRandomPos
-                        success = True
-                        break
-                else:
-                    # Subsequent - relative to first of same type
-                    refPos = firstRandomizedObjs[typeOfObj]
-                    objRandomPos = self.random_position_around(
-                        refPos, min_dist=2.0, max_dist=highestDistance * 0.75
-                    )
-                    if objRandomPos:
-                        obj.position = objRandomPos
-                        firstRandomizedObjs[typeOfObj] = objRandomPos
-                        success = True
-                        break
+            for _ in range(100):
+                objRandomPos = self.random_position_around(
+                    lastPos, min_dist=2.0, max_dist=highestDistance * 0.75
+                )
+                if objRandomPos:
+                    obj.position = objRandomPos
+                    lastPos = objRandomPos
+                    success = True
+                    break
 
             if not success:
                 print(f"Failed to randomize {obj.id}")
@@ -164,7 +152,7 @@ class PyBulletWorld:
     def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
-            time.sleep(1 / 60)
+            # time.sleep(1 / 60)
 
     def settle(self, steps=2):
         for _ in range(steps):
