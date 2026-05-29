@@ -16,7 +16,8 @@ export const calculateRewardStats = (
   const defRew = maxShapingReward * toNumber(budgetSteps);
   const terminal = toNumber(terminalReward);
   let rewardStatus = null;
-
+  console.log("Terminal: ", terminal);
+  console.log("defRew: ", defRew);
   if (terminalReward !== null && terminalReward !== undefined) {
     if (terminal > defRew) {
       rewardStatus = "Terminal reward is higher than max shaping reward";
