@@ -11,8 +11,7 @@ export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
   const graph = graphs?.[graphId];
 
   if (!graph || !entities || !assignments) return;
-
-  const agent = entities[agentId];
+  const agent = useSceneStore.getState().entities?.[agentId];
   let visitedNodes = new Set();
   const postObs = buildObsSpace(agent); //post action obs
 
@@ -45,6 +44,8 @@ export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
     reward: ctxObj.reward,
     terminated: ctxObj.terminated,
     truncated: ctxObj.truncated,
+    postObs,
+    info: {},
   };
 }
 
@@ -91,12 +92,15 @@ function visitNode(NodeId, graph, ctxObj) {
     const result = value === expectedBool;
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       result
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -109,12 +113,15 @@ function visitNode(NodeId, graph, ctxObj) {
     const result = expected === value;
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       result
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -140,12 +147,15 @@ function visitNode(NodeId, graph, ctxObj) {
     const result = opFunction(currentState, numericValue);
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       result
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -197,12 +207,15 @@ function visitNode(NodeId, graph, ctxObj) {
     }
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       inRadius
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -270,12 +283,15 @@ function visitNode(NodeId, graph, ctxObj) {
     }
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       deltaX
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -341,12 +357,15 @@ function visitNode(NodeId, graph, ctxObj) {
     }
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       deltaZ
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -418,12 +437,15 @@ function visitNode(NodeId, graph, ctxObj) {
     }
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       distanceLess
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -499,12 +521,15 @@ function visitNode(NodeId, graph, ctxObj) {
     }
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       distanceMore
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 
@@ -531,12 +556,15 @@ function visitNode(NodeId, graph, ctxObj) {
           if (opFn) {
             const result = opFn(currentVal, obsValue);
             const edges = findEdges(NodeId, graph);
-            const chosenEdge = edges.find((e) =>
+            const chosenEdges = edges.filter((e) =>
               result
                 ? e.sourceHandle?.toLowerCase().includes("true")
                 : e.sourceHandle?.toLowerCase().includes("false"),
             );
-            if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+            for (const chosenEdge of chosenEdges) {
+              visitNode(chosenEdge.target, graph, ctxObj);
+              if (ctxObj._stop) return;
+            }
           }
         }
       }
@@ -559,12 +587,15 @@ function visitNode(NodeId, graph, ctxObj) {
           const asBool = currentVal === true || currentVal === 1;
           const result = asBool === expectedBool;
           const edges = findEdges(NodeId, graph);
-          const chosenEdge = edges.find((e) =>
+          const chosenEdges = edges.filter((e) =>
             result
               ? e.sourceHandle?.toLowerCase().includes("true")
               : e.sourceHandle?.toLowerCase().includes("false"),
           );
-          if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+          for (const chosenEdge of chosenEdges) {
+            visitNode(chosenEdge.target, graph, ctxObj);
+            if (ctxObj._stop) return;
+          }
         }
       }
     }
@@ -600,12 +631,15 @@ function visitNode(NodeId, graph, ctxObj) {
       inPathBool;
 
     const edges = findEdges(NodeId, graph);
-    const chosenEdge = edges.find((e) =>
+    const chosenEdges = edges.filter((e) =>
       isBlocked
         ? e.sourceHandle?.toLowerCase().includes("true")
         : e.sourceHandle?.toLowerCase().includes("false"),
     );
-    if (chosenEdge) visitNode(chosenEdge.target, graph, ctxObj);
+    for (const chosenEdge of chosenEdges) {
+      visitNode(chosenEdge.target, graph, ctxObj);
+      if (ctxObj._stop) return;
+    }
     return;
   }
 

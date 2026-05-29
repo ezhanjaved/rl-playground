@@ -12,6 +12,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 
 export async function trainingLoop(experimentId) {
   const runtime0 = useRunTimeStore.getState();
+  const { setSeq } = useRunTimeStore.getState();
   const exp0 = runtime0.experiments?.[experimentId];
   if (!exp0) return;
 
@@ -122,24 +123,28 @@ export async function trainingLoop(experimentId) {
 
         const obsVector = buildObsSpace(agent);
         const actionSpace = agent.action_space;
+        const sequence = useRunTimeStore.getState().seq[agentId] ?? 0;
+        const newSeq = sequence + 1; //increment it
+        console.log("New Seq: ", newSeq);
         const actionPicked = ControllerRouter(
+          newSeq,
           obsVector,
           agentId,
           actionSpace,
           experimentId,
           qTable,
           "training",
+          false,
         );
-        const {
-          reward,
-          done: stepDone,
-          nextObs,
-        } = envSet(actionPicked, agent, obsVector, step);
+        const { reward, finished, nextObs } = envSet(
+          actionPicked,
+          agent,
+          obsVector,
+          step,
+        );
+        done = finished;
         console.log(
-          "Reward Computed In This Step: " +
-            reward +
-            " Done Status: " +
-            stepDone,
+          "Reward Computed In This Step: " + reward + " Done Status: " + done,
         );
         qTable = qLearningLearner(
           qTable,
@@ -147,15 +152,14 @@ export async function trainingLoop(experimentId) {
           obsVector,
           nextObs,
           reward,
-          stepDone,
+          done,
           config,
           agentId,
         );
 
         rewardSum += reward;
         stepTaken += 1;
-        done = stepDone;
-
+        setSeq(agentId, newSeq); //set it back in store
         console.log("Reward Sum Value: " + rewardSum);
         if (done) {
           console.log(
@@ -164,7 +168,7 @@ export async function trainingLoop(experimentId) {
           break;
         }
         if (step % 50 === 0) {
-          console.log("Episode was terminated because Agent was out of steps");
+          console.log("Yielding to event loop at step " + step);
           await tick();
         }
       }

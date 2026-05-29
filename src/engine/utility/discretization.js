@@ -2,8 +2,6 @@ import { getIndexOfObs } from "./getIndex";
 
 const NOT_FOUND = 1.0;
 
-const MAX_DIST = 40.0;
-
 export default function discretize(obsVector, agent) {
   const agentObsSpace = agent?.observation_space || [];
   let stateKey = "";
@@ -28,15 +26,20 @@ export default function discretize(obsVector, agent) {
         stateKey = buildKey(stateKey, space, rotationBin(value));
         break;
 
+      // --- Temporal Memory ---
+      case "last_action_counter":
+        stateKey = buildKey(stateKey, space, streakBin(value));
+        break;
+
       // --- Target (Finder) ---
-      case "dist_x_to_target":
+      case "delta_x_to_target":
         stateKey = buildKey(
           stateKey,
           space,
           value >= NOT_FOUND ? "NONE" : directionBin(value),
         );
         break;
-      case "dist_z_to_target":
+      case "delta_z_to_target":
         stateKey = buildKey(
           stateKey,
           space,
@@ -55,14 +58,14 @@ export default function discretize(obsVector, agent) {
         break;
 
       // --- Collectable (Collector) ---
-      case "dist_x_to_collect":
+      case "delta_x_to_collectable":
         stateKey = buildKey(
           stateKey,
           space,
           value >= NOT_FOUND ? "NONE" : directionBin(value),
         );
         break;
-      case "dist_z_to_collect":
+      case "delta_z_to_collectable":
         stateKey = buildKey(
           stateKey,
           space,
@@ -81,14 +84,14 @@ export default function discretize(obsVector, agent) {
         break;
 
       // --- Pickable (Holder) ---
-      case "dist_x_to_pickable":
+      case "delta_x_to_pickable":
         stateKey = buildKey(
           stateKey,
           space,
           value >= NOT_FOUND ? "NONE" : directionBin(value),
         );
         break;
-      case "dist_z_to_pickable":
+      case "delta_z_to_pickable":
         stateKey = buildKey(
           stateKey,
           space,
@@ -105,16 +108,23 @@ export default function discretize(obsVector, agent) {
       case "holding":
         stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
         break;
+      case "lastPickSuccess":
+        stateKey = buildKey(
+          stateKey,
+          space,
+          value === null ? "NONE" : value === 1 ? "YES" : "NO",
+        );
+        break;
 
       // --- Deposit (Depositor) ---
-      case "dist_x_to_deposit":
+      case "delta_x_to_deposit":
         stateKey = buildKey(
           stateKey,
           space,
           value >= NOT_FOUND ? "NONE" : directionBin(value),
         );
         break;
-      case "dist_z_to_deposit":
+      case "delta_z_to_deposit":
         stateKey = buildKey(
           stateKey,
           space,
@@ -131,23 +141,30 @@ export default function discretize(obsVector, agent) {
       case "items_deposit":
         stateKey = buildKey(stateKey, space, itemsBin(value));
         break;
+      case "last_deposit_success":
+        stateKey = buildKey(
+          stateKey,
+          space,
+          value === null ? "NONE" : value === 1 ? "YES" : "NO",
+        );
+        break;
 
       // --- Obstacle (Navigator) ---
-      case "dist_x_to_obstacle":
+      case "obstacle_forward":
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : distanceBin(value),
         );
         break;
-      case "dist_z_to_obstacle":
+      case "obstacle_left":
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : distanceBin(value),
         );
         break;
-      case "dist_to_nearest_obstacle":
+      case "obstacle_right":
         stateKey = buildKey(
           stateKey,
           space,
@@ -203,4 +220,12 @@ function itemsBin(item) {
   if (item <= 3) return "FEW";
   if (item <= 9) return "HANDFUL";
   return "MANY";
+}
+
+// Consecutive steps the same action has been taken
+function streakBin(value) {
+  if (value <= 1) return "NEW"; // just switched or first step
+  if (value <= 3) return "SHORT"; // 2–3 steps
+  if (value <= 8) return "MEDIUM"; // 4–8 steps
+  return "LONG"; // 9+ steps — likely stuck or repeating
 }
