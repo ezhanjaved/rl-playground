@@ -138,7 +138,7 @@ export function BehaviorGraphPanel() {
     {
       id: "add-reward-node",
       payload: {
-        data: { label: "AddReward", agentId: null, rewardValue: null },
+        data: { label: "AddReward", typeOfReward: null, rewardValue: null },
         type: "AddRewardNode",
       },
     },

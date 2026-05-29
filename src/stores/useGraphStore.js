@@ -1,13 +1,30 @@
 // We will maintain state of Behavior graphs (nodes/edges) it's params and validation
 import { create } from "zustand";
 import { validateGraphWithStore } from "../editor/nodes/validateGraph";
+import { calculateRewardStats } from "../editor/nodes/calRew";
 
-export const useGraphStore = create((set, get) => ({
+export const useGraphStore = create((set) => ({
   graphs: {},
   totalGraph: [],
   indexNumber: 0,
   activeGraphId: null,
   graphError: {},
+  rewardDict: {},
+  terminalReward: null,
+  defRew: null,
+  budgetSteps: null,
+  maxShapingReward: 0,
+  rewardStatus: null,
+
+  setTerminal: (terminal) => set({ terminalReward: terminal }),
+  setBudget: (budget) => set({ budgetSteps: budget }),
+  addReward: (id, reward) =>
+    set((state) => ({
+      rewardDict: {
+        ...state.rewardDict,
+        [id]: reward,
+      },
+    })),
 
   addGraphError: (id, result) =>
     set((state) => ({
@@ -45,9 +62,9 @@ export const useGraphStore = create((set, get) => ({
   nextGraph: () =>
     set((state) => {
       const totalNum = state.totalGraph.length;
-      console.log("Total Num: " + totalNum);
+      // console.log("Total Num: " + totalNum);
       if (totalNum === 0 || totalNum === 1) return state;
-      console.log("Total Graphs: " + state.totalGraph);
+      // console.log("Total Graphs: " + state.totalGraph);
 
       const newIndex = (state.indexNumber + 1) % totalNum;
       const newActiveId = state.totalGraph[newIndex];
@@ -92,7 +109,6 @@ export const useGraphStore = create((set, get) => ({
     set((state) => {
       const graph = state.graphs[graphId];
       if (!graph) return state; // guard
-
       return {
         graphs: {
           ...state.graphs,
@@ -129,9 +145,10 @@ export const useGraphStore = create((set, get) => ({
         typeof updater === "function" ? updater(graph.nodes) : updater;
 
       const updatedGraph = { ...graph, nodes: nextNodes };
-
+      const rS = state.rewardStatus;
       validateGraphWithStore(
         updatedGraph,
+        rS,
         (id, errs) =>
           set((s) => ({ graphError: { ...s.graphError, [id]: errs } })),
         (id) =>
@@ -159,9 +176,10 @@ export const useGraphStore = create((set, get) => ({
         typeof updater === "function" ? updater(graph.edges) : updater;
 
       const updatedGraph = { ...graph, edges: nextEdges };
-
+      const rS = state.rewardStatus;
       validateGraphWithStore(
         updatedGraph,
+        rS,
         (id, errs) =>
           set((s) => ({ graphError: { ...s.graphError, [id]: errs } })),
         (id) =>
@@ -185,11 +203,57 @@ export const useGraphStore = create((set, get) => ({
       const graph = state.graphs[graphId];
       if (!graph) return state;
 
-      const nodes = graph.nodes.map((node) =>
-        node.id === nodeId ? { ...node, ...partial } : node,
+      let updatedNodeData = null;
+
+      const nodes = graph.nodes.map((node) => {
+        if (node.id !== nodeId) return node;
+
+        const updatedNode = {
+          ...node,
+          ...partial,
+          data: {
+            ...node.data,
+            ...partial.data,
+          },
+        };
+
+        updatedNodeData = updatedNode.data;
+        return updatedNode;
+      });
+
+      let rewardDict = { ...state.rewardDict };
+      let terminalReward = state.terminalReward;
+      let budgetSteps = state.budgetSteps;
+
+      if (updatedNodeData) {
+        if (updatedNodeData.typeOfReward === "Shaping") {
+          rewardDict[nodeId] = updatedNodeData.rewardValue;
+        } else {
+          delete rewardDict[nodeId];
+        }
+
+        if (updatedNodeData.typeOfReward === "Terminal") {
+          terminalReward = updatedNodeData.rewardValue;
+        }
+
+        if (updatedNodeData.maxSteps !== undefined) {
+          budgetSteps = updatedNodeData.maxSteps;
+        }
+      }
+
+      const rewardStats = calculateRewardStats(
+        rewardDict,
+        terminalReward,
+        budgetSteps,
       );
 
+      console.log("Reward Status: " + JSON.stringify(rewardStats, null, 2));
       return {
+        rewardDict,
+        terminalReward,
+        budgetSteps,
+        ...rewardStats,
+
         graphs: {
           ...state.graphs,
           [graphId]: {
@@ -225,7 +289,28 @@ export const useGraphStore = create((set, get) => ({
       const graph = state.graphs[graphId];
       if (!graph) return state;
 
+      const deletedNode = graph.nodes.find((node) => node.id === nodeId);
+
+      const rewardDict = { ...state.rewardDict };
+      delete rewardDict[nodeId];
+
+      let terminalReward = state.terminalReward;
+
+      if (deletedNode?.data?.typeOfReward === "Terminal") {
+        terminalReward = null;
+      }
+
+      const rewardStats = calculateRewardStats(
+        rewardDict,
+        terminalReward,
+        state.budgetSteps,
+      );
+
       return {
+        rewardDict,
+        terminalReward,
+        ...rewardStats,
+
         graphs: {
           ...state.graphs,
           [graphId]: {

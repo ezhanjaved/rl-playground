@@ -76,6 +76,13 @@ export function AddRewardNode({ data, id }) {
       },
     });
   }
+
+  function updateMode(e) {
+    updateNode(activeGraphId, id, {
+      data: { ...data, typeOfReward: e.target.value },
+    });
+  }
+
   return (
     <div
       onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
@@ -104,6 +111,17 @@ export function AddRewardNode({ data, id }) {
         }}
       />
       <div className="effect-data-form">
+        <span>Reward Type</span>
+        <select onChange={updateMode} value={data?.typeOfReward ?? "Shaping"}>
+          <option key="Shaping" value="Shaping">
+            Shaping Reward
+          </option>
+          <option key="Terminal" value="Terminal">
+            Terminal Reward
+          </option>
+        </select>
+
+        <br />
         <span>Reward Value</span>
         <input
           type="number"

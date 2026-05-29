@@ -1,4 +1,9 @@
-export function validateGraphWithStore(graph, addGraphError, removeGraphError) {
+export function validateGraphWithStore(
+  graph,
+  rs,
+  addGraphError,
+  removeGraphError,
+) {
   if (!graph) return;
 
   const errors = [];
@@ -24,6 +29,10 @@ export function validateGraphWithStore(graph, addGraphError, removeGraphError) {
   if (errors.length > 0) {
     addGraphError(id, errors);
     return;
+  }
+
+  if (rs !== "Terminal reward is higher than max shaping reward") {
+    errors.push(rs);
   }
 
   const onEpisodeId = onEpisodeNodes[0].id;
