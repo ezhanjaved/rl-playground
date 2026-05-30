@@ -87,7 +87,7 @@ class SingleAgentTrainer:
             vec_env,
             norm_obs=False,
             norm_reward=True,
-            clip_reward=50.0,
+            clip_reward=100.0,
             gamma=self.gamma,
         )
 
