@@ -30,8 +30,14 @@ export const useRunTimeStore = create((set, get) => ({
   envMode: "Fixed",
   setEnvMode: (value) => set({ envMode: value }),
 
+  percentageFixedEp: 0,
+  setPercentageFixed: (value) => set({ percentageFixedEp: value }),
+
   timesteps: 0,
   setTimestep: (value) => set({ timesteps: value }),
+
+  maxStepPerEp: 0,
+  setMaxStepPerEp: (value) => set({ maxStepPerEp: value }),
 
   isModelLoading: false,
   isModelReady: false,

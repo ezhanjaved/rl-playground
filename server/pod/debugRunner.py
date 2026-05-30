@@ -55,3 +55,14 @@ def debugRunner(id):
 # debugRunner("6715a1b8-8375-4f9b-b96d-166c127e3ea2")
 # debugRunner("d182bb08-b182-4e5b-8327-34519b76c330")
 # debugRunner("cb03cafb-f271-4c8c-b666-0b7a766a2e78")
+# debugRunner("b9a57553-5ca7-4012-aa63-bcd008e26f60")
+# debugRunner("ba7aeab7-b8f1-4438-b62f-cc8aac92ec78")
+# debugRunner("32abd69a-c6bc-4ea1-8c03-54993855d1d5") Holder/Deposit Graph Test
+# debugRunner("b4bb6074-16ac-4b36-afab-fa7db1004304
+# debugRunner("00a92d86-bdd9-467a-b93a-47806d6b2aa4")
+# debugRunner("eecc7d3e-575f-408a-bfc0-4823dc4f3f34")
+# debugRunner("bccd4332-c192-4c06-9b26-de8021ccf386")
+# debugRunner("d50806b7-dca5-4d38-a867-2987b11005ff")
+# debugRunner("a29fa070-3afe-415b-af75-2fa43f7e19ef")
+# debugRunner("c4a50b03-a324-420e-b924-35a2cd05b3dd")
+# debugRunner("b82fb2fe-0e90-4d84-8b78-c69c2d32eb14")

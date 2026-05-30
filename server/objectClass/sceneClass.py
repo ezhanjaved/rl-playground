@@ -43,16 +43,20 @@ class TrainingState:
     info: dict[str, dict] = field(default_factory=dict)
 
     highest_dist: float = 0.0
+
     spawn_mode: str = "Fixed"
+    randomSpawnAfterEp: int | None = None
 
 
 def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
     record = fetchExtactModel(tId)
     highestDist: float = 0.0
     spawnMode: str = "Fixed"
+    randomSpawnAfterEp: int = None
     if record != None:
         highestDist = record.get("highest_dist", 0.0)
         spawnMode = record.get("spawn_mode", "Fixed")
+        randomSpawnAfterEp = record.get("fixed_episode_per")
     return TrainingState(
         entities=deepcopy(scenario.entities),
         assignment_by_agent=deepcopy(scenario.assignments),
@@ -60,4 +64,5 @@ def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
         agents_ids=agents_ids,
         highest_dist=highestDist,
         spawn_mode=spawnMode,
+        randomSpawnAfterEp=randomSpawnAfterEp,
     )

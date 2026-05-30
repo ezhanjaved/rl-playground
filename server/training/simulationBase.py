@@ -12,11 +12,21 @@ class SimulationEnv:
     def reset(self):
         self.core.reset()
         self.world.load()
+
+        runtime = self.core.runtime
+        episode = runtime.episode_count
+        threshold = runtime.randomSpawnAfterEp
+        if runtime.spawn_mode == "Curriculum" and threshold is not None:
+            effective_mode = "Random" if episode >= threshold else "Fixed"
+        else:
+            effective_mode = runtime.spawn_mode
+        print("Effective Mode: ", effective_mode)
         self.world.spawn_entities(
             self.core.runtime.entities.values(),
             self.core.runtime.highest_dist,
-            self.core.runtime.spawn_mode,
+            effective_mode,
         )
+
         self.world.settle()
         self.core.sync_state_from_world(self.world)
         obs = self.core.get_observation()

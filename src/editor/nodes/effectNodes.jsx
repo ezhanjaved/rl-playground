@@ -1,6 +1,7 @@
 import "../../styling/App.css";
 import { Position, Handle } from "@xyflow/react";
 import { useGraphStore } from "../../stores/useGraphStore";
+import { useRunTimeStore } from "../../stores/useRunTimeStore";
 
 export function EndEpisodeNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
@@ -31,8 +32,10 @@ export function TruncateEpisodeNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const updateNode = useGraphStore((s) => s.updateNode);
+  const setMaxStepPerEp = useRunTimeStore((s) => s.setMaxStepPerEp);
 
   function updateValue(e) {
+    setMaxStepPerEp(Number(e.target.value));
     updateNode(activeGraphId, id, {
       data: { ...data, maxSteps: Number(e.target.value) },
     });

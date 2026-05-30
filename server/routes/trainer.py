@@ -31,6 +31,7 @@ class RequestModel(BaseModel):
     timesteps: int
     highestDistance: float
     spawnMode: str
+    randomSpawnAfterEp: int | None = None
 
 
 class RunModel(BaseModel):
@@ -62,6 +63,9 @@ async def getData(data: RequestModel):
         model_name = data.dict()["modelName"]
         highestDistance = data.dict()["highestDistance"]
         spawnMode = data.dict()["spawnMode"]
+        randomSpawnAfterEp = data.dict().get(
+            "randomSpawnAfterEp"
+        )  # None if not provided
         config_path = uploadConfig(path)
         create_model(
             {
@@ -73,6 +77,7 @@ async def getData(data: RequestModel):
                 "total_timestep": timesteps,
                 "highest_dist": highestDistance,
                 "spawn_mode": spawnMode,
+                "fixed_episode_per": randomSpawnAfterEp,
             },
             "models",
         )
@@ -107,6 +112,9 @@ async def getDataDebug(data: RequestModel):
         model_name = data.dict()["modelName"]
         highestDistance = data.dict()["highestDistance"]
         spawnMode = data.dict()["spawnMode"]
+        randomSpawnAfterEp = data.dict().get(
+            "randomSpawnAfterEp"
+        )  # None if not provided
         config_path = uploadConfig(path)
         create_model(
             {
@@ -118,6 +126,7 @@ async def getDataDebug(data: RequestModel):
                 "total_timestep": timesteps,
                 "highest_dist": highestDistance,
                 "spawn_mode": spawnMode,
+                "fixed_episode_per": randomSpawnAfterEp,
             },
             "models",
         )

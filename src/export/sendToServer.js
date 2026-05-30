@@ -7,8 +7,32 @@ import { useAuthStore } from "../stores/useAuthStore";
 export async function sendServer() {
   const { entities, assignments, highestDistance } = useSceneStore.getState();
   const { graphs } = useGraphStore.getState();
-  const { modelName, envType, timesteps, envMode } = useRunTimeStore.getState();
+  const {
+    modelName,
+    envType,
+    timesteps,
+    envMode,
+    percentageFixedEp,
+    maxStepPerEp,
+  } = useRunTimeStore.getState();
   const { user } = useAuthStore.getState();
+
+  let random_spawn_after_episode = null;
+
+  if (envMode === "Curriculum") {
+    const total_timesteps = timesteps;
+    const max_steps_per_episode = maxStepPerEp;
+    const max_episodes = total_timesteps / max_steps_per_episode;
+    console.log("MAX EPISODES (FLOOR): " + max_episodes);
+    const user_defined_fixed_ep_per = percentageFixedEp;
+
+    random_spawn_after_episode = Number(
+      max_episodes * user_defined_fixed_ep_per,
+    );
+  }
+  console.log("Spawn Mode: ", envMode);
+  console.log("RSAE: " + random_spawn_after_episode);
+
   const data = {
     entities,
     graphs,
@@ -19,8 +43,10 @@ export async function sendServer() {
     timesteps,
     highestDistance: highestDistance,
     spawnMode: envMode,
+    randomSpawnAfterEp: random_spawn_after_episode,
   };
-  console.log("Body: " + JSON.stringify(data, null, 2));
+
+  // console.log("Body: " + JSON.stringify(data, null, 2));
   // const empty = emptyRoutine(data);
   // if (empty) return;
 

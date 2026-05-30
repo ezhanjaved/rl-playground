@@ -450,7 +450,13 @@ const PPOSection = ({ setThree }) => {
   const [timesteps, setTimesteps] = useState(1000000);
   const [kl, setKL] = useState(0.03);
   const [ent_coeff, setEntCf] = useState(0.01);
-  const { setEnvMode, envMode, setTimestep } = useRunTimeStore.getState();
+  const {
+    setEnvMode,
+    envMode,
+    setTimestep,
+    percentageFixedEp,
+    setPercentageFixed,
+  } = useRunTimeStore.getState();
 
   useEffect(() => {
     setThree({
@@ -550,8 +556,27 @@ const PPOSection = ({ setThree }) => {
             type="number"
             onChange={(e) => setEntCf(Number(e.target.value))}
           />
-          <label htmlFor="">Object Spawn Mode</label>
+          {envMode === "Curriculum" && (
+            <>
+              <label htmlFor="">Fixed Episodes %</label>
+              <input
+                value={percentageFixedEp}
+                type="number"
+                onChange={(e) => setPercentageFixed(Number(e.target.value))}
+              />
+            </>
+          )}
+          <label htmlFor="">Spawn Mode</label>
           <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+            <label>
+              <input
+                checked={envMode === "Fixed"}
+                onChange={(e) => setEnvMode(e.target.value)}
+                type="radio"
+                value="Fixed"
+              />{" "}
+              Fixed{" "}
+            </label>
             <label>
               <input
                 checked={envMode === "Random"}
@@ -563,12 +588,12 @@ const PPOSection = ({ setThree }) => {
             </label>
             <label>
               <input
-                checked={envMode === "Fixed"}
+                checked={envMode === "Curriculum"}
                 onChange={(e) => setEnvMode(e.target.value)}
                 type="radio"
-                value="Fixed"
+                value="Curriculum"
               />{" "}
-              Fixed{" "}
+              Curriculum{" "}
             </label>
           </div>
         </div>
