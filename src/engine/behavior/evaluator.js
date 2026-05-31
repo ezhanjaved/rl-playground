@@ -374,10 +374,16 @@ function visitNode(NodeId, graph, ctxObj) {
 
     const entityOne = currentNodeData.data.entityOne;
     const entityTwo = currentNodeData.data.entityTwo;
+    let mode = currentNodeData.data.mode;
     const isAgent1 = entityOne === "Agent";
     const isAgent2 = entityTwo === "Agent";
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
+
+    if (mode === null) {
+      //fallback
+      mode = "Best Record";
+    }
 
     const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
     const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
@@ -393,12 +399,16 @@ function visitNode(NodeId, graph, ctxObj) {
       e.isCollectable === 1;
     const depositPredicate = (e) =>
       e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
-    const obstaclePredicate = (e) =>
-      e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
 
-    const diffCal = (predicate, key) => {
+    const getObs = (key) => {
+      const idx = ctxObj?.facts?.obs_space.indexOf(key);
+      return idx === -1 ? null : ctxObj.preObs[idx];
+    };
+
+    const diffCal = (predicate, key, mode, key2) => {
       const agentCurrentPos = ctxObj?.facts?.position;
-      const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
+      const bestDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
+      const previousDistance = getObs(key2);
       const { entities } = useSceneStore.getState();
       const rotation = ctxObj?.facts?.rotation;
       const { min: currentDistance } = nearestDistance(
@@ -409,28 +419,52 @@ function visitNode(NodeId, graph, ctxObj) {
         entities,
       );
 
-      if (currentDistance !== null && currentDistance < previousDistance) {
-        distanceLess = true;
+      if (mode === "Best Record") {
+        if (currentDistance !== null && currentDistance < bestDistance) {
+          distanceLess = true;
+        }
+      }
+
+      if (mode === "Raw Distance") {
+        if (currentDistance !== null && currentDistance < previousDistance) {
+          distanceLess = true;
+        }
       }
     };
 
     if (entityTwo === "Target Object") {
-      diffCal(targetPredicate, "previous_distance_target");
-    }
-
-    if (entityTwo === "Non-State Object") {
-      diffCal(obstaclePredicate, "previous_distance_obstacle");
+      diffCal(
+        targetPredicate,
+        "previous_distance_target",
+        mode,
+        "dist_to_nearest_target",
+      );
     } else if (entityTwo === "Pickable Object") {
       if (hasHolder) {
-        diffCal(pickablePredicate, "previous_distance_pickable");
+        diffCal(
+          pickablePredicate,
+          "previous_distance_pickable",
+          mode,
+          "dist_to_nearest_pickable",
+        );
       } else if (hasCollector) {
-        diffCal(collectPredicate, "previous_distance_collect");
+        diffCal(
+          collectPredicate,
+          "previous_distance_collect",
+          mode,
+          "dist_to_nearest_collectable",
+        );
       } else {
         return;
       }
     } else if (entityTwo === "Deposit Object") {
       if (hasDepositor) {
-        diffCal(depositPredicate, "previous_distance_deposit");
+        diffCal(
+          depositPredicate,
+          "previous_distance_deposit",
+          mode,
+          "dist_to_nearest_deposit",
+        );
       } else {
         return;
       }
@@ -474,8 +508,6 @@ function visitNode(NodeId, graph, ctxObj) {
       e.isCollectable === 1;
     const depositPredicate = (e) =>
       e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
-    const obstaclePredicate = (e) =>
-      e.isDecor === true || e.isDecor === "true" || e.isDecor === 1;
 
     const diffCal = (predicate, key) => {
       const agentCurrentPos = ctxObj?.facts?.position;
@@ -500,10 +532,6 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if (entityTwo === "Target Object") {
       diffCal(targetPredicate, "previous_distance_target");
-    }
-
-    if (entityTwo === "Non-State Object") {
-      diffCal(obstaclePredicate, "previous_distance_obstacle");
     } else if (entityTwo === "Pickable Object") {
       if (hasHolder) {
         diffCal(pickablePredicate, "previous_distance_pickable");

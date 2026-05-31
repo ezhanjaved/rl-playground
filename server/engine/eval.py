@@ -1,11 +1,6 @@
 from server.engine.observationBuilder import (
-    collect_predicate,
-    deposit_predicate,
     nearestDistance,
-    obstacle_predicate,
     partition_entities,
-    pickable_predicate,
-    target_predicate,
 )
 
 
@@ -235,12 +230,34 @@ def visitNode(node_id, graph, ctx):
     elif node_data.type == "IsDistanceLessNode":
         entity_one = node_data.data.get("entityOne")
         entity_two = node_data.data.get("entityTwo")
+        mode = node_data.data.get("mode")
 
         is_agent_1 = entity_one == "Agent"
         is_agent_2 = entity_two == "Agent"
 
         if is_agent_1 == is_agent_2:
             return
+
+        if not mode:
+            mode = "Best Record"
+
+        def get_obs(key):
+            obs_space = ctx["facts"].get("obs_space", [])
+            obs_vector = ctx.get("obsVector", [])
+            try:
+                idx = obs_space.index(key)
+                return obs_vector[idx]  # getting data from pre action obs
+            except (ValueError, IndexError):
+                return None
+
+        def get_obs_2(key):
+            obs_space = ctx["facts"].get("obs_space", [])
+            obs_vector = ctx.get("postObsVector", [])
+            try:
+                idx = obs_space.index(key)
+                return obs_vector[idx]  # getting data from pre action obs
+            except (ValueError, IndexError):
+                return None
 
         capabilities = ctx["facts"].get("capabilities", [])
         has_holder = "Holder" in capabilities
@@ -250,35 +267,58 @@ def visitNode(node_id, graph, ctx):
         distance_less = False
         buckets = ctx["buckets"]
 
-        def diff_cal(bucket_key, state_key):
+        def diff_cal(bucket_key, state_key, mode, obs_key):
             nonlocal distance_less
-            agent_pos = ctx["facts"]["position"]
-            agent_rot = ctx["facts"]["rotation"]
-            previous_distance = ctx["facts"]["state_space"].get(state_key)
-            current_distance, _ = nearestDistance(
-                agent_pos, agent_rot, buckets[bucket_key], "both"
-            )
-            if current_distance is not None and previous_distance is not None:
-                if current_distance < previous_distance:
-                    distance_less = True
+            # agent_pos = ctx["facts"]["position"]
+            # agent_rot = ctx["facts"]["rotation"]
+            best_distance = ctx["facts"]["state_space"].get(state_key)
+            previous_dist = get_obs(obs_key)
+            # current_distance_2, _ = nearestDistance(
+            #     agent_pos, agent_rot, buckets[bucket_key], "both"
+            # )
+            current_distance = get_obs_2(obs_key)
+            if mode == "Best Record":
+                if current_distance is not None and best_distance is not None:
+                    if current_distance < best_distance:
+                        distance_less = True
+
+            if mode == "Raw Distance":
+                if current_distance is not None and previous_dist is not None:
+                    if current_distance < previous_dist:
+                        distance_less = True
+            print("Distance Was Dec: ", distance_less)
 
         if entity_two == "Target Object":
-            diff_cal("target", "previous_distance_target")
-
-        if entity_two == "Non-State Object":
-            diff_cal("obstacle", "previous_distance_obstacle")
+            diff_cal(
+                "target", "previous_distance_target", mode, "dist_to_nearest_target"
+            )
 
         elif entity_two == "Pickable Object":
             if has_holder:
-                diff_cal("pickable", "previous_distance_pickable")
+                diff_cal(
+                    "pickable",
+                    "previous_distance_pickable",
+                    mode,
+                    "dist_to_nearest_pickable",
+                )
             elif has_collector:
-                diff_cal("collectable", "previous_distance_collect")
+                diff_cal(
+                    "collectable",
+                    "previous_distance_collect",
+                    mode,
+                    "dist_to_nearest_collectable",
+                )
             else:
                 return
 
         elif entity_two == "Deposit Object":
             if has_depositor:
-                diff_cal("deposit", "previous_distance_deposit")
+                diff_cal(
+                    "deposit",
+                    "previous_distance_deposit",
+                    mode,
+                    "dist_to_nearest_deposit",
+                )
             else:
                 return
 
@@ -307,7 +347,7 @@ def visitNode(node_id, graph, ctx):
         tolerance = 0.2
         buckets = ctx["buckets"]
 
-        def diff_cal(bucket_key, state_key):
+        def diff_call(bucket_key, state_key):
             nonlocal distance_more
             agent_pos = ctx["facts"]["position"]
             agent_rot = ctx["facts"]["rotation"]
@@ -320,22 +360,19 @@ def visitNode(node_id, graph, ctx):
                     distance_more = True
 
         if entity_two == "Target Object":
-            diff_cal("target", "previous_distance_target")
-
-        if entity_two == "Non-State Object":
-            diff_cal("obstacle", "previous_distance_obstacle")
+            diff_call("target", "previous_distance_target")
 
         elif entity_two == "Pickable Object":
             if has_holder:
-                diff_cal("pickable", "previous_distance_pickable")
+                diff_call("pickable", "previous_distance_pickable")
             elif has_collector:
-                diff_cal("collectable", "previous_distance_collect")
+                diff_call("collectable", "previous_distance_collect")
             else:
                 return
 
         elif entity_two == "Deposit Object":
             if has_depositor:
-                diff_cal("deposit", "previous_distance_deposit")
+                diff_call("deposit", "previous_distance_deposit")
             else:
                 return
 

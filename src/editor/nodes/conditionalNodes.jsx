@@ -602,6 +602,15 @@ export function IsDistanceLessNode({ data, id }) {
     });
   }
 
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
+
   return (
     <div
       onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
@@ -647,6 +656,17 @@ export function IsDistanceLessNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "Best Record"}
+        >
+          <option value="Best Record">Best Record</option>
+          <option value="Raw Distance">Raw Distance</option>
+        </select>
+        <br></br>
         <span>Entity One</span>
         <select
           name="in-radius-entity-one"
@@ -655,7 +675,6 @@ export function IsDistanceLessNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
@@ -672,7 +691,6 @@ export function IsDistanceLessNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
@@ -760,7 +778,6 @@ export function IsDistanceMoreNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
@@ -777,7 +794,6 @@ export function IsDistanceMoreNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>

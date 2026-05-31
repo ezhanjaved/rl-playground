@@ -1,3 +1,5 @@
+import pybullet as p
+
 from server.engine.actuators.collectorActuator import collectorActuator
 from server.engine.actuators.depositActuator import depositActuator
 from server.engine.actuators.finderActuator import finderActuator
@@ -11,6 +13,11 @@ def process_action(agent_id, agent_data, action, entityMapping, client, entities
     agentCapability = agent_data.capabilities
     actionSpace = agent_data.action_space  # array
     indexOfAction = actionSpace.index(action)
+
+    # reset velocity before an action is taken - so no residual movement takes place
+    agent_bullet_id = entityMapping[agent_id]
+    p.resetBaseVelocity(agent_bullet_id, [0, 0, 0], [0, 0, 0], physicsClientId=client)
+
     match capabilityMatched:
         case "Moveable":
             moveableActuator(

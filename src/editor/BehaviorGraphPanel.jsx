@@ -31,7 +31,12 @@ export function BehaviorGraphPanel() {
     {
       id: "is-distance-less-node",
       payload: {
-        data: { label: "IsDistanceLess", entityOne: null, entityTwo: null },
+        data: {
+          label: "IsDistanceLess",
+          entityOne: null,
+          entityTwo: null,
+          mode: null,
+        },
         type: "IsDistanceLessNode",
       },
     },

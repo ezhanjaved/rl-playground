@@ -90,8 +90,8 @@ export function BehaviorGraphEditor() {
   );
 
   useEffect(() => {
-    // console.log("Nodes: " + JSON.stringify(graph?.nodes, null, 2));
-    // console.log("Edges: " + JSON.stringify(graph?.edges, null, 2));
+    console.log("Nodes: " + JSON.stringify(graph?.nodes, null, 2));
+    console.log("Edges: " + JSON.stringify(graph?.edges, null, 2));
   }, [graph?.nodes, graph?.edges]);
 
   if (!graph) {
