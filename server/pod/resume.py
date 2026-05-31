@@ -2,7 +2,7 @@ from server.database.select import fetchExtactModel
 from server.database.update import update_model, update_status
 from server.objectClass.sceneClass import make_runtime_state
 from server.storage.downloadModel import download_from_s3, downloadNorm
-from server.storage.uploadModel import uploadModel
+from server.storage.uploadModel import uploadModel, uploadNorm
 from server.training.training import TrainingLoop
 from server.utilities.callWebhook import call_webhook_for_training
 from server.utilities.compile import compiler
@@ -28,7 +28,10 @@ def resume(uid: str, additional_steps: int):
     loop = TrainingLoop(scenarioObject, runTimeState, uid)
     loop.train()
     localPath = loop.save()
-    s3Path = uploadModel(localPath, uid)
+    model_path = localPath + ".zip"
+    s3Path = uploadModel(model_path, uid)
+    vec_path = localPath + "_vecnormalize.pkl"
+    uploadNorm(vec_path, uid)
     update_status(uid, "model is saved", "models", "training_id")
     call_webhook_for_training(uid, s3Path)
     update_model(
