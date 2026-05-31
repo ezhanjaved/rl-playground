@@ -286,7 +286,6 @@ def visitNode(node_id, graph, ctx):
                 if current_distance is not None and previous_dist is not None:
                     if current_distance < previous_dist:
                         distance_less = True
-            print("Distance Was Dec: ", distance_less)
 
         if entity_two == "Target Object":
             diff_cal(
