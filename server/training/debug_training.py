@@ -6,8 +6,8 @@ def debugPipeline(scenario, runTimeState, uid):
     print("MODEL ID: ", uid)
     env = SimulationEnv(scenario, runTimeState)
 
-    num_episodes = 10
-    max_steps_per_episode = 1000
+    num_episodes = 1
+    max_steps_per_episode = 200
 
     for episode in range(num_episodes):
         print(f"\n=== Episode Number: {episode} ===")

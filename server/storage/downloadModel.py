@@ -13,8 +13,8 @@ def downloadModel(id):
     return f"{file_name} is downloaded from the bucket to {download_model_path}"
 
 
-def downloadNorm(id):
-    file_name = f"model_training_{id}/model_{id}_vecnormalize.pkl"
+def downloadNorm(uid):
+    file_name = f"model_training_{uid}/model_{uid}_vecnormalize.pkl"
     download_model_path = MODEL_DIR
     full_path = download_model_path / file_name
     full_path.parent.mkdir(parents=True, exist_ok=True)

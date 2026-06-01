@@ -130,7 +130,7 @@ export default function EntitiesPanel() {
           0: "agents/skelton/Rig_Medium_MovementBasic.glb",
           1: "agents/skelton/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Finder", "Collector"],
+        capabilities: ["Moveable", "Collector"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
