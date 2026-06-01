@@ -3,19 +3,14 @@ import { useSceneStore } from "../stores/useSceneStore";
 import { useGraphStore } from "../stores/useGraphStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { useAuthStore } from "../stores/useAuthStore";
+import { recreateEnv, wipeEntities } from "../engine/utility/recreate";
 
-export async function sendServer() {
+export async function changeConfig(id) {
   const { entities, assignments, highestDistance } = useSceneStore.getState();
   const { graphs } = useGraphStore.getState();
-  const {
-    modelName,
-    envType,
-    timesteps,
-    envMode,
-    percentageFixedEp,
-    maxStepPerEp,
-  } = useRunTimeStore.getState();
-  const { user } = useAuthStore.getState();
+  const { timesteps, envMode, percentageFixedEp, maxStepPerEp } =
+    useRunTimeStore.getState();
+  const { user, envPer, graphPer, configPer } = useAuthStore.getState();
 
   let random_spawn_after_episode = null;
 
@@ -37,22 +32,26 @@ export async function sendServer() {
     entities,
     graphs,
     assignments,
+
+    environChange: envPer,
+    graphChange: graphPer,
+    configChange: configPer,
+
     user_uid: user?.id,
-    modelName,
-    envType,
+    model_uid: id,
     timesteps,
     highestDistance: highestDistance,
     spawnMode: envMode,
     randomSpawnAfterEp: random_spawn_after_episode,
   };
 
-  // console.log("Body: " + JSON.stringify(data, null, 2));
+  console.log("Body: " + JSON.stringify(data, null, 2));
   // const empty = emptyRoutine(data);
   // if (empty) return;
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/change-config`,
       {
         method: "POST",
         headers: {
@@ -88,3 +87,44 @@ const emptyCheck = (jsonData) => {
   const keys = Object.keys(jsonData);
   return keys.length === 0;
 };
+
+export async function importConfig(model_id) {
+  const { user } = useAuthStore.getState();
+  const { setName } = useSceneStore.getState();
+  const { addGraphWithId } = useGraphStore.getState();
+
+  const body = {
+    model_uid: model_id,
+    user_uid: user.id,
+  };
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/fetch_current_config`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(body),
+      },
+    );
+    const result = await response.json();
+    if (result.status === 1) {
+      wipeEntities();
+      recreateEnv(result.entities);
+      setName(result.entities.name);
+
+      const graphObj = result.graphs;
+      const graphs = Object.keys(graphObj);
+
+      for (const graph of graphs) {
+        const graphId = graphObj[graph].id;
+        addGraphWithId(graphId, graphObj[graph]);
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}

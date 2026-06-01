@@ -74,3 +74,19 @@ def download_ent(uid):
     s3.download_file(bucket_name, prefix, str(file_path))
 
     return file_path
+
+
+def download_graph(uid):
+    bucket_name = "rl-models"
+    prefix = f"model_training_{uid}/graphs.json"
+    local_dir = f"model_training_{uid}"
+
+    folder_dir = DATA_DIR / local_dir
+
+    os.makedirs(folder_dir, exist_ok=True)
+
+    file_path = folder_dir / "graphs.json"
+
+    s3.download_file(bucket_name, prefix, str(file_path))
+
+    return file_path

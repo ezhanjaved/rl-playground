@@ -1,10 +1,101 @@
 // TrainingMonitor.jsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTrainingStore } from "../stores/useTrainingStore";
+import { useAuthStore } from "../stores/useAuthStore";
 import { supabase } from "../lib/supabasePoint";
+import { importConfig, changeConfig } from "../export/changeConfig";
 import styles from "../styling/TrainingMonitor.module.css";
+import "../styling/UpdateConfigModal.css";
+
+function UpdateConfigModal({ setModal, model }) {
+  const setEnvPer = useAuthStore((s) => s.setEnvPer);
+  const setGraphPer = useAuthStore((s) => s.setGraphPer);
+  const setConfigPer = useAuthStore((s) => s.setConfigPer);
+
+  const [permissions, setPermissions] = useState({
+    env: false,
+    graph: false,
+    config: false,
+  });
+
+  const togglePermission = (key) => {
+    const newValue = !permissions[key];
+
+    setPermissions((prev) => ({
+      ...prev,
+      [key]: newValue,
+    }));
+
+    if (key === "env") setEnvPer(newValue);
+    if (key === "graph") setGraphPer(newValue);
+    if (key === "config") setConfigPer(newValue);
+  };
+
+  const hasSelection =
+    permissions.env || permissions.graph || permissions.config;
+
+  return (
+    <div className="modalOverlay" onDoubleClick={() => setModal(false)}>
+      <div className="modalBox" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modalTitle">Update Configuration</h2>
+
+        <p className="modalText">
+          You are about to overwrite the model configuration.
+        </p>
+
+        <p className="modalSubText">
+          Select which permissions you want to overwrite:
+        </p>
+
+        <div className="permissionList">
+          <label className="permissionItem">
+            <input
+              type="checkbox"
+              checked={permissions.env}
+              onChange={() => togglePermission("env")}
+            />
+            Environment Permission
+          </label>
+
+          <label className="permissionItem">
+            <input
+              type="checkbox"
+              checked={permissions.graph}
+              onChange={() => togglePermission("graph")}
+            />
+            Graph Permission
+          </label>
+
+          <label className="permissionItem">
+            <input
+              type="checkbox"
+              checked={permissions.config}
+              onChange={() => togglePermission("config")}
+            />
+            Configuration Permission
+          </label>
+        </div>
+
+        <div className="buttonRow">
+          <button className="cancelBtn" onClick={() => setModal(false)}>
+            Cancel
+          </button>
+
+          <button
+            className="confirmBtn"
+            disabled={!hasSelection}
+            onClick={() => changeConfig(model?.training_id)}
+          >
+            Update Configuration
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function TrainingMonitor({ trainingId }) {
+  const [modal, setModal] = useState(false);
   const model = useTrainingStore((s) => s.model);
   const setModel = useTrainingStore((s) => s.setModel);
   const rewardHistory = useTrainingStore((s) => s.rewardHistory);
@@ -70,7 +161,8 @@ export default function TrainingMonitor({ trainingId }) {
 
   return (
     <div className={styles.page}>
-      <Header model={model} />
+      {modal && <UpdateConfigModal setModal={setModal} model={model} />}
+      <Header model={model} setModal={setModal} />
       <MetricCards
         model={model}
         smoothed={smoothed}
@@ -94,15 +186,29 @@ export default function TrainingMonitor({ trainingId }) {
   );
 }
 
-function Header({ model }) {
+function Header({ model, setModal }) {
   const isLive = model.status === "training";
   return (
     <div className={styles.header}>
       <div>
         <h1 className={styles.title}>{model.name ?? "Training run"}</h1>
         <p className={styles.meta}>
-          {model.algorithm} · training_id: {model.training_id?.slice(0, 8)}…
+          {model.algorithm} · training_id: {model.training_id?.slice(0, 16)}…
         </p>
+        <div>
+          <button
+            disabled={!model?.training_id || model?.status === "training"}
+            onClick={() => importConfig(model?.training_id)}
+          >
+            Fetch Config
+          </button>
+          <button
+            disabled={!model?.training_id || model?.status === "training"}
+            onClick={() => setModal(true)}
+          >
+            Update Config
+          </button>
+        </div>
       </div>
       {isLive && (
         <span className={styles.livePill}>
@@ -257,7 +363,7 @@ function RewardChart({ history }) {
   );
 }
 
-function makeLineChart(ctx, history, keyFn, color, label) {
+function makeLineChart(ctx, history, keyFn, color) {
   const canvas = ctx.canvas;
   const W = canvas.width,
     H = canvas.height;

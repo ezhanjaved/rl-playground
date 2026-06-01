@@ -3,25 +3,32 @@ import json
 from server.path_config import DATA_DIR, TEMPLATE_PATH
 
 
-def json_handler(id, data):
+def json_handler(id, data, changePer=[True, True, True]):
     folder_name = f"model_training_{id}"
     folder = DATA_DIR / folder_name
     folder.mkdir(parents=True, exist_ok=True)
     try:
-        json_iterator(data, folder)
+        json_iterator(data, folder, changePer)
         return str(folder)
     except Exception as exceptionMsg:
         print(exceptionMsg)
 
 
-def json_iterator(data, path):
-    keys = ["entities", "graphs", "assignments"]
-    for key in keys:
-        newPath = path / f"{key}.json"
-        json_saver(data[key], newPath)
+def json_iterator(data, path, changePer):
+    mapping = [
+        ("entities", changePer[0]),
+        ("graphs", changePer[1]),
+        ("assignments", changePer[2]),
+    ]
+    for key, permission in mapping:
+        print(f"Key: {key} and Permission: {permission}")
+        if permission == "true" or permission:
+            newPath = path / f"{key}.json"
+            json_saver(data[key], newPath)
 
 
 def json_saver(data, path):
+    print("Path: ", path)
     with open(path, "w") as f:
         json.dump(data, f, indent=4)
 

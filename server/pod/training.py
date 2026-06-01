@@ -19,8 +19,8 @@ def trainingPod(uid: str):
         vec_path = local_path + "_vecnormalize.pkl"
         uploadNorm(vec_path, uid)
         update_status(uid, "model is saved", "models", "training_id")
-        call_webhook_for_training(uid, s3Path)
         update_status(uid, "completed", "models", "training_id")
+        call_webhook_for_training(uid, s3Path)
     except Exception:
         print(f"Training for model {uid} failed")
         tb = traceback.format_exc()

@@ -6,6 +6,15 @@ export const useAuthStore = create((set) => ({
   session: null,
   loading: true,
   friendModel: null,
+
+  envPer: null,
+  graphPer: null,
+  configPer: null,
+
+  setEnvPer: (value) => set({ envPer: value }),
+  setGraphPer: (value) => set({ graphPer: value }),
+  setConfigPer: (value) => set({ configPer: value }),
+
   setFriendModel: (value) => set({ friendModel: value }),
   initialize: async () => {
     const {

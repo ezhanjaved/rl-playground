@@ -322,12 +322,9 @@ export function Table({
   actions,
   title,
   totalResults,
-  currentPage = 1,
-  perPage = 15,
   headerExtra,
   onRetrain, // (item, additionalSteps) => Promise<void>  ← new prop
 }) {
-  const [openMenu, setOpenMenu] = useState(null);
   const [retrainItem, setRetrainItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
 

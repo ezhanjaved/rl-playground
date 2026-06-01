@@ -33,7 +33,6 @@ def resume(uid: str, additional_steps: int):
     vec_path = localPath + "_vecnormalize.pkl"
     uploadNorm(vec_path, uid)
     update_status(uid, "model is saved", "models", "training_id")
-    call_webhook_for_training(uid, s3Path)
     update_model(
         id=uid,
         data={"total_timestep": target_timesteps},
@@ -41,3 +40,4 @@ def resume(uid: str, additional_steps: int):
         id_name="training_id",
     )
     update_status(uid, "completed", "models", "training_id")
+    call_webhook_for_training(uid, s3Path)
