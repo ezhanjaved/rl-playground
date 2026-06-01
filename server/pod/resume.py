@@ -1,7 +1,7 @@
 from server.database.select import fetchExtactModel
 from server.database.update import update_model, update_status
 from server.objectClass.sceneClass import make_runtime_state
-from server.storage.downloadModel import download_from_s3, downloadNorm
+from server.storage.downloadModel import download_from_s3, downloadModel, downloadNorm
 from server.storage.uploadModel import uploadModel, uploadNorm
 from server.training.training import TrainingLoop
 from server.utilities.callWebhook import call_webhook_for_training
@@ -12,6 +12,7 @@ from server.utilities.extractor import extact_graph_per_agent, extract_agent_lis
 def resume(uid: str, additional_steps: int):
     download_from_s3(uid)
     downloadNorm(uid)
+    downloadModel(uid)
     scenarioObject = compiler(uid)
     agent_list = extract_agent_list(scenarioObject)
     graphs_per_agent = extact_graph_per_agent(scenarioObject, agent_list)
