@@ -25,13 +25,15 @@
 .modalText {
     font-size: 14px;
     color: #333;
-    margin-bottom: 6px;
+    margin-top: 10px;
+    margin-bottom: 15px;
 }
 
 .modalSubText {
     font-size: 13px;
     color: #666;
     margin-bottom: 15px;
+    margin-top: 10px;
 }
 
 .permissionList {

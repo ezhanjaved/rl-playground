@@ -40,8 +40,14 @@ function UpdateConfigModal({ setModal, model }) {
         <h2 className="modalTitle">Update Configuration</h2>
 
         <p className="modalText">
-          You are about to overwrite the model configuration.
+          You are about to overwrite the model configuration. Only do that when
+          you want to change <strong>behavior</strong> of the policy.
         </p>
+
+        <strong className="modalText">
+          Wrong addition/subtraction especially in Environment can break the
+          trained policy weights!
+        </strong>
 
         <p className="modalSubText">
           Select which permissions you want to overwrite:
@@ -84,7 +90,10 @@ function UpdateConfigModal({ setModal, model }) {
           <button
             className="confirmBtn"
             disabled={!hasSelection}
-            onClick={() => changeConfig(model?.training_id)}
+            onClick={() => {
+              changeConfig(model?.training_id);
+              setModal(false);
+            }}
           >
             Update Configuration
           </button>
@@ -197,12 +206,14 @@ function Header({ model, setModal }) {
         </p>
         <div>
           <button
+            className={styles.button}
             disabled={!model?.training_id || model?.status === "training"}
             onClick={() => importConfig(model?.training_id)}
           >
             Fetch Config
           </button>
           <button
+            className={styles.button}
             disabled={!model?.training_id || model?.status === "training"}
             onClick={() => setModal(true)}
           >
