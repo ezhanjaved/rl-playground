@@ -4,7 +4,7 @@ import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.utils import get_schedule_fn
+from stable_baselines3.common.utils import FloatSchedule
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
 
 from server.database.select import fetchExtactModel
@@ -68,8 +68,8 @@ class SingleAgentTrainer:
         clip_range = float(self.clip_range)
 
         self.model.learning_rate = lr
-        self.model.lr_schedule = get_schedule_fn(lr)
-        self.model.clip_range = get_schedule_fn(clip_range)
+        self.model.lr_schedule = FloatSchedule(lr)
+        self.model.clip_range = FloatSchedule(clip_range)
 
         self.model.ent_coef = float(self.ent_coeff)
         self.model.gae_lambda = float(self.gae_lambda)
