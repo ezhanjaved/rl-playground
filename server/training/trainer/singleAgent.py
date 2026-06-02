@@ -70,9 +70,12 @@ class SingleAgentTrainer:
         self.model.vf_coef = self.vf_coef
         self.model.target_kl = self.target_kl
         self.model.n_epochs = self.epoch
-        print(
-            f"Config applied to loaded model — lr: {self.learning_rate}, ent_coef: {self.ent_coeff}"
-        )
+        # Force optimizer to use new learning rate
+        for param_group in self.model.policy.optimizer.param_groups:
+            param_group["lr"] = self.learning_rate
+            print(
+                f"Config applied — lr: {self.learning_rate}, ent_coef: {self.ent_coeff}"
+            )
 
     def train(self):
         self.n_steps = max(512, self.n_steps)
