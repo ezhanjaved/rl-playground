@@ -60,6 +60,19 @@ class SingleAgentTrainer:
             self.learning_rate = 3e-4
         elif self.learning_rate == "Fast":
             self.learning_rate = 1e-3
+        print("Learning Rate: ", self.learning_rate)
+
+    def _apply_config_to_loaded_model(self):
+        self.model.learning_rate = self.learning_rate
+        self.model.ent_coef = self.ent_coeff
+        self.model.clip_range = self.clip_range
+        self.model.gae_lambda = self.gae_lambda
+        self.model.vf_coef = self.vf_coef
+        self.model.target_kl = self.target_kl
+        self.model.n_epochs = self.epoch
+        print(
+            f"Config applied to loaded model — lr: {self.learning_rate}, ent_coef: {self.ent_coeff}"
+        )
 
     def train(self):
         self.n_steps = max(512, self.n_steps)
@@ -114,6 +127,7 @@ class SingleAgentTrainer:
                     "No VecNormalize stats found for final model, starting normalizer fresh."
                 )
             self.model = PPO.load(str(final_path), env=vec_env)
+            self._apply_config_to_loaded_model()
             resumed_timesteps = self.already_trained
         else:
             if checkpoint_path is not None:
@@ -126,6 +140,7 @@ class SingleAgentTrainer:
                     print("No VecNormalize stats found, starting normalizer fresh.")
 
                 self.model = PPO.load(str(checkpoint_path), env=vec_env)
+                self._apply_config_to_loaded_model()
                 try:
                     stem = checkpoint_path.stem
                     resumed_timesteps = int(stem.split("_steps")[0].split("_")[-1])
