@@ -7,9 +7,21 @@ from server.database.update import update_model, update_status
 def rl_trainer(self, uid: str):
     try:
         update_status(uid, "queued", "models", "training_id")
+        # remote_cmd = f"""
+        # cd /workspace/rl-playground
+        # nohup server/venv/bin/python -m server.pod.trigger_training {uid} > server/pod/trigger_training.log 2>&1 &
+        # exit
+        # """
         remote_cmd = f"""
-        cd /workspace/rl-playground
-        nohup server/venv/bin/python -m server.pod.trigger_training {uid} > server/pod/trigger_training.log 2>&1 &
+        bash -c '
+          cd /workspace/rl-playground
+          setsid nohup server/venv/bin/python -m server.pod.trigger_training {uid} \
+            > server/pod/trigger_training.log 2>&1 &
+          CHILD_PID=$!
+          echo $CHILD_PID > server/pod/training_{uid}.pid
+          disown $CHILD_PID
+          sync
+        '
         exit
         """
         connectToPod(remote_cmd)

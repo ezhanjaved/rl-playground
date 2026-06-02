@@ -8,9 +8,21 @@ def rl_inference(self, uid: str):
     try:
         update_status(uid, "connecting", "simulation", "model_id")
         # connect to pod
-        remote_cmd = f"""
-        cd /workspace/rl-playground
-        nohup server/venv/bin/python -m server.pod.trigger_inference {uid} > server/pod/trigger_inference.log 2>&1 &
+        # remote_cmd = f"""
+        # cd /workspace/rl-playground
+        # nohup server/venv/bin/python -m server.pod.trigger_inference {uid} > server/pod/trigger_inference.log 2>&1 &
+        # exit
+        # """
+        remote_cmd = remote_cmd = f"""
+        bash -c '
+          cd /workspace/rl-playground
+          setsid nohup server/venv/bin/python -m server.pod.trigger_inference {uid} \
+            > server/pod/trigger_inference.log 2>&1 &
+          CHILD_PID=$!
+          echo $CHILD_PID > server/pod/inference_{uid}.pid
+          disown $CHILD_PID
+          sync
+        '
         exit
         """
         connectToPod(remote_cmd)
