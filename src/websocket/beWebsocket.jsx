@@ -2,11 +2,12 @@ import { useRef } from "react";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { recreateEnv, wipeEntities } from "../engine/utility/recreate";
 import { useAuthStore } from "../stores/useAuthStore";
-
+import { useGraphStore } from "../stores/useGraphStore";
 export function useBackendWebSocket(onModelReady) {
   const socketRef = useRef(null);
   const intentionalClose = useRef(false);
   const { setModalStage, setModeltoLoading } = useRunTimeStore.getState();
+  const { addGraphWithId } = useGraphStore.getState();
   const { user } = useAuthStore.getState();
   const connectSocket = async (item) => {
     if (socketRef.current) return;
@@ -26,6 +27,8 @@ export function useBackendWebSocket(onModelReady) {
       const rep = await res.json();
 
       const entities = rep.entities;
+      const graphs = rep.graphs;
+      const Allgraphs = Object.keys(graphs);
       const session_id = rep.session_id;
       const token_id = rep.jwt_token;
       localStorage.setItem("session_token", session_id);
@@ -33,6 +36,10 @@ export function useBackendWebSocket(onModelReady) {
       setModalStage("env_fetched_from_backend");
       wipeEntities(); //wiping the current env
       recreateEnv(entities); //recreating the env from entities dict we got from python
+      for (const graph_id of Allgraphs) {
+        const graphId = graphs[graph_id].id;
+        addGraphWithId(graphId, graphs[graph_id]);
+      }
     } catch (err) {
       console.error("Failed to start inference:", err);
       return;

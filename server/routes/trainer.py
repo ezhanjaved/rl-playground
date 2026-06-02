@@ -161,6 +161,7 @@ async def run_the_model(data: RunModel):
                 "simulation",
             )
             entities = fetchEnt(model_id)
+            graphs = fetchGraph(model_id)
             rl_inference.delay(model_id)
             return {
                 "message": "Ownership test passed",
@@ -169,6 +170,7 @@ async def run_the_model(data: RunModel):
                 "session_id": session_id,
                 "jwt_token": token,
                 "entities": entities,
+                "graphs": graphs,
             }
         else:
             return {"message": "Ownership failed", "status": 0}
