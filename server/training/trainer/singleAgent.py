@@ -63,9 +63,9 @@ class SingleAgentTrainer:
         print("Learning Rate: ", self.learning_rate)
 
     def _apply_config_to_loaded_model(self):
-        self.model.learning_rate = self.learning_rate
+        self.model.learning_rate = lambda _: self.learning_rate
+        self.model.clip_range = lambda _: self.clip_range
         self.model.ent_coef = self.ent_coeff
-        self.model.clip_range = self.clip_range
         self.model.gae_lambda = self.gae_lambda
         self.model.vf_coef = self.vf_coef
         self.model.target_kl = self.target_kl
