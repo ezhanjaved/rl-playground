@@ -53,7 +53,7 @@ class SingleAgentTrainer:
         self.n_steps = self.assignment.n_steps
         self.target_kl = self.assignment.target_kl
         self.ent_coeff = self.assignment.ent_coeff
-
+        print("Entropy: ", self.ent_coeff)
         if self.learning_rate == "Slow":
             self.learning_rate = 1e-4
         elif self.learning_rate == "Medium":
