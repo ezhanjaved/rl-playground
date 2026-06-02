@@ -94,8 +94,6 @@ def unitTestingGetForwardDirection():
     test_passed = False
     rz = 3.142  # 180 degree
     Rx, Ry = getForwardVectorFromYaw(rz)
-    print("Rx: ", Rx)
-    print("Ry: ", Ry)
     if Rx == 0 and Ry == 1:
         test_passed = True
     return test_passed
