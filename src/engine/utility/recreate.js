@@ -1,7 +1,7 @@
 import { useSceneStore } from "../../stores/useSceneStore";
 export function recreateEnv(entities) {
   const objects = Object.keys(entities);
-  const { addEntity } = useSceneStore.getState();
+  const { addEntityWithId } = useSceneStore.getState();
 
   objects.forEach((singleKey) => {
     const singleObj = entities[singleKey];
@@ -27,7 +27,7 @@ export function recreateEnv(entities) {
       state_space: singleObj?.state_space || {},
       settings: singleObj.settings || {},
     };
-    addEntity(newEnt);
+    addEntityWithId(singleKey, newEnt);
   });
 }
 
