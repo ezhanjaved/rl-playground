@@ -6,6 +6,10 @@ from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
 
+VecNormalize.__getstate__ = lambda self: {
+    k: v for k, v in self.__dict__.items() if k != "class_attributes"
+}
+
 from server.database.select import fetchExtactModel
 from server.path_config import MODEL_DIR
 from server.storage.uploadModel import downloadLatestCheckpoint
