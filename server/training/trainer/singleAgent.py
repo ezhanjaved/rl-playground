@@ -4,11 +4,8 @@ import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.utils import get_schedule_fn
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
-
-VecNormalize.__getstate__ = lambda self: {
-    k: v for k, v in self.__dict__.items() if k != "class_attributes"
-}
 
 from server.database.select import fetchExtactModel
 from server.path_config import MODEL_DIR
@@ -67,19 +64,26 @@ class SingleAgentTrainer:
         print("Learning Rate: ", self.learning_rate)
 
     def _apply_config_to_loaded_model(self):
-        self.model.learning_rate = lambda _: self.learning_rate
-        self.model.clip_range = lambda _: self.clip_range
-        self.model.ent_coef = self.ent_coeff
-        self.model.gae_lambda = self.gae_lambda
-        self.model.vf_coef = self.vf_coef
-        self.model.target_kl = self.target_kl
-        self.model.n_epochs = self.epoch
-        # Force optimizer to use new learning rate
+        lr = float(self.learning_rate)
+        clip_range = float(self.clip_range)
+
+        self.model.learning_rate = lr
+        self.model.lr_schedule = get_schedule_fn(lr)
+        self.model.clip_range = get_schedule_fn(clip_range)
+
+        self.model.ent_coef = float(self.ent_coeff)
+        self.model.gae_lambda = float(self.gae_lambda)
+        self.model.vf_coef = float(self.vf_coef)
+        self.model.target_kl = None if self.target_kl is None else float(self.target_kl)
+        self.model.n_epochs = int(self.epoch)
+
         for param_group in self.model.policy.optimizer.param_groups:
-            param_group["lr"] = self.learning_rate
-            print(
-                f"Config applied — lr: {self.learning_rate}, ent_coef: {self.ent_coeff}"
-            )
+            param_group["lr"] = lr
+
+        print(
+            f"Config applied — lr: {lr}, clip_range: {clip_range}, "
+            f"ent_coef: {self.model.ent_coef}"
+        )
 
     def train(self):
         self.n_steps = max(512, self.n_steps)
