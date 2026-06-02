@@ -120,6 +120,7 @@ def visitNode(node_id, graph, ctx):
         return
 
     elif node_data.type == "LastActionIsNode":
+        print("LAN hit!")
         action_picked = node_data.data.get("entityAction")
         action_status = node_data.data.get("actionStatus")
         expected = action_status is True or str(action_status).lower() == "true"
