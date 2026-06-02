@@ -10,9 +10,13 @@ def inferencePod(uid):
     try:
         update_status(uid, "downloading model", "simulation", "model_id")
         runner = basis(uid)
+        print(f"[inference] basis() created for {uid}")
         downloadModel(uid)
+        print(
+            f"[inference] downloadModel() complete for {uid}"
+        )  # if this never prints, download is the hang
         model = runner.load()
-        update_status(uid, "model is loaded", "simulation", "model_id")
+        print(f"[inference] runner.load() returned: {model}")
         call_webhook_for_inference(uid)
         return model
     except Exception:
