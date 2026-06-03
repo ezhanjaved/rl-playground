@@ -24,6 +24,7 @@ class ConnectionManager:
         actions, _ = actionMasking(capability)
         action_predicted, _ = model.predict(obs, deterministic=True)
 
+        # added the prob check
         obs_np = np.asarray(obs)
         if obs_np.ndim == 1:
             obs_np = obs_np.reshape(1, -1)
@@ -32,8 +33,14 @@ class ConnectionManager:
             dist = model.policy.get_distribution(obs_tensor)
             probs = dist.distribution.probs.cpu().numpy()[0]
 
-        print("ACTION PROBS:", probs, flush=True)
-        print("PREDICTED ACTION:", probs.argmax(), flush=True)
+        print("RAW MODEL ACTION:", action_predicted, flush=True)
+        print("RAW ARGMAX ACTION:", probs.argmax(), flush=True)
+        print("AVAILABLE ACTIONS:", actions, flush=True)
+        print(
+            "TRANSLATED ACTION:",
+            actionTranslator(action_predicted, actions),
+            flush=True,
+        )
 
         return actionTranslator(action_predicted, actions)
 
