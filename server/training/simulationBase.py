@@ -20,7 +20,6 @@ class SimulationEnv:
             effective_mode = "Random" if episode >= threshold else "Fixed"
         else:
             effective_mode = runtime.spawn_mode
-        print("Effective Mode: ", effective_mode)
         self.world.spawn_entities(
             self.core.runtime.entities.values(),
             self.core.runtime.highest_dist,

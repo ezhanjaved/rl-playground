@@ -15,7 +15,7 @@ def rl_resume(self, uid: str, steps: int):
         remote_cmd = f"""
         bash -c '
           cd /workspace/rl-playground
-          setsid nohup server/venv/bin/python -m server.pod.trigger_resume {uid} \
+          setsid nohup server/venv/bin/python -m server.pod.trigger_resume {uid} {steps} \
             > server/pod/trigger_resume.log 2>&1 &
           CHILD_PID=$!
           echo $CHILD_PID > server/pod/resume_{uid}.pid
