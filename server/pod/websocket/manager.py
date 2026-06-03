@@ -25,22 +25,35 @@ class ConnectionManager:
         action_predicted, _ = model.predict(obs, deterministic=True)
 
         # added the prob check
-        obs_np = np.asarray(obs)
+        obs_np = np.asarray(obs, dtype=np.float32)
         if obs_np.ndim == 1:
             obs_np = obs_np.reshape(1, -1)
+
         obs_tensor = torch.as_tensor(obs_np).float().to(model.device)
+
         with torch.no_grad():
             dist = model.policy.get_distribution(obs_tensor)
             probs = dist.distribution.probs.cpu().numpy()[0]
 
-        print("RAW MODEL ACTION:", action_predicted, flush=True)
-        print("RAW ARGMAX ACTION:", probs.argmax(), flush=True)
-        print("AVAILABLE ACTIONS:", actions, flush=True)
-        print(
-            "TRANSLATED ACTION:",
-            actionTranslator(action_predicted, actions),
-            flush=True,
+        action_idx = (
+            int(action_predicted.item())
+            if hasattr(action_predicted, "item")
+            else int(action_predicted)
         )
+
+        print("---- ACTION PROBABILITIES ----", flush=True)
+
+        for i, prob in enumerate(probs):
+            action_name = actions[i] if i < len(actions) else f"unknown_{i}"
+            print(
+                f"{i}: {action_name:<10} -> {prob:.4f} ({prob * 100:.2f}%)", flush=True
+            )
+
+        print("------------------------------", flush=True)
+        print("RAW MODEL ACTION:", action_idx, flush=True)
+        print("RAW ARGMAX ACTION:", int(probs.argmax()), flush=True)
+        print("AVAILABLE ACTIONS:", actions, flush=True)
+        print("TRANSLATED ACTION:", actionTranslator(action_idx, actions), flush=True)
 
         return actionTranslator(action_predicted, actions)
 
