@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from server.celery_app.rl_inference import rl_inference
 from server.celery_app.rl_inference_stop import rl_inference_stop
 from server.celery_app.rl_resume import rl_resume
+from server.celery_app.rl_resume_stop import rl_resume_stop
 from server.celery_app.rl_test import rl_test
 from server.celery_app.rl_trainer import rl_trainer
 from server.celery_app.rl_training_stop import rl_trainer_stop
@@ -38,8 +39,9 @@ class RequestModel(BaseModel):
 
 
 class RunModel(BaseModel):
-    user_uid: str
+    user_uid: str | None = None
     model_uid: str
+    mode: str | None = None
 
 
 class ConfigModel(RequestModel):
@@ -186,21 +188,17 @@ async def kill_the_training(data: RunModel):
     try:
         dictObj = data.dict()
         model_id = dictObj["model_uid"]
-        user_id = dictObj["user_uid"]
-        status = validateOwner(model_id, user_id)
-        if status:
-            session_id = str(uuid.uuid4())
-            token = create_access_token(dictObj)
+        mode = dictObj["mode"]
+        if mode == "new":
             rl_trainer_stop.delay(model_id)
-            return {
-                "message": "Ownership test passed",
-                "status": 1,
-                "user_id": user_id,
-                "session_id": session_id,
-                "jwt_token": token,
-            }
-        else:
-            return {"message": "Ownership failed", "status": 0}
+
+        if mode == "re-run":
+            rl_resume_stop.delay(model_id)
+
+        return {
+            "message": "Training Is Stopped",
+            "status": 1,
+        }
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()
@@ -212,21 +210,11 @@ async def kill_inference(data: RunModel):
     try:
         dictObj = data.dict()
         model_id = dictObj["model_uid"]
-        user_id = dictObj["user_uid"]
-        status = validateOwner(model_id, user_id)
-        if status:
-            session_id = str(uuid.uuid4())
-            token = create_access_token(dictObj)
-            rl_inference_stop.delay(model_id)
-            return {
-                "message": "Ownership test passed",
-                "status": 1,
-                "user_id": user_id,
-                "session_id": session_id,
-                "jwt_token": token,
-            }
-        else:
-            return {"message": "Ownership failed", "status": 0}
+        rl_inference_stop.delay(model_id)
+        return {
+            "message": "Inference is stopped",
+            "status": 1,
+        }
     except Exception as exceptionMsg:
         print("An error occured")
         traceback.print_exc()

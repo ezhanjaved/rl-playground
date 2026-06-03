@@ -10,6 +10,7 @@ load_dotenv()
 from server.database.update import update_model, update_status
 from server.routes.analysis import analysis
 from server.routes.graph_ai import graph_ai
+from server.routes.model import modelRouter
 from server.routes.templates import template
 from server.routes.trainer import trainer
 from server.websocket.broadcast import ConnectionManager
@@ -31,6 +32,7 @@ app.include_router(trainer, prefix="/trainer")
 app.include_router(analysis, prefix="/analysis")
 app.include_router(graph_ai, prefix="/graph-ai")
 app.include_router(template, prefix="/template")
+app.include_router(modelRouter, prefix="/model", tags=["model"])
 
 
 @app.get("/")

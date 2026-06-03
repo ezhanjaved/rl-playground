@@ -1,12 +1,13 @@
 from server.celery_app.celery_worker import celery_app
 from server.celery_app.connectionPod import connectToPod
+from server.database.update import update_model, update_status
 
 
-@celery_app.task(name="rl_inference_stop", bind=True, max_retries=3)
-def rl_inference_stop(self, uid: str):
+@celery_app.task(name="rl_resume_stop", bind=True, max_retries=3)
+def rl_resume_stop(self, uid: str):
     try:
         remote_cmd = f"""
-        PID_FILE=/workspace/rl-playground/server/pod/inference_{uid}.pid
+        PID_FILE=/workspace/rl-playground/server/pod/resume_{uid}.pid
         if [ -f "$PID_FILE" ]; then
             PID=$(cat "$PID_FILE")
             PGID=$(ps -o pgid= -p "$PID" 2>/dev/null | tr -d ' ')
@@ -22,9 +23,13 @@ def rl_inference_stop(self, uid: str):
         exit
         """
         connectToPod(remote_cmd)
+        update_status(uid, "stopped", "models", "training_id")
 
     except ConnectionError as e:
         self.retry(exc=e, countdown=10 * (2**self.request.retries))
 
     except Exception as e:
+        update_model(
+            uid, {"status": "failed", "error": str(e)}, "models", "training_id"
+        )
         raise

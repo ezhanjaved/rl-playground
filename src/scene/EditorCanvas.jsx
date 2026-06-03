@@ -32,10 +32,11 @@ export default function CanvasPad() {
 
   function SimulationLoop() {
     useFrame(() => {
-      const { playing, training, inferenceMode } = useRunTimeStore.getState();
+      const { playing, training, inferenceMode, isModelReady } =
+        useRunTimeStore.getState();
       const { entities } = useSceneStore.getState();
 
-      if (inferenceMode === "lockstep") {
+      if (inferenceMode === "lockstep" && isModelReady) {
         if (!playing || training) return;
         stepTimeLoop(entities);
         return;

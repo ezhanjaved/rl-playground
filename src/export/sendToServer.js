@@ -46,24 +46,24 @@ export async function sendServer() {
     randomSpawnAfterEp: random_spawn_after_episode,
   };
 
-  // console.log("Body: " + JSON.stringify(data, null, 2));
+  console.log("Body: " + JSON.stringify(data, null, 2));
   // const empty = emptyRoutine(data);
   // if (empty) return;
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify(data),
-      },
-    );
-    const result = await response.json();
-    console.log("Result from the server: " + JSON.stringify(result, null, 2));
+    // const response = await fetch(
+    //   `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "ngrok-skip-browser-warning": "true",
+    //     },
+    //     body: JSON.stringify(data),
+    //   },
+    // );
+    // const result = await response.json();
+    // console.log("Result from the server: " + JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(error);
   }

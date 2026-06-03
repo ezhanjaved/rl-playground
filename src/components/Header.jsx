@@ -33,9 +33,12 @@ const Header = () => {
   const togglePlaying = useRunTimeStore((state) => state.togglePlaying);
   const playing = useRunTimeStore((state) => state.playing);
   const isModelReady = useRunTimeStore((state) => state.isModelReady);
+  const setModeltoReady = useRunTimeStore((state) => state.setModeltoReady);
+
   const training = useRunTimeStore((s) => s.training);
   const clearExperiment = useRunTimeStore((s) => s.clearExperiment);
   const currentExpId = useRunTimeStore((s) => s.currentExperimentId);
+  const modelID = useRunTimeStore((s) => s.modelID);
 
   const toggleDebug = useCanvasSetting((state) => state.toggleDebug);
   const changeColor = useCanvasSetting((state) => state.changeColor);
@@ -57,6 +60,7 @@ const Header = () => {
   const nextGraph = useGraphStore((state) => state.nextGraph);
   const updateName = useGraphStore((state) => state.updateName);
   const removeGraphError = useGraphStore((state) => state.removeGraphError);
+  const deleteGraph = useGraphStore((state) => state.deleteGraph);
   const graphError = useGraphStore((state) => state.graphError);
   const addGraphError = useGraphStore((state) => state.addGraphError);
   const activeGraphId = useGraphStore((state) => state.activeGraphId);
@@ -75,6 +79,18 @@ const Header = () => {
   const [dModal, setdModel] = useState(false);
   const [infoModal, setInfoModal] = useState(false);
   const [exportInfo, setMessage] = useState(null);
+
+  async function kill_inference(trainingId) {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/kill-inference`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: { model_uid: trainingId },
+      },
+    );
+    console.log("Response: ", res);
+  }
 
   useEffect(() => {
     if (visibility === 1 && envList.length > 0) {
@@ -338,6 +354,17 @@ const Header = () => {
           >
             <FaFileExport />
           </span>
+          {visibility === 2 && (
+            <span
+              style={{
+                display: "flex",
+                cursor: "pointer",
+              }}
+              onClick={() => deleteGraph(activeGraphId)}
+            >
+              <FaTimes />
+            </span>
+          )}
           {user && (
             <span
               style={{ cursor: "pointer" }}
@@ -423,7 +450,14 @@ const Header = () => {
               display: visibility !== 1 ? "none" : "flex",
               cursor: "pointer",
             }}
-            onClick={() => clearExperiment(currentExpId)}
+            onClick={() => {
+              if (isModelReady) {
+                kill_inference(modelID); //model is ready so inference is working - kill it
+                setModeltoReady(false); // set it to false so that controller can go back to random
+              } else {
+                clearExperiment(currentExpId); //clear q-learning table
+              }
+            }}
           >
             <FaTimes />
           </span>

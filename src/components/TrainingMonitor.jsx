@@ -7,6 +7,99 @@ import { importConfig, changeConfig } from "../export/changeConfig";
 import styles from "../styling/TrainingMonitor.module.css";
 import "../styling/UpdateConfigModal.css";
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchDownloadLinks(trainingId) {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/model/download-links?uid=${trainingId}`,
+  );
+  return res.json();
+}
+
+async function kill_training(trainingId, mode) {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/trainer/kill-training`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: { model_uid: trainingId, mode: mode },
+    },
+  );
+  return res.json();
+}
+
+async function triggerDownload(url, filename) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  await sleep(300);
+  document.body.removeChild(a);
+}
+
+async function uploadCheckpoint(trainingId, file, type, resumedTimesteps) {
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/model/upload-checkpoint?uid=${trainingId}&file_type=${type}&resumed_timesteps=${resumedTimesteps}`,
+    { method: "POST", body: form },
+  );
+  if (!res.ok) throw new Error("Upload failed");
+  return res.json();
+}
+
+function RestoreModal({ model, onConfirm, onCancel }) {
+  const [timesteps, setTimesteps] = useState("");
+  const parsed = parseInt(timesteps.replace(/[^0-9]/g, ""), 10);
+  const valid = !isNaN(parsed) && parsed > 0;
+
+  return (
+    <div className="modalOverlay" onDoubleClick={onCancel}>
+      <div className="modalBox" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modalTitle">Restore Checkpoint</h2>
+
+        <p className="modalText">
+          Select the <strong>.zip</strong> and optionally the{" "}
+          <strong>.pkl</strong> files you downloaded. Then enter the timestep
+          this checkpoint belongs to — this will be used to correctly resume
+          training.
+        </p>
+
+        <p className="modalSubText">
+          You can find this in the filename or from the training monitor at the
+          time of download.
+        </p>
+
+        <input
+          className="modalInput" // add this style to UpdateConfigModal.css
+          type="text"
+          placeholder="e.g. 1500000"
+          value={timesteps}
+          onChange={(e) => setTimesteps(e.target.value)}
+        />
+        {timesteps && !valid && (
+          <p className="modalError">Please enter a valid timestep number.</p>
+        )}
+
+        <div className="buttonRow">
+          <button className="cancelBtn" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            className="confirmBtn"
+            disabled={!valid}
+            onClick={() => onConfirm(parsed)}
+          >
+            Select Files & Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UpdateConfigModal({ setModal, model }) {
   const setEnvPer = useAuthStore((s) => s.setEnvPer);
   const setGraphPer = useAuthStore((s) => s.setGraphPer);
@@ -103,8 +196,67 @@ function UpdateConfigModal({ setModal, model }) {
   );
 }
 
+function KillModal({ setModal, model }) {
+  const [mode, setMode] = useState("new");
+  return (
+    <div className="modalOverlay" onDoubleClick={() => setModal(false)}>
+      <div className="modalBox" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modalTitle">Kill Training</h2>
+
+        <p className="modalText">
+          You are about to kill the training run. Only do that when you are sure
+          you want to stop.
+        </p>
+
+        <p className="modalSubText">
+          Select nature of training (ex: first run so pick new)
+        </p>
+
+        <div className="permissionList">
+          <label className="permissionItem">
+            <input
+              type="radio"
+              name="trainingMode"
+              checked={mode === "re-run"}
+              onChange={() => setMode("re-run")}
+            />
+            Resumption
+          </label>
+
+          <label className="permissionItem">
+            <input
+              type="radio"
+              name="trainingMode"
+              checked={mode === "new"}
+              onChange={() => setMode("new")}
+            />
+            First Run
+          </label>
+        </div>
+
+        <div className="buttonRow">
+          <button className="cancelBtn" onClick={() => setModal(false)}>
+            Cancel
+          </button>
+
+          <button
+            className="confirmBtn"
+            onClick={() => {
+              kill_training(model?.training_id, mode);
+              setModal(false);
+            }}
+          >
+            Kill Training
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TrainingMonitor({ trainingId }) {
   const [modal, setModal] = useState(false);
+  const [Kmodal, setKModal] = useState(false);
   const model = useTrainingStore((s) => s.model);
   const setModel = useTrainingStore((s) => s.setModel);
   const rewardHistory = useTrainingStore((s) => s.rewardHistory);
@@ -171,7 +323,8 @@ export default function TrainingMonitor({ trainingId }) {
   return (
     <div className={styles.page}>
       {modal && <UpdateConfigModal setModal={setModal} model={model} />}
-      <Header model={model} setModal={setModal} />
+      {Kmodal && <KillModal setModal={setKModal} model={model} />}
+      <Header model={model} setModal={setModal} setKModal={setKModal} />
       <MetricCards
         model={model}
         smoothed={smoothed}
@@ -195,10 +348,79 @@ export default function TrainingMonitor({ trainingId }) {
   );
 }
 
-function Header({ model, setModal }) {
+function Header({ model, setModal, setKModal }) {
   const isLive = model.status === "training";
+  const isDisabled = !model?.training_id || isLive;
+
+  const [downloading, setDownloading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [restoreModal, setRestoreModal] = useState(false);
+  const fileInputRef = useRef(null);
+  const pendingTimesteps = useRef(null);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const { models: modelUrl, norms: normUrl } = await fetchDownloadLinks(
+        model.training_id,
+      );
+      if (modelUrl) {
+        await triggerDownload(modelUrl, `model_${model.training_id}.zip`);
+        await sleep(500);
+      }
+      if (normUrl) {
+        await triggerDownload(
+          normUrl,
+          `model_${model.training_id}_vecnormalize.pkl`,
+        );
+      }
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleRestoreConfirm = (timesteps) => {
+    pendingTimesteps.current = timesteps;
+    setRestoreModal(false);
+    fileInputRef.current?.click(); // open file picker after modal closes
+  };
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    const zip = files.find((f) => f.name.endsWith(".zip"));
+    const pkl = files.find((f) => f.name.endsWith(".pkl"));
+    const ts = pendingTimesteps.current;
+
+    if (!zip || !ts) return;
+
+    setUploading(true);
+    try {
+      // Upload pkl first so it's ready before model triggers the DB update
+      if (pkl) await uploadCheckpoint(model.training_id, pkl, "norm", ts);
+      await uploadCheckpoint(model.training_id, zip, "model", ts);
+      alert(
+        pkl
+          ? "Model + normalizer restored."
+          : "Model restored (normalizer will reset on resume).",
+      );
+    } catch {
+      alert("Upload failed.");
+    } finally {
+      setUploading(false);
+      pendingTimesteps.current = null;
+      e.target.value = "";
+    }
+  };
+
   return (
     <div className={styles.header}>
+      {restoreModal && (
+        <RestoreModal
+          model={model}
+          onConfirm={handleRestoreConfirm}
+          onCancel={() => setRestoreModal(false)}
+        />
+      )}
       <div>
         <h1 className={styles.title}>{model.name ?? "Training run"}</h1>
         <p className={styles.meta}>
@@ -207,17 +429,46 @@ function Header({ model, setModal }) {
         <div>
           <button
             className={styles.button}
-            disabled={!model?.training_id || model?.status === "training"}
+            disabled={isDisabled}
             onClick={() => importConfig(model?.training_id)}
           >
             Fetch Config
           </button>
           <button
             className={styles.button}
-            disabled={!model?.training_id || model?.status === "training"}
+            disabled={isDisabled}
             onClick={() => setModal(true)}
           >
             Update Config
+          </button>
+          <button
+            className={styles.button}
+            disabled={isDisabled || downloading}
+            onClick={handleDownload}
+          >
+            {downloading ? "Downloading…" : "Download Model"}
+          </button>
+          <button
+            className={styles.button}
+            disabled={isDisabled || uploading}
+            onClick={() => setRestoreModal(true)}
+          >
+            {uploading ? "Uploading…" : "Restore Checkpoint"}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".zip,.pkl"
+            multiple
+            style={{ display: "none" }}
+            onChange={handleUpload}
+          />
+          <button
+            className={styles.button}
+            disabled={isDisabled}
+            onClick={() => setKModal(true)}
+          >
+            Kill Training
           </button>
         </div>
       </div>

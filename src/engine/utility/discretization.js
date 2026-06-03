@@ -11,7 +11,7 @@ export default function discretize(obsVector, agent) {
   };
 
   agentObsSpace.forEach((space) => {
-    const index = getIndexOfObs(space);
+    const index = getIndexOfObs(agentObsSpace, space);
     const value = obsVector[index];
 
     switch (space) {
@@ -36,14 +36,14 @@ export default function discretize(obsVector, agent) {
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
         );
         break;
       case "delta_z_to_target":
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : ZdirectionBin(value),
         );
         break;
       case "dist_to_nearest_target":
@@ -53,7 +53,9 @@ export default function discretize(obsVector, agent) {
           value >= NOT_FOUND ? "NONE" : distanceBin(value),
         );
         break;
+
       case "in_target_radius":
+        console.log("IN TARGET RADIUS: ", value);
         stateKey = buildKey(stateKey, space, value);
         break;
 
@@ -62,14 +64,14 @@ export default function discretize(obsVector, agent) {
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
         );
         break;
       case "delta_z_to_collectable":
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
         );
         break;
       case "dist_to_nearest_collectable":
@@ -88,14 +90,14 @@ export default function discretize(obsVector, agent) {
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
         );
         break;
       case "delta_z_to_pickable":
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : ZdirectionBin(value),
         );
         break;
       case "dist_to_nearest_pickable":
@@ -121,14 +123,14 @@ export default function discretize(obsVector, agent) {
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
         );
         break;
       case "delta_z_to_deposit":
         stateKey = buildKey(
           stateKey,
           space,
-          value >= NOT_FOUND ? "NONE" : directionBin(value),
+          value >= NOT_FOUND ? "NONE" : ZdirectionBin(value),
         );
         break;
       case "dist_to_nearest_deposit":
@@ -183,14 +185,18 @@ export default function discretize(obsVector, agent) {
   return stateKey;
 }
 
-// Normalized direction: negative = one side, positive = other, ~0 = aligned
-function directionBin(value) {
+function XdirectionBin(value) {
   if (value < -0.025) return "LEFT"; // normalized: ~-1 unit
   if (value > 0.025) return "RIGHT"; // normalized: ~+1 unit
   return "CENTER";
 }
 
-// Normalized distance bins (divide world-unit thresholds by MAX_DIST=40)
+function ZdirectionBin(value) {
+  if (value < -0.025) return "FORWARD"; // normalized: ~-1 unit
+  if (value > 0.025) return "BEHIND"; // normalized: ~+1 unit
+  return "INLINE";
+}
+
 function distanceBin(distance) {
   if (distance < 0.05) return "VERY_NEAR"; // < 2 world units
   if (distance < 0.2) return "NEAR"; // 2–8 world units
@@ -199,7 +205,6 @@ function distanceBin(distance) {
   return "VERY_FAR"; // 35–40+ world units
 }
 
-// Position bin — agent's own position normalized by MAX_DIST
 function positionBin(value) {
   if (value < -0.5) return "FAR_NEG";
   if (value < -0.25) return "NEG";
@@ -208,7 +213,6 @@ function positionBin(value) {
   return "FAR_POS";
 }
 
-// Rotation bin — normalized to [-1, 1]
 function rotationBin(value) {
   if (value < -0.5) return "LEFT";
   if (value > 0.5) return "RIGHT";
@@ -222,7 +226,6 @@ function itemsBin(item) {
   return "MANY";
 }
 
-// Consecutive steps the same action has been taken
 function streakBin(value) {
   if (value <= 1) return "NEW"; // just switched or first step
   if (value <= 3) return "SHORT"; // 2–3 steps

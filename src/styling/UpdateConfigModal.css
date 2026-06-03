@@ -16,6 +16,11 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
+.modalInput {
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    padding: 5px;
+}
+
 .modalTitle {
     font-size: 18px;
     font-weight: 600;

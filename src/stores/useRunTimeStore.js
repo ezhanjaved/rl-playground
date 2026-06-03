@@ -18,6 +18,9 @@ export const useRunTimeStore = create((set, get) => ({
   modalStage: "idle",
   setModalStage: (stage) => set({ modalStage: stage }),
 
+  modelID: null,
+  setModelId: (uid) => set({ modalID: uid }),
+
   showLoadingModal: false,
   setShowLoadingModal: (val) => set({ showLoadingModal: val }),
 

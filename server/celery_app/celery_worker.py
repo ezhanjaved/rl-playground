@@ -15,6 +15,7 @@ celery_app.conf.update(
         "rl_inference": {"queue": "celery"},
         "rl_trainer_stop": {"queue": "celery"},
         "rl_inference_stop": {"queue": "celery"},
+        "rl_resume_stop": {"queue": "celery"},
         "rl_test": {"queue": "celery"},
     }
 )
@@ -22,6 +23,7 @@ celery_app.conf.update(
 import server.celery_app.rl_inference
 import server.celery_app.rl_inference_stop
 import server.celery_app.rl_resume
+import server.celery_app.rl_resume_stop
 import server.celery_app.rl_test
 import server.celery_app.rl_trainer
 import server.celery_app.rl_training_stop

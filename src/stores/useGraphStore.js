@@ -284,6 +284,32 @@ export const useGraphStore = create((set) => ({
       };
     }),
 
+  deleteGraph: (graphId) =>
+    set((state) => {
+      const graphs = { ...state.graphs };
+      delete graphs[graphId];
+
+      const newTotal = state.totalGraph.filter((id) => id !== graphId);
+      const graphError = { ...state.graphError };
+      delete graphError[graphId];
+
+      let activeGraphId = state.activeGraphId;
+      let indexNumber = state.indexNumber;
+
+      if (activeGraphId === graphId) {
+        indexNumber = Math.min(state.indexNumber, newTotal.length - 1);
+        activeGraphId = newTotal[indexNumber] ?? null;
+      }
+
+      return {
+        graphs,
+        totalGraph: newTotal,
+        graphError,
+        activeGraphId,
+        indexNumber,
+      };
+    }),
+
   deleteNode: (graphId, nodeId) =>
     set((state) => {
       const graph = state.graphs[graphId];

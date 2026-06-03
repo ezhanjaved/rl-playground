@@ -6,7 +6,8 @@ import { useGraphStore } from "../stores/useGraphStore";
 export function useBackendWebSocket(onModelReady) {
   const socketRef = useRef(null);
   const intentionalClose = useRef(false);
-  const { setModalStage, setModeltoLoading } = useRunTimeStore.getState();
+  const { setModalStage, setModeltoLoading, setModelId } =
+    useRunTimeStore.getState();
   const { addGraphWithId } = useGraphStore.getState();
   const { user } = useAuthStore.getState();
   const connectSocket = async (item) => {
@@ -34,6 +35,7 @@ export function useBackendWebSocket(onModelReady) {
       localStorage.setItem("session_token", session_id);
       localStorage.setItem("jwt_token", token_id);
       setModalStage("env_fetched_from_backend");
+      setModelId(item?.training_id);
       wipeEntities(); //wiping the current env
       recreateEnv(entities); //recreating the env from entities dict we got from python
       for (const graph_id of Allgraphs) {
