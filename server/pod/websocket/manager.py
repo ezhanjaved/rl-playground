@@ -22,7 +22,7 @@ class ConnectionManager:
     async def predict_action(self, obs: list, capability: list):
         obs = np.array(obs, dtype=np.float32)
         actions, _ = actionMasking(capability)
-        action_predicted, _ = model.predict(obs, deterministic=False)
+        action_predicted, _ = model.predict(obs, deterministic=True)
 
         # added the prob check
         obs_np = np.asarray(obs, dtype=np.float32)
