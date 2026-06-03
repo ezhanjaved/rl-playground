@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from fastapi import FastAPI, WebSocket
 
 from server.pod.jwt_token.generateJWT import verify_token
@@ -22,6 +23,18 @@ class ConnectionManager:
         obs = np.array(obs, dtype=np.float32)
         actions, _ = actionMasking(capability)
         action_predicted, _ = model.predict(obs, deterministic=True)
+
+        obs_np = np.asarray(obs)
+        if obs_np.ndim == 1:
+            obs_np = obs_np.reshape(1, -1)
+        obs_tensor = torch.as_tensor(obs_np).float().to(model.device)
+        with torch.no_grad():
+            dist = model.policy.get_distribution(obs_tensor)
+            probs = dist.distribution.probs.cpu().numpy()[0]
+
+        print("ACTION PROBS:", probs, flush=True)
+        print("PREDICTED ACTION:", probs.argmax(), flush=True)
+
         return actionTranslator(action_predicted, actions)
 
 
