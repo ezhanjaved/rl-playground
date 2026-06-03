@@ -93,6 +93,7 @@ def visitNode(node_id, graph, ctx):
         ctx["reward"] += reward_value * multiplier
 
     elif node_data.type == "EndEpisodeNode":
+        print("Ending Episode")
         ctx["terminated"] = True
         ctx["_stop"] = True
         return
@@ -122,8 +123,10 @@ def visitNode(node_id, graph, ctx):
     elif node_data.type == "LastActionIsNode":
         action_picked = node_data.data.get("entityAction")
         action_status = node_data.data.get("actionStatus")
+
         expected = action_status is True or str(action_status).lower() == "true"
         current_last_action = ctx["facts"]["last_action"]
+        print("Action: ", current_last_action)
         value = current_last_action == action_picked
         result = expected == value
 

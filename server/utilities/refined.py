@@ -39,7 +39,7 @@ def actionMasking(capabilities):
 
 
 def actionTranslator(action, action_list):
-    print("Action Rec: ", action, flush=True)
+    print("Action Rec Number: ", action, flush=True)
     if isinstance(action, np.ndarray):
         action = action.flatten()[0]
     elif isinstance(action, (list, tuple)):
@@ -51,5 +51,5 @@ def actionTranslator(action, action_list):
         raise ValueError(f"Invalid action index: {action}")
 
     print("Action List: ", action_list, flush=True)
-    print("Action Send Back: ", action_list[action], flush=True)
+    print("Action Send Back (Words): ", action_list[action], flush=True)
     return action_list[action]
