@@ -2,51 +2,36 @@ import { getIndexOfObs } from "./getIndex";
 
 const NOT_FOUND = 1.0;
 
-export default function discretize(obsVector, agent) {
-  const agentObsSpace = agent?.observation_space || [];
+export default function discretizeBehavior(obsVector, behaviorOBSspace = []) {
   let stateKey = "";
 
   const buildKey = (key, string, value) => {
     return key + `${string}:${value}|`;
   };
 
-  agentObsSpace.forEach((space) => {
-    const index = getIndexOfObs(agentObsSpace, space);
+  behaviorOBSspace.forEach((space) => {
+    const index = getIndexOfObs(behaviorOBSspace, space);
     const value = obsVector[index];
 
     switch (space) {
-      // --- Agent self-awareness (Moveable) ---
-      case "agent_pos_x":
-        stateKey = buildKey(stateKey, space, positionBin(value));
-        break;
-      case "agent_pos_z":
-        stateKey = buildKey(stateKey, space, positionBin(value));
-        break;
-      case "agent_rotation_y":
-        stateKey = buildKey(stateKey, space, rotationBin(value));
-        break;
-
-      // --- Temporal Memory ---
-      case "last_action_counter":
-        stateKey = buildKey(stateKey, space, streakBin(value));
-        break;
-
-      // --- Target (Finder) ---
-      case "delta_x_to_target":
+      // --- Active current goal ---
+      case "delta_x_to_current_goal":
         stateKey = buildKey(
           stateKey,
           space,
           value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
         );
         break;
-      case "delta_z_to_target":
+
+      case "delta_z_to_current_goal":
         stateKey = buildKey(
           stateKey,
           space,
           value >= NOT_FOUND ? "NONE" : ZdirectionBin(value),
         );
         break;
-      case "dist_to_nearest_target":
+
+      case "dist_to_current_goal":
         stateKey = buildKey(
           stateKey,
           space,
@@ -54,63 +39,11 @@ export default function discretize(obsVector, agent) {
         );
         break;
 
-      case "in_target_radius":
-        console.log("IN TARGET RADIUS: ", value);
-        stateKey = buildKey(stateKey, space, value);
-        break;
-
-      // --- Collectable (Collector) ---
-      case "delta_x_to_collectable":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
-        );
-        break;
-      case "delta_z_to_collectable":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
-        );
-        break;
-      case "dist_to_nearest_collectable":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : distanceBin(value),
-        );
-        break;
-      case "items_collected":
-        stateKey = buildKey(stateKey, space, itemsBin(value));
-        break;
-
-      // --- Pickable (Holder) ---
-      case "delta_x_to_pickable":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
-        );
-        break;
-      case "delta_z_to_pickable":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : ZdirectionBin(value),
-        );
-        break;
-      case "dist_to_nearest_pickable":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : distanceBin(value),
-        );
-        break;
-      case "holding":
+      case "in_radius_current_goal":
         stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
         break;
-      case "lastPickSuccess":
+
+      case "last_action_success":
         stateKey = buildKey(
           stateKey,
           space,
@@ -118,54 +51,35 @@ export default function discretize(obsVector, agent) {
         );
         break;
 
-      // --- Deposit (Depositor) ---
-      case "delta_x_to_deposit":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : XdirectionBin(value),
-        );
-        break;
-      case "delta_z_to_deposit":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : ZdirectionBin(value),
-        );
-        break;
-      case "dist_to_nearest_deposit":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : distanceBin(value),
-        );
-        break;
-      case "items_deposit":
+      // --- Progress fields ---
+      case "items_collected":
+      case "total_items_collected":
+      case "items_deposited":
+      case "keys_collected":
+      case "gates_open":
+      case "items_destroyed":
         stateKey = buildKey(stateKey, space, itemsBin(value));
         break;
-      case "last_deposit_success":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value === null ? "NONE" : value === 1 ? "YES" : "NO",
-        );
+
+      case "holding":
+      case "hasKey":
+      case "targetReached":
+        stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
         break;
 
-      // --- Obstacle (Navigator) ---
+      // --- Goal flags ---
+      case "goal_is_collectable":
+      case "goal_is_holding":
+      case "goal_is_deposit":
+      case "goal_is_gate":
+      case "goal_is_destroyable":
+      case "goal_is_target":
+        stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
+        break;
+
+      // --- Navigator ---
       case "obstacle_forward":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : distanceBin(value),
-        );
-        break;
       case "obstacle_left":
-        stateKey = buildKey(
-          stateKey,
-          space,
-          value >= NOT_FOUND ? "NONE" : distanceBin(value),
-        );
-        break;
       case "obstacle_right":
         stateKey = buildKey(
           stateKey,
@@ -173,11 +87,13 @@ export default function discretize(obsVector, agent) {
           value >= NOT_FOUND ? "NONE" : distanceBin(value),
         );
         break;
+
       case "obstacle_in_path":
         stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
         break;
 
       default:
+        stateKey = buildKey(stateKey, space, numericBin(value));
         break;
     }
   });
@@ -186,37 +102,23 @@ export default function discretize(obsVector, agent) {
 }
 
 function XdirectionBin(value) {
-  if (value < -0.025) return "LEFT"; // normalized: ~-1 unit
-  if (value > 0.025) return "RIGHT"; // normalized: ~+1 unit
+  if (value < -0.025) return "LEFT";
+  if (value > 0.025) return "RIGHT";
   return "CENTER";
 }
 
 function ZdirectionBin(value) {
-  if (value < -0.025) return "FORWARD"; // normalized: ~-1 unit
-  if (value > 0.025) return "BEHIND"; // normalized: ~+1 unit
+  if (value < -0.025) return "FORWARD";
+  if (value > 0.025) return "BEHIND";
   return "INLINE";
 }
 
 function distanceBin(distance) {
-  if (distance < 0.05) return "VERY_NEAR"; // < 2 world units
-  if (distance < 0.2) return "NEAR"; // 2–8 world units
-  if (distance < 0.5) return "MEDIUM"; // 8–20 world units
-  if (distance < 0.875) return "FAR"; // 20–35 world units
-  return "VERY_FAR"; // 35–40+ world units
-}
-
-function positionBin(value) {
-  if (value < -0.5) return "FAR_NEG";
-  if (value < -0.25) return "NEG";
-  if (value < 0.25) return "CENTER";
-  if (value < 0.5) return "POS";
-  return "FAR_POS";
-}
-
-function rotationBin(value) {
-  if (value < -0.5) return "LEFT";
-  if (value > 0.5) return "RIGHT";
-  return "FORWARD";
+  if (distance < 0.05) return "VERY_NEAR";
+  if (distance < 0.2) return "NEAR";
+  if (distance < 0.5) return "MEDIUM";
+  if (distance < 0.875) return "FAR";
+  return "VERY_FAR";
 }
 
 function itemsBin(item) {
@@ -226,9 +128,15 @@ function itemsBin(item) {
   return "MANY";
 }
 
-function streakBin(value) {
-  if (value <= 1) return "NEW"; // just switched or first step
-  if (value <= 3) return "SHORT"; // 2–3 steps
-  if (value <= 8) return "MEDIUM"; // 4–8 steps
-  return "LONG"; // 9+ steps — likely stuck or repeating
+function numericBin(value) {
+  if (value === undefined || value === null || Number.isNaN(Number(value))) {
+    return "NONE";
+  }
+
+  const num = Number(value);
+
+  if (num <= 0) return "ZERO";
+  if (num < 0.25) return "LOW";
+  if (num < 0.75) return "MID";
+  return "HIGH";
 }

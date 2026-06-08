@@ -5,6 +5,8 @@ import ControllerRouter from "./controllers/controllerRouter.js";
 import applyAction from "./actuators/applyAction.js";
 import { flushActions } from "./actionQueue.js";
 import { useSceneStore } from "../../stores/useSceneStore.js";
+import { BehaviorBuilder } from "./behaviorBuilder.js";
+
 export default function runTimeloop(entities) {
   const { playing, training } = useRunTimeStore.getState();
   const { updateEntityStat } = useSceneStore.getState();
@@ -43,12 +45,17 @@ export default function runTimeloop(entities) {
       return;
 
     const observation_space = buildObsSpace(entity);
+    const { behaviorOBSvector, behaviorOBSspace } = BehaviorBuilder(
+      observation_space,
+      entity,
+    );
     const action_space = entity.action_space;
     const sequence = seq[entity.id] ?? 0; //Read sequence number from store
     const newSeq = sequence + 1; //increment it
     const action = ControllerRouter(
       newSeq,
-      observation_space,
+      behaviorOBSspace,
+      behaviorOBSvector,
       entity.id,
       action_space,
       currentExperimentId,

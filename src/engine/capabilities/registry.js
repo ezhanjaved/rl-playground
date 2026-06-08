@@ -45,7 +45,8 @@ export const CAPABILITY_SCHEMAS = {
       "delta_x_to_pickable",
       "delta_z_to_pickable",
       "holding",
-      "lastPickSuccess", // ADD: did last pick attempt succeed or fail?
+      "in_radius_holder",
+      "lastPickSuccess",
     ],
     state: {
       holding: false,
@@ -61,11 +62,17 @@ export const CAPABILITY_SCHEMAS = {
       "dist_to_nearest_collectable",
       "delta_x_to_collectable",
       "delta_z_to_collectable",
+      "in_radius_collect",
       "items_collected",
+      "keys_collected",
+      "total_items_collected",
+      "lastPickSuccess",
     ],
     state: {
       lastItemCollected: null,
       items_collected: 0,
+      keys_collected: 0,
+      total_items_collected: 0,
       lastPickSuccess: null,
       previous_distance_collect: Infinity,
     },
@@ -77,14 +84,53 @@ export const CAPABILITY_SCHEMAS = {
       "dist_to_nearest_deposit",
       "delta_x_to_deposit",
       "delta_z_to_deposit",
-      "items_deposit",
-      "last_deposit_success", // ADD: did deposit attempt succeed?
+      "items_deposited",
+      "in_radius_deposit",
+      "last_deposit_success",
     ],
     state: {
       items_deposited: 0,
       nearDeposit: false,
       lastDepositSuccess: false,
       previous_distance_deposit: Infinity,
+    },
+  },
+
+  Destroyer: {
+    actions: ["destroy"],
+    observations: [
+      "dist_to_nearest_destroyable",
+      "delta_x_to_destroyable",
+      "delta_z_to_destroyable",
+      "in_radius_destroyed",
+      "items_destroyed",
+      "last_destroy_success",
+    ],
+    state: {
+      items_destroyed: 0,
+      nearDestroyable: false,
+      lastDestroySuccess: false,
+      previous_distance_destroyable: Infinity,
+    },
+  },
+
+  Opener: {
+    actions: ["open"],
+    observations: [
+      "dist_to_nearest_gate",
+      "delta_x_to_gate",
+      "delta_z_to_gate",
+      "in_radius_gate",
+      "gates_open",
+      "hasKey",
+      "last_open_success",
+    ],
+    state: {
+      gates_open: 0,
+      nearGate: false,
+      hasKey: false,
+      lastOpenSuccess: false,
+      previous_distance_gate: Infinity,
     },
   },
 };

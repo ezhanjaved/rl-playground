@@ -28,7 +28,11 @@ import target1 from "../assets/target_1.png";
 import target2 from "../assets/target_2.png";
 import Wall from "../assets/Wall.png";
 import Rubble from "../assets/Rubble.png";
-
+import ArchGate from "../assets/Arch_Gate.png";
+import Fence from "../assets/Fence.png";
+import YellowPumpkin from "../assets/Yellow_Pumpkin.png";
+import OrangePumpkin from "../assets/Orange_Pumpkin.png";
+import PineTree from "../assets/TreePine.png";
 function DraggableItem({ id, payload, imageSrc, ...rest }) {
   const { listeners, setNodeRef, attributes, transform } = useDraggable({
     id,
@@ -113,7 +117,8 @@ export default function EntitiesPanel() {
           0: "agents/skelton/Rig_Medium_MovementBasic.glb",
           1: "agents/skelton/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Finder"],
+        capabilities: ["Moveable", "Destroyer"],
+        behavior: ["Destroy"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -130,7 +135,8 @@ export default function EntitiesPanel() {
           0: "agents/skelton/Rig_Medium_MovementBasic.glb",
           1: "agents/skelton/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Collector"],
+        capabilities: ["Moveable", "Collector", "Opener"],
+        behavior: ["Collect", "Destroy"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -148,6 +154,7 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Finder", "Holder"],
+        behavior: ["Holding", "Find"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -164,7 +171,8 @@ export default function EntitiesPanel() {
           0: "agents/skelton/Rig_Medium_MovementBasic.glb",
           1: "agents/skelton/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Navigator"],
+        capabilities: ["Moveable", "Navigator", "Finder"],
+        behavior: ["Find"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -182,6 +190,7 @@ export default function EntitiesPanel() {
           1: "agents/heroes/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Holder", "Depositor"],
+        behavior: ["Holding", "Deposit"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -199,6 +208,7 @@ export default function EntitiesPanel() {
           1: "agents/heroes/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Collector", "Depositor"],
+        behavior: ["Collect", "Deposit"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -215,7 +225,16 @@ export default function EntitiesPanel() {
           0: "agents/heroes/Rig_Medium_MovementBasic.glb",
           1: "agents/heroes/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Finder", "Navigator"],
+        capabilities: [
+          "Moveable",
+          "Collector",
+          "Depositor",
+          "Destroyer",
+          "Opener",
+          "Finder",
+          "Navigator",
+        ],
+        behavior: ["Collect", "Deposit", "Destroy", "Open", "Find"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -232,9 +251,63 @@ export default function EntitiesPanel() {
           0: "agents/heroes/Rig_Medium_MovementBasic.glb",
           1: "agents/heroes/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Navigator", "Collector"],
+        capabilities: [
+          "Moveable",
+          "Holder",
+          "Depositor",
+          "Destroyer",
+          "Opener",
+          "Finder",
+          "Navigator",
+        ],
+        behavior: ["Holding", "Deposit", "Destroy", "Open", "Find"],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+  ];
+
+  const destroyableObjects = [
+    {
+      id: "lib_destroy_obj_1",
+      image: OrangePumpkin,
+      payload: {
+        name: "pumpkin_orange",
+        tag: "destroyable",
+        isDestroyable: "true",
+        isDecor: "true",
+        assetRef: "resources/pumpkin_orange_jackolantern.gltf",
+        collider: { shape: "box", w: 1.5, h: 0.6, d: 1.0 },
+        state: { isDestroyed: false },
+      },
+    },
+    {
+      id: "lib_destroy_obj_2",
+      image: YellowPumpkin,
+      payload: {
+        name: "pumpkin_yellow",
+        tag: "destroyable",
+        isDestroyable: "true",
+        isDecor: "true",
+        assetRef: "resources/pumpkin_yellow_jackolantern.gltf",
+        collider: { shape: "box", w: 1.5, h: 0.6, d: 1.0 },
+        state: { isDestroyed: false },
+      },
+    },
+  ];
+
+  const StateObjects = [
+    {
+      id: "lib_state_obj_1",
+      image: ArchGate,
+      payload: {
+        name: "arch_gate",
+        tag: "static-obj",
+        isGate: "true",
+        isDecor: "true",
+        assetRef: "resources/arch_gate.gltf",
+        collider: { shape: "box", w: 4.5, h: 2.5, d: 1.0 },
+        state: { isOpen: false },
       },
     },
   ];
@@ -264,6 +337,17 @@ export default function EntitiesPanel() {
     },
     {
       id: "lib_non_state_obj_3",
+      image: PineTree,
+      payload: {
+        name: "Pine Tree",
+        tag: "non_state",
+        isDecor: "true",
+        assetRef: "nature/tree_pine_orange_large.gltf",
+        collider: { shape: "capsule", h: 4.0, r: 1.2 },
+      },
+    },
+    {
+      id: "lib_non_state_obj_4",
       image: lib3,
       payload: {
         name: "Bush",
@@ -274,7 +358,7 @@ export default function EntitiesPanel() {
       },
     },
     {
-      id: "lib_non_state_obj_4",
+      id: "lib_non_state_obj_5",
       image: lib4,
       payload: {
         name: "Rock",
@@ -285,7 +369,7 @@ export default function EntitiesPanel() {
       },
     },
     {
-      id: "lib_non_state_obj_5",
+      id: "lib_non_state_obj_6",
       image: Wall,
       payload: {
         name: "Wall Gated",
@@ -296,7 +380,7 @@ export default function EntitiesPanel() {
       },
     },
     {
-      id: "lib_non_state_obj_6",
+      id: "lib_non_state_obj_7",
       image: Rubble,
       payload: {
         name: "Rubble",
@@ -304,6 +388,17 @@ export default function EntitiesPanel() {
         isDecor: "true",
         assetRef: "nature/rubble_large.gltf",
         collider: { shape: "box", w: 6.5, h: 0.6, d: 2.5 },
+      },
+    },
+    {
+      id: "lib_non_state_obj_8",
+      image: Fence,
+      payload: {
+        name: "Fence",
+        tag: "non_state",
+        isDecor: "true",
+        assetRef: "resources/fence.gltf",
+        collider: { shape: "box", w: 4.0, h: 1.5, d: 1.0 },
       },
     },
   ];
@@ -374,6 +469,7 @@ export default function EntitiesPanel() {
         isDecor: "false",
         isPickable: "true",
         isCollectable: "true",
+        isKey: "true",
         assetRef: "resources/key.gltf",
         collider: { shape: "capsule", h: 1, r: 0.2 },
         targetStat: { radius: 1 },
@@ -433,8 +529,10 @@ export default function EntitiesPanel() {
     <>
       <div className="library_main">
         <Section title="Agents" items={agents} />
-        <Section title="Non State Objects" items={nonStateObjects} />
+        <Section title="Static Obstacles" items={nonStateObjects} />
+        <Section title="Dyanmic Obstacles" items={StateObjects} />
         <Section title="Pickable Items" items={pickableItems} />
+        <Section title="Destroyable Items" items={destroyableObjects} />
         <Section title="Target Items" items={targetItems} />
       </div>
       <Tooltip

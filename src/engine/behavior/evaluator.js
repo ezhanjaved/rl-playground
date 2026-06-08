@@ -1,6 +1,7 @@
 import { useSceneStore } from "../../stores/useSceneStore";
 import { useGraphStore } from "../../stores/useGraphStore";
 import buildObsSpace, { nearestDistance } from "../runtime/observationBuilder";
+import { BehaviorBuilder } from "../runtime/behaviorBuilder";
 
 export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
   const { assignments, entities } = useSceneStore.getState();
@@ -13,7 +14,10 @@ export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
   if (!graph || !entities || !assignments) return;
   const agent = useSceneStore.getState().entities?.[agentId];
   let visitedNodes = new Set();
-  const postObs = buildObsSpace(agent); //post action obs
+
+  const postObsRaw = buildObsSpace(agent);
+  const { behaviorOBSvector: postActionBehaviorOBSvector, behaviorOBSspace } =
+    BehaviorBuilder(postObsRaw, agent);
 
   let ctxObj = {
     reward: 0,
@@ -26,14 +30,14 @@ export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
       capabilities: agent.capabilities,
       last_action: agent.last_action,
       state_space: agent.state_space,
-      obs_space: agent.observation_space,
+      obs_space: behaviorOBSspace,
     },
     maxSteps: 300,
     stepCount: 0,
     visitedNodes,
     config,
     preObs,
-    postObs,
+    postObs: postActionBehaviorOBSvector,
     currentEpisodeStep,
   };
 
@@ -44,7 +48,7 @@ export default function BehaviorGraphEval(agentId, preObs, currentEpisodeStep) {
     reward: ctxObj.reward,
     terminated: ctxObj.terminated,
     truncated: ctxObj.truncated,
-    postObs,
+    postObs: postActionBehaviorOBSvector,
     info: {},
   };
 }
@@ -160,10 +164,6 @@ function visitNode(NodeId, graph, ctxObj) {
   }
 
   if (currentNodeData.type === "InRadiusNode") {
-    const MAX_DIST = 40.0;
-    const radiusCheck = 1.5 / MAX_DIST;
-    let inRadius = false;
-
     const entityOne = currentNodeData.data.entityOne;
     const entityTwo = currentNodeData.data.entityTwo;
     const isAgent1 = entityOne === "Agent";
@@ -171,40 +171,13 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
-
     const getObs = (key) => {
-      const idx = ctxObj?.facts?.obs_space.indexOf(key);
-      return idx === -1 ? null : ctxObj.preObs[idx];
+      const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
+      return idx === -1 ? null : ctxObj.preObs?.[idx];
     };
 
-    if (entityTwo === "Target Object") {
-      const dist = getObs("dist_to_nearest_target");
-      if (dist !== null && dist <= radiusCheck) inRadius = true;
-    }
-
-    if (entityTwo === "Pickable Object") {
-      if (hasHolder) {
-        const dist = getObs("dist_to_nearest_pickable");
-        if (dist !== null && dist <= radiusCheck) inRadius = true;
-      } else if (hasCollector) {
-        const dist = getObs("dist_to_nearest_collectable");
-        if (dist !== null && dist <= radiusCheck) inRadius = true;
-      } else {
-        return;
-      }
-    }
-
-    if (entityTwo === "Deposit Object") {
-      if (hasDepositor) {
-        const dist = getObs("dist_to_nearest_deposit");
-        if (dist !== null && dist <= radiusCheck) inRadius = true;
-      } else {
-        return;
-      }
-    }
+    const inRadiusRaw = getObs("in_radius_current_goal");
+    const inRadius = inRadiusRaw === 1 || inRadiusRaw === true;
 
     const edges = findEdges(NodeId, graph);
     const chosenEdges = edges.filter((e) =>
@@ -222,9 +195,10 @@ function visitNode(NodeId, graph, ctxObj) {
   if (currentNodeData.type === "IsDeltaXLessNode") {
     const deltaXCheck = 0.05;
     let deltaX = false;
-    // Delta X POS means object is left
-    // Delta X NEG means object is right
-    // If current Delta will be bigger it means there is significant deviation and agent will not find obj in its path
+    // Delta X POS: object is to the left.
+    // Delta X NEG: object is to the right.
+    // If |deltaX| > threshold, there is meaningful lateral deviation.
+
     const entityOne = currentNodeData.data.entityOne;
     const entityTwo = currentNodeData.data.entityTwo;
     const isAgent1 = entityOne === "Agent";
@@ -232,55 +206,22 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
-    const hasNavigator = ctxObj.facts?.capabilities.includes("Navigator");
-
     const getObs = (key) => {
-      const idx = ctxObj?.facts?.obs_space.indexOf(key);
-      return idx === -1 ? null : ctxObj.preObs[idx];
+      const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
+      return idx === -1 ? null : ctxObj.preObs?.[idx];
     };
 
-    if (entityTwo === "Target Object") {
-      const currentDeltaX = getObs("delta_x_to_target");
+    if (
+      entityTwo === "Target Object" ||
+      entityTwo === "Pickable Object" ||
+      entityTwo === "Deposit Object"
+    ) {
+      const currentDeltaX = getObs("delta_x_to_current_goal");
       if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
         deltaX = true;
     }
-
-    if (entityTwo === "Pickable Object") {
-      if (hasHolder) {
-        const currentDeltaX = getObs("delta_x_to_pickable");
-        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
-          deltaX = true;
-      } else if (hasCollector) {
-        const currentDeltaX = getObs("delta_x_to_collectable");
-        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
-          deltaX = true;
-      } else {
-        return;
-      }
-    }
-
-    if (entityTwo === "Navigator Object") {
-      if (hasNavigator) {
-        const currentDeltaX = getObs("delta_x_to_obstacle");
-        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
-          deltaX = true;
-      } else {
-        return;
-      }
-    }
-
-    if (entityTwo === "Deposit Object") {
-      if (hasDepositor) {
-        const currentDeltaX = getObs("delta_x_to_deposit");
-        if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
-          deltaX = true;
-      } else {
-        return;
-      }
-    }
+    // Any other entityTwo (including unrecognized values) falls through with
+    // deltaX = false, so no edges fire. This is intentional.
 
     const edges = findEdges(NodeId, graph);
     const chosenEdges = edges.filter((e) =>
@@ -298,8 +239,8 @@ function visitNode(NodeId, graph, ctxObj) {
   if (currentNodeData.type === "IsDeltaZPosNode") {
     const deltaZCheck = 0.05;
     let deltaZ = false;
-    // Delta Z POS means object is forward
-    // If current Delta will be pos it means target is indeed ahead. If not we can penalize the agent for being ahead.
+    // Delta Z POS: target is ahead (forward of the agent).
+
     const entityOne = currentNodeData.data.entityOne;
     const entityTwo = currentNodeData.data.entityTwo;
     const isAgent1 = entityOne === "Agent";
@@ -307,53 +248,18 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
-    const hasNavigator = ctxObj.facts?.capabilities.includes("Navigator");
-
     const getObs = (key) => {
-      const idx = ctxObj?.facts?.obs_space.indexOf(key);
-      return idx === -1 ? null : ctxObj.preObs[idx];
+      const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
+      return idx === -1 ? null : ctxObj.preObs?.[idx];
     };
 
-    if (entityTwo === "Target Object") {
-      const currentDeltaZ = getObs("delta_z_to_target");
+    if (
+      entityTwo === "Target Object" ||
+      entityTwo === "Pickable Object" ||
+      entityTwo === "Deposit Object"
+    ) {
+      const currentDeltaZ = getObs("delta_z_to_current_goal");
       if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck) deltaZ = true;
-    }
-
-    if (entityTwo === "Pickable Object") {
-      if (hasHolder) {
-        const currentDeltaZ = getObs("delta_z_to_pickable");
-        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
-          deltaZ = true;
-      } else if (hasCollector) {
-        const currentDeltaZ = getObs("delta_z_to_collectable");
-        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
-          deltaZ = true;
-      } else {
-        return;
-      }
-    }
-
-    if (entityTwo === "Navigator Object") {
-      if (hasNavigator) {
-        const currentDeltaZ = getObs("delta_z_to_obstacle");
-        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
-          deltaZ = true;
-      } else {
-        return;
-      }
-    }
-
-    if (entityTwo === "Deposit Object") {
-      if (hasDepositor) {
-        const currentDeltaZ = getObs("delta_z_to_deposit");
-        if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck)
-          deltaZ = true;
-      } else {
-        return;
-      }
     }
 
     const edges = findEdges(NodeId, graph);
@@ -374,99 +280,47 @@ function visitNode(NodeId, graph, ctxObj) {
 
     const entityOne = currentNodeData.data.entityOne;
     const entityTwo = currentNodeData.data.entityTwo;
-    let mode = currentNodeData.data.mode;
+    let mode = currentNodeData.data.mode ?? "Best Record";
     const isAgent1 = entityOne === "Agent";
     const isAgent2 = entityTwo === "Agent";
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    if (mode === null) {
-      //fallback
-      mode = "Best Record";
+    const getObs = (key) => {
+      const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
+      return idx === -1 ? null : ctxObj.preObs?.[idx];
+    };
+
+    // Resolve active goal: predicate for nearestDistance + state_space key.
+    const goalCtx = resolveGoalContext(getObs);
+    if (!goalCtx) return; // no recognized goal flag set; skip node
+
+    const agentCurrentPos = ctxObj.facts?.position;
+    const rotation = ctxObj.facts?.rotation;
+    const { entities } = useSceneStore.getState();
+
+    const { min: currentDistance } = nearestDistance(
+      agentCurrentPos,
+      rotation,
+      goalCtx.predicate,
+      "both",
+      entities,
+    );
+
+    if (mode === "Best Record") {
+      // Per-capability state_space key, selected by goal flag.
+      // These keys exist unchanged on both client and Python.
+      const bestDistance = ctxObj.facts?.state_space?.[goalCtx.stateKey];
+      if (currentDistance !== null && currentDistance < bestDistance) {
+        distanceLess = true;
+      }
     }
 
-    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
-
-    const targetPredicate = (e) =>
-      e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
-    const pickablePredicate = (e) =>
-      e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
-    const collectPredicate = (e) =>
-      e.isCollectable === true ||
-      e.isCollectable === "true" ||
-      e.isCollectable === 1;
-    const depositPredicate = (e) =>
-      e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
-
-    const getObs = (key) => {
-      const idx = ctxObj?.facts?.obs_space.indexOf(key);
-      return idx === -1 ? null : ctxObj.preObs[idx];
-    };
-
-    const diffCal = (predicate, key, mode, key2) => {
-      const agentCurrentPos = ctxObj?.facts?.position;
-      const bestDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
-      const previousDistance = getObs(key2);
-      const { entities } = useSceneStore.getState();
-      const rotation = ctxObj?.facts?.rotation;
-      const { min: currentDistance } = nearestDistance(
-        agentCurrentPos,
-        rotation,
-        predicate,
-        "both",
-        entities,
-      );
-
-      if (mode === "Best Record") {
-        if (currentDistance !== null && currentDistance < bestDistance) {
-          distanceLess = true;
-        }
-      }
-
-      if (mode === "Raw Distance") {
-        if (currentDistance !== null && currentDistance < previousDistance) {
-          distanceLess = true;
-        }
-      }
-    };
-
-    if (entityTwo === "Target Object") {
-      diffCal(
-        targetPredicate,
-        "previous_distance_target",
-        mode,
-        "dist_to_nearest_target",
-      );
-    } else if (entityTwo === "Pickable Object") {
-      if (hasHolder) {
-        diffCal(
-          pickablePredicate,
-          "previous_distance_pickable",
-          mode,
-          "dist_to_nearest_pickable",
-        );
-      } else if (hasCollector) {
-        diffCal(
-          collectPredicate,
-          "previous_distance_collect",
-          mode,
-          "dist_to_nearest_collectable",
-        );
-      } else {
-        return;
-      }
-    } else if (entityTwo === "Deposit Object") {
-      if (hasDepositor) {
-        diffCal(
-          depositPredicate,
-          "previous_distance_deposit",
-          mode,
-          "dist_to_nearest_deposit",
-        );
-      } else {
-        return;
+    if (mode === "Raw Distance") {
+      // previousDistance from behavior OBS (pre-action dist to current goal).
+      const previousDistance = getObs("dist_to_current_goal");
+      if (currentDistance !== null && currentDistance < previousDistance) {
+        distanceLess = true;
       }
     }
 
@@ -485,7 +339,7 @@ function visitNode(NodeId, graph, ctxObj) {
 
   if (currentNodeData.type === "IsDistanceMoreNode") {
     let distanceMore = false;
-    let tolerance = 0.2;
+    const tolerance = 0.2;
 
     const entityOne = currentNodeData.data.entityOne;
     const entityTwo = currentNodeData.data.entityTwo;
@@ -494,58 +348,34 @@ function visitNode(NodeId, graph, ctxObj) {
 
     if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
-    const hasHolder = ctxObj.facts?.capabilities?.includes("Holder");
-    const hasCollector = ctxObj.facts?.capabilities?.includes("Collector");
-    const hasDepositor = ctxObj.facts?.capabilities?.includes("Depositor");
-
-    const targetPredicate = (e) =>
-      e.isTarget === true || e.isTarget === "true" || e.isTarget === 1;
-    const pickablePredicate = (e) =>
-      e.isPickable === true || e.isPickable === "true" || e.isPickable === 1;
-    const collectPredicate = (e) =>
-      e.isCollectable === true ||
-      e.isCollectable === "true" ||
-      e.isCollectable === 1;
-    const depositPredicate = (e) =>
-      e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
-
-    const diffCal = (predicate, key) => {
-      const agentCurrentPos = ctxObj?.facts?.position;
-      const previousDistance = ctxObj?.facts?.state_space?.[key]; // normalized, from obs vector
-      const { entities } = useSceneStore.getState();
-      const rotation = ctxObj?.facts?.rotation;
-      const { min: currentDistance } = nearestDistance(
-        agentCurrentPos,
-        rotation,
-        predicate,
-        "both",
-        entities,
-      );
-
-      if (
-        currentDistance !== null &&
-        currentDistance > previousDistance + tolerance
-      ) {
-        distanceMore = true;
-      }
+    const getObs = (key) => {
+      const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
+      return idx === -1 ? null : ctxObj.preObs?.[idx];
     };
 
-    if (entityTwo === "Target Object") {
-      diffCal(targetPredicate, "previous_distance_target");
-    } else if (entityTwo === "Pickable Object") {
-      if (hasHolder) {
-        diffCal(pickablePredicate, "previous_distance_pickable");
-      } else if (hasCollector) {
-        diffCal(collectPredicate, "previous_distance_collect");
-      } else {
-        return;
-      }
-    } else if (entityTwo === "Deposit Object") {
-      if (hasDepositor) {
-        diffCal(depositPredicate, "previous_distance_deposit");
-      } else {
-        return;
-      }
+    const goalCtx = resolveGoalContext(getObs);
+    if (!goalCtx) return;
+
+    const agentCurrentPos = ctxObj.facts?.position;
+    const rotation = ctxObj.facts?.rotation;
+    const { entities } = useSceneStore.getState();
+
+    const { min: currentDistance } = nearestDistance(
+      agentCurrentPos,
+      rotation,
+      goalCtx.predicate,
+      "both",
+      entities,
+    );
+
+    // previousDistance: the stored per-capability reference distance.
+    const previousDistance = ctxObj.facts?.state_space?.[goalCtx.stateKey];
+
+    if (
+      currentDistance !== null &&
+      currentDistance > previousDistance + tolerance
+    ) {
+      distanceMore = true;
     }
 
     const edges = findEdges(NodeId, graph);
@@ -676,6 +506,62 @@ function visitNode(NodeId, graph, ctxObj) {
     visitNode(edge.target, graph, ctxObj);
     if (ctxObj._stop) return;
   }
+}
+
+function resolveGoalContext(getObs) {
+  if (getObs("goal_is_target") === 1 || getObs("goal_is_target") === true) {
+    return {
+      predicate: (e) =>
+        e.isTarget === true || e.isTarget === "true" || e.isTarget === 1,
+      stateKey: "previous_distance_target",
+    };
+  }
+  if (
+    getObs("goal_is_collectable") === 1 ||
+    getObs("goal_is_collectable") === true
+  ) {
+    return {
+      predicate: (e) =>
+        e.isCollectable === true ||
+        e.isCollectable === "true" ||
+        e.isCollectable === 1,
+      stateKey: "previous_distance_collect",
+    };
+  }
+  if (getObs("goal_is_holding") === 1 || getObs("goal_is_holding") === true) {
+    return {
+      predicate: (e) =>
+        e.isPickable === true || e.isPickable === "true" || e.isPickable === 1,
+      stateKey: "previous_distance_pickable",
+    };
+  }
+  if (getObs("goal_is_deposit") === 1 || getObs("goal_is_deposit") === true) {
+    return {
+      predicate: (e) =>
+        e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1,
+      stateKey: "previous_distance_deposit",
+    };
+  }
+  if (getObs("goal_is_gate") === 1 || getObs("goal_is_gate") === true) {
+    return {
+      predicate: (e) =>
+        e.isGate === true || e.isGate === "true" || e.isGate === 1,
+      stateKey: "previous_distance_gate",
+    };
+  }
+  if (
+    getObs("goal_is_destroyable") === 1 ||
+    getObs("goal_is_destroyable") === true
+  ) {
+    return {
+      predicate: (e) =>
+        e.isDestroyable === true ||
+        e.isDestroyable === "true" ||
+        e.isDestroyable === 1,
+      stateKey: "previous_distance_destroyable",
+    };
+  }
+  return null;
 }
 
 function findEdges(NodeId, graph) {

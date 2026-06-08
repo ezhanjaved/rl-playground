@@ -36,11 +36,21 @@ export default function collectorAdapter(action, agent, actionSpace) {
 
     if (targetObj) {
       console.log("Collecting!");
+      const totalNumberCollected = agent?.state_space?.total_items_collected;
       const numberOfPickedItems = agent?.state_space?.items_collected;
       const updatedNumber = numberOfPickedItems + 1;
+      const updatedTotalNumber = totalNumberCollected + updatedNumber;
+
       newStateSpace.items_collected = updatedNumber;
+      newStateSpace.total_items_collected = updatedTotalNumber;
+
       newStateSpace.lastPickSuccess = true;
       newStateSpace.lastItemCollected = targetObj.tag;
+      if (targetObj.name === "Key") {
+        const numberOfKeysPresent = agent?.state_space?.keys_collected;
+        const updatedKey = numberOfKeysPresent + 1;
+        newStateSpace.keys_collected = updatedKey;
+      }
       updateEntity(agent.id, {
         last_action: action,
         state_space: newStateSpace,

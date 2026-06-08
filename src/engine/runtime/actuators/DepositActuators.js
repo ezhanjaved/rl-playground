@@ -75,18 +75,23 @@ export default function depositAdapter(action, ent, actionSpace) {
   if (collectedItems > 0) {
     newStateFragment = {
       ...newStateFragment,
-      items_collected: 0,
+      items_collected: 0, // inventory cleared
       lastItemCollected: null,
+      lastPickSuccess: false,
     };
     itemsJustDeposited += collectedItems;
   }
 
-  newStateFragment.lastDepositSuccess = true;
-  newStateFragment.nearDeposit = targetReached;
-  ((newStateFragment.items_deposited =
-    (agent?.state_space?.items_deposited ?? 0) + itemsJustDeposited),
-    updateEntity(agent.id, {
-      last_action: action,
-      state_space: newStateFragment,
-    }));
+  newStateFragment = {
+    ...newStateFragment,
+    lastDepositSuccess: true,
+    nearDeposit: true,
+    items_deposited:
+      (agent?.state_space?.items_deposited ?? 0) + itemsJustDeposited,
+  };
+
+  updateEntity(agent.id, {
+    last_action: action,
+    state_space: newStateFragment,
+  });
 }

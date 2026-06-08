@@ -150,6 +150,12 @@ const buildEntityStat = (partial) => {
     observation_space: observationsSpace,
     state_space: stateSpace,
     observation_vector: [],
+
+    current_behavior: partial.current_behavior || null,
+    behavior: partial.behavior || [],
+    behaviorObs: [],
+    behaviorObsVector: [],
+
     last_action: partial.last_action || "idle",
   };
   return entity;
@@ -175,11 +181,17 @@ const buildEntitiyFromPartial = (partial, id) => {
     animationRef: partial.animationRef || null,
     collider: partial.collider || null,
     actuator_type: partial.actuator_type || "walker",
+    state: partial.state || {}, //added this will have to sync it on Object Class in python
+
+    behavior: partial.behavior || [],
+    behaviorObs: partial.behaviorObs || [],
 
     targetVisual: partial.targetStat || null,
     isDecor: partial.isDecor || false,
+    isGate: partial.isGate || false,
     isDeposit: partial.isDeposit || false,
     isPickable: partial.isPickable || false,
+    isDestroyable: partial.isDestroyable || false,
     isCollectable: partial.isCollectable || false, //This flag can help us to make sure that agent with Collector capability is picking only isCollectable item
     isTarget: partial.isTarget || false,
   };

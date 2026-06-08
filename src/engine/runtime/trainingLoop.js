@@ -7,6 +7,7 @@ import ControllerRouter from "./controllers/controllerRouter";
 import { qLearningLearner } from "../runtime/controllers/policyController";
 import { addCapabilitySchemas } from "../capabilities/registry";
 import { convertRot } from "../utility/rotationCal";
+import { BehaviorBuilder } from "./behaviorBuilder";
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
@@ -122,13 +123,18 @@ export async function trainingLoop(experimentId) {
         console.log("Step Number: " + step);
 
         const obsVector = buildObsSpace(agent);
+        const { behaviorOBSvector, behaviorOBSspace } = BehaviorBuilder(
+          obsVector,
+          agent,
+        );
         const actionSpace = agent.action_space;
         const sequence = useRunTimeStore.getState().seq[agentId] ?? 0;
         const newSeq = sequence + 1; //increment it
         console.log("New Seq: ", newSeq);
         const actionPicked = ControllerRouter(
           newSeq,
-          obsVector,
+          behaviorOBSspace,
+          behaviorOBSvector,
           agentId,
           actionSpace,
           experimentId,
@@ -139,7 +145,7 @@ export async function trainingLoop(experimentId) {
         const { reward, finished, nextObs } = envSet(
           actionPicked,
           agent,
-          obsVector,
+          behaviorOBSvector,
           step,
         );
         done = finished;
@@ -149,7 +155,8 @@ export async function trainingLoop(experimentId) {
         qTable = qLearningLearner(
           qTable,
           actionPicked,
-          obsVector,
+          behaviorOBSspace,
+          behaviorOBSvector,
           nextObs,
           reward,
           done,

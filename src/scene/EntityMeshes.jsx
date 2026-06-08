@@ -123,7 +123,7 @@ function EntityRenderer({ entity }) {
 
   useFrame(() => {
     if (!playing) return;
-    if (entity.isDecor || !actions) return;
+    if (entity.tag !== "agent" || !actions) return;
     const actionPerformed = entity.last_action;
     const name = entity.name;
     animationLoop(name, actionPerformed, actions, playing);

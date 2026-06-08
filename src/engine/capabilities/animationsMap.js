@@ -9,6 +9,7 @@ const baseAnimations = {
   drop: "Throw",
   interact: "Interact",
   deposit: "Interact",
+  destroy: "Interact",
 };
 
 const animationMap = {

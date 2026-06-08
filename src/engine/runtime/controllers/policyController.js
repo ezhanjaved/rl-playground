@@ -2,9 +2,10 @@
 import { useRunTimeStore } from "../../../stores/useRunTimeStore";
 import { useSceneStore } from "../../../stores/useSceneStore";
 import randomController from "./randomController";
-import discretize from "../../utility/discretization";
+import discretizeBehavior from "../../utility/discretization";
 
 export function qLearningAct(
+  obsSpace,
   obsVector,
   action_space,
   agentId,
@@ -14,8 +15,6 @@ export function qLearningAct(
   mode,
 ) {
   const { experiments, currentExperimentId } = useRunTimeStore.getState();
-  const { entities } = useSceneStore.getState();
-  const agent = entities?.[agentId];
   const expId = experimentId ?? currentExperimentId;
 
   const exp = experiments?.[expId] ?? null;
@@ -34,7 +33,7 @@ export function qLearningAct(
     return randomController(action_space);
   }
 
-  const stateKey = discretize(obsVector, agent);
+  const stateKey = discretizeBehavior(obsVector, obsSpace);
 
   const epsilonTrain =
     agentExp?.learningState?.epsilon ?? config?.epsilon ?? 0.8;
@@ -67,6 +66,7 @@ export function qLearningAct(
 export function qLearningLearner(
   qTable,
   actionTaken,
+  obsSpace,
   obsVector,
   nextObsVector,
   reward,
@@ -76,7 +76,6 @@ export function qLearningLearner(
 ) {
   const { entities } = useSceneStore.getState();
   const action_space = entities?.[agentId]?.action_space ?? [];
-  const agent = entities?.[agentId];
   if (!qTable) qTable = {};
   let alpha;
   console.log("Reward Given To Q Learner: " + reward);
@@ -96,8 +95,8 @@ export function qLearningLearner(
   console.log("action_space:", action_space);
   console.log("actionTaken:", actionTaken);
 
-  const stateKey = discretize(obsVector, agent);
-  const nextStateKey = discretize(nextObsVector, agent);
+  const stateKey = discretizeBehavior(obsVector, obsSpace);
+  const nextStateKey = discretizeBehavior(nextObsVector, obsSpace);
 
   if (!qTable[stateKey]) {
     qTable[stateKey] = {};

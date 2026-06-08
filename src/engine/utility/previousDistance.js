@@ -67,6 +67,27 @@ export default function previousDistanceCorrection(
         }
         break;
 
+      case "Destroyer":
+        index = getIndexOfObs(
+          agent?.observation_space,
+          "dist_to_nearest_destroyable",
+        );
+        value = obs_space[index]; //pre step obs value
+        best = newStateSpace.previous_distance_destroyable; //current best
+        if (value < best) {
+          newStateSpace.previous_distance_destroyable = value;
+        }
+        break;
+
+      case "Opener":
+        index = getIndexOfObs(agent?.observation_space, "dist_to_nearest_gate");
+        value = obs_space[index]; //pre step obs value
+        best = newStateSpace.previous_distance_gate; //current best
+        if (value < best) {
+          newStateSpace.previous_distance_gate = value;
+        }
+        break;
+
       case "TemporalMemory":
         newStateSpace.last_action_index = indexOfAction;
         //if current action is same as last was we will increment counter.

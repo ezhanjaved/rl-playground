@@ -23,6 +23,14 @@ const obstaclePredicate = (e) =>
 const depositPredicate = (e) =>
   e.isDeposit === true || e.isDeposit === "true" || e.isDeposit === 1;
 
+const destroyablePredicate = (e) =>
+  e.isDestroyable === true ||
+  e.isDestroyable === "true" ||
+  e.isDestroyable === 1;
+
+const gatePredicate = (e) =>
+  e.isGate === true || e.isGate === "true" || e.isGate === 1;
+
 export function distanceInDirection(
   position,
   rotation,
@@ -319,6 +327,14 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      case "in_radius_holder": {
+        const info = getNearestTargetInfo(position, entities, "isPickable");
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
+      //Shared by both Collector & Holder
       case "lastPickSuccess": {
         const lps = stateSpace?.lastPickSuccess;
         const val = lps === null || lps === undefined ? 0.5 : lps ? 1 : 0;
@@ -352,6 +368,27 @@ export default function buildObsSpace(agent) {
         break;
       }
 
+      case "keys_collected": {
+        let val = parseFloat(stateSpace?.keys_collected ?? 0);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "total_items_collected": {
+        let val = parseFloat(stateSpace?.total_items_collected ?? 0);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "in_radius_collect": {
+        const info = getNearestTargetInfo(position, entities, "isCollectable");
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
       // --- (Depositor) ---
       case "dist_to_nearest_deposit": {
         const { min } = cached(depositPredicate, "both");
@@ -371,16 +408,111 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      case "items_deposit": {
+      case "items_deposited": {
         let val = parseFloat(stateSpace?.items_deposited ?? 0);
         val = Math.min(val / 10.0, 1.0);
         constructedObs.push(val);
         break;
       }
 
+      case "in_radius_deposit": {
+        const info = getNearestTargetInfo(position, entities, "isDeposit");
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
       case "last_deposit_success": {
         // null = never tried (0.5), true = success (1), false = failed (0)
         const lds = stateSpace?.lastDepositSuccess;
+        const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
+        constructedObs.push(val);
+        break;
+      }
+
+      // --- (Destroyer) ---
+      case "dist_to_nearest_destroyable": {
+        const { min } = cached(destroyablePredicate, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_x_to_destroyable": {
+        const { min } = cached(destroyablePredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_destroyable": {
+        const { min } = cached(destroyablePredicate, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "items_destroyed": {
+        let val = parseFloat(stateSpace?.items_destroyed ?? 0);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "in_radius_destroyed": {
+        const info = getNearestTargetInfo(position, entities, "isDestroyable");
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
+      case "last_destroy_success": {
+        // null = never tried (0.5), true = success (1), false = failed (0)
+        const lds = stateSpace?.lastDestroySuccess;
+        const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
+        constructedObs.push(val);
+        break;
+      }
+
+      // --- (Opener) ---
+      case "dist_to_nearest_gate": {
+        const { min } = cached(gatePredicate, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_x_to_gate": {
+        const { min } = cached(gatePredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_gate": {
+        const { min } = cached(gatePredicate, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "in_radius_gate": {
+        const info = getNearestTargetInfo(position, entities, "isGate");
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
+      case "hasKey": {
+        const keyPresent = stateSpace?.keys_collected > 0;
+        constructedObs.push(keyPresent ? 1 : 0);
+        break;
+      }
+
+      case "gates_open": {
+        let val = parseFloat(stateSpace?.gates_open ?? 0);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "last_open_success": {
+        // null = never tried (0.5), true = success (1), false = failed (0)
+        const lds = stateSpace?.lastOpenSuccess;
         const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
         constructedObs.push(val);
         break;

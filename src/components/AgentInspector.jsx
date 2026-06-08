@@ -139,6 +139,19 @@ function AgentInspectorWindow({ open, onClose }) {
 
                 <div className="agent-inspector-info-row">
                   <span className="agent-inspector-info-label">
+                    Behavior-Oriented OBS Space
+                  </span>
+                  <div className="agent-inspector-pill-list">
+                    {activeAgentData.behaviorObs?.map((value, index) => (
+                      <span key={index} className="agent-inspector-pill">
+                        {value}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="agent-inspector-info-row">
+                  <span className="agent-inspector-info-label">
                     Action Space
                   </span>
                   <div className="agent-inspector-pill-list">
@@ -179,6 +192,29 @@ function AgentInspectorWindow({ open, onClose }) {
 
                   <div className="agent-inspector-pill-list">
                     {activeAgentData.observation_vector?.map((value, index) => (
+                      <span key={index} className="agent-inspector-pill">
+                        {value}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="agent-inspector-info-row">
+                  <span className="agent-inspector-info-label">
+                    Current Behavior
+                  </span>
+                  <span className="agent-inspector-info-value">
+                    {activeAgentData.current_behavior}
+                  </span>
+                </div>
+
+                <div className="agent-inspector-info-row">
+                  <span className="agent-inspector-info-label">
+                    Behavior-Defined OBS Vector
+                  </span>
+
+                  <div className="agent-inspector-pill-list">
+                    {activeAgentData.behaviorObsVector?.map((value, index) => (
                       <span key={index} className="agent-inspector-pill">
                         {value}
                       </span>

@@ -8,6 +8,7 @@ import { useRunTimeStore } from "../../../stores/useRunTimeStore";
 export default function ControllerRouter(
   seq,
   observation_space,
+  observation_vector,
   agentId,
   action_space,
   experimentId,
@@ -29,6 +30,7 @@ export default function ControllerRouter(
     setControllerMode("Policy (Q-Learning)");
     return qLearningAct(
       observation_space,
+      observation_vector,
       action_space,
       agentId,
       config,

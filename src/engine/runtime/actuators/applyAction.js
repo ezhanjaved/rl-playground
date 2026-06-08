@@ -5,6 +5,8 @@ import holderAdapter from "./HolderActuators.js";
 import collectorAdapter from "./CollectorActuators.js";
 import finderAdapter from "./finderActuators.js";
 import depositAdapter from "./DepositActuators.js";
+import destoryAdapter from "./DestroyActuator.js";
+import openAdapter from "./OpenActuators.js";
 
 export default function applyAction(action_picked, agent, observation_space) {
   const capabilityMatched = CapabilityMatcher(action_picked);
@@ -24,6 +26,12 @@ export default function applyAction(action_picked, agent, observation_space) {
       break;
     case "Depositor":
       depositWorker(action_picked, agent, actionSpace);
+      break;
+    case "Destroyer":
+      destroyWorker(action_picked, agent, actionSpace);
+      break;
+    case "Opener":
+      openWorker(action_picked, agent, actionSpace);
       break;
     default:
       break;
@@ -60,4 +68,12 @@ function depositWorker(action, entity, actionSpace) {
 
 function finderWorker(action, entity, actionSpace) {
   finderAdapter(action, entity, actionSpace);
+}
+
+function destroyWorker(action, entity, actionSpace) {
+  destoryAdapter(action, entity, actionSpace);
+}
+
+function openWorker(action, entity, actionSpace) {
+  openAdapter(action, entity, actionSpace);
 }
