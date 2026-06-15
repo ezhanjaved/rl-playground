@@ -162,6 +162,22 @@ function AgentInspectorWindow({ open, onClose }) {
                     ))}
                   </div>
                 </div>
+
+                <div className="agent-inspector-info-row">
+                  <span className="agent-inspector-info-label">
+                    State Space
+                  </span>
+
+                  <div className="agent-inspector-pill-list">
+                    {Object.entries(activeAgentData.state_space ?? {}).map(
+                      ([key, value]) => (
+                        <span key={key} className="agent-inspector-pill">
+                          {key}: {String(value)}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -232,6 +248,38 @@ function AgentInspectorWindow({ open, onClose }) {
                 </div>
               </div>
             </section>
+
+            {activeAgentData.probabilities &&
+              activeAgentData.probabilities.length > 0 && (
+                <section className="agent-inspector-section">
+                  <div className="agent-inspector-info">
+                    <h4>Action Probability Distribution</h4>
+
+                    {activeAgentData.probabilities.map(({ action, prob }) => {
+                      const masked = prob === 0;
+                      const pct = (prob * 100).toFixed(1);
+                      return (
+                        <div key={action} className="agent-inspector-prob-row">
+                          <span className="agent-inspector-prob-label">
+                            {action}
+                          </span>
+                          <div className="agent-inspector-bar-track">
+                            <div
+                              className={`agent-inspector-bar-fill ${masked ? "masked" : "active"}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span
+                            className={`agent-inspector-bar-pct ${masked ? "masked" : ""}`}
+                          >
+                            {masked ? "—" : `${pct}%`}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
           </>
         )}
       </div>

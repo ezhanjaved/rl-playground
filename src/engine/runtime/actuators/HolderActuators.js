@@ -3,7 +3,7 @@ import { useSceneStore } from "../../../stores/useSceneStore";
 import { getIndexOfObs } from "../../utility/getIndex";
 
 export default function holderAdapter(action, entity, actionSpace) {
-  const { updateEntity, entities, deleteEntity, addEntity } =
+  const { updateEntity, entities, deleteEntity, addEntity, updateEntityStat } =
     useSceneStore.getState();
   const freshEntity = entities[entity.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
@@ -35,6 +35,9 @@ export default function holderAdapter(action, entity, actionSpace) {
         last_action: action,
         state_space: newStateSpace,
       });
+      updateEntityStat(entity.id, {
+        state_space: newStateSpace,
+      });
       return;
     }
 
@@ -43,6 +46,9 @@ export default function holderAdapter(action, entity, actionSpace) {
       newStateSpace.lastPickSuccess = false;
       updateEntity(entity.id, {
         last_action: action,
+        state_space: newStateSpace,
+      });
+      updateEntityStat(entity.id, {
         state_space: newStateSpace,
       });
       return;
@@ -57,6 +63,9 @@ export default function holderAdapter(action, entity, actionSpace) {
 
     updateEntity(entity.id, {
       last_action: action,
+      state_space: newStateSpace,
+    });
+    updateEntityStat(entity.id, {
       state_space: newStateSpace,
     });
     return;

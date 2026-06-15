@@ -118,11 +118,16 @@ def build_agents(agent_obj):
         isCollectable=agent_obj.get("isCollectable", False),
         isAssigned=agent_obj.get("isAssigned", False),
         isTarget=agent_obj.get("isTarget", False),
+        isGate=agent_obj.get("isGate", False),
+        isDestroyable=agent_obj.get("isDestroyable", False),
         last_action=agent_obj.get("last_action", "idle"),
         action_space=agent_obj.get("action_space", []),
         observation_space=agent_obj.get("observation_space", []),
         state_space=build_state_space(agent_obj.get("state_space", {})),
         settings=agent_obj.get("settings", {}),
+        current_behavior=agent_obj.get("current_behavior", None),
+        behavior=agent_obj.get("behavior", []),
+        behaviorObs=agent_obj.get("behaviorObs", []),
         collider=agent_obj.get("collider", {}),
     )
 
@@ -140,7 +145,10 @@ def build_objects(obj):
         isCollectable=obj.get("isCollectable", False),
         isTarget=obj.get("isTarget", False),
         isDeposit=obj.get("isDeposit", False),
+        isGate=obj.get("isGate", False),
+        isDestroyable=obj.get("isDestroyable", False),
         collider=obj.get("collider", {}),
+        state=obj.get("state", {}),
     )
 
 
@@ -185,5 +193,31 @@ def build_state_space(ss_dict) -> StateSpace:
 
     if "previous_distance_deposit" in ss_dict:
         state["previous_distance_deposit"] = ss_dict["previous_distance_deposit"]
+
+    if "items_destroyed" in ss_dict:
+        state["items_destroyed"] = ss_dict["items_destroyed"]
+
+    if "nearDestroyable" in ss_dict:
+        state["nearDestroyable"] = ss_dict["nearDestroyable"]
+
+    if "lastDestroySuccess" in ss_dict:
+        state["lastDestroySuccess"] = ss_dict["lastDestroySuccess"]
+
+    if "previous_distance_destroyable" in ss_dict:
+        state["previous_distance_destroyable"] = ss_dict[
+            "previous_distance_destroyable"
+        ]
+
+    if "gates_open" in ss_dict:
+        state["gates_open"] = ss_dict["gates_open"]
+
+    if "nearGate" in ss_dict:
+        state["nearGate"] = ss_dict["nearGate"]
+
+    if "hasKey" in ss_dict:
+        state["hasKey"] = ss_dict["hasKey"]
+
+    if "lastOpenSuccess" in ss_dict:
+        state["lastOpenSuccess"] = ss_dict["lastOpenSuccess"]
 
     return state

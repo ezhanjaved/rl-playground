@@ -1,8 +1,10 @@
 import { nearbyPickable } from "../../utility/nearByPickable";
 import { useSceneStore } from "../../../stores/useSceneStore";
 import { getIndexOfObs } from "../../utility/getIndex";
+
 export default function collectorAdapter(action, agent, actionSpace) {
-  const { updateEntity, entities, deleteEntity } = useSceneStore.getState();
+  const { updateEntity, entities, deleteEntity, updateEntityStat } =
+    useSceneStore.getState();
   const indexOfAction = getIndexOfObs(actionSpace, action);
   const capabilities = agent.capabilities;
   let newStateSpace = { ...agent.state_space };
@@ -31,16 +33,17 @@ export default function collectorAdapter(action, agent, actionSpace) {
         last_action: action,
         state_space: newStateSpace,
       });
+      updateEntityStat(agent.id, {
+        state_space: newStateSpace,
+      });
       return;
     }
 
     if (targetObj) {
       console.log("Collecting!");
-      const totalNumberCollected = agent?.state_space?.total_items_collected;
       const numberOfPickedItems = agent?.state_space?.items_collected;
       const updatedNumber = numberOfPickedItems + 1;
-      const updatedTotalNumber = totalNumberCollected + updatedNumber;
-
+      const updatedTotalNumber = updatedNumber;
       newStateSpace.items_collected = updatedNumber;
       newStateSpace.total_items_collected = updatedTotalNumber;
 
@@ -53,6 +56,9 @@ export default function collectorAdapter(action, agent, actionSpace) {
       }
       updateEntity(agent.id, {
         last_action: action,
+        state_space: newStateSpace,
+      });
+      updateEntityStat(agent.id, {
         state_space: newStateSpace,
       });
       deleteEntity(targetObj.id); //Remove item from env - it is collected now!

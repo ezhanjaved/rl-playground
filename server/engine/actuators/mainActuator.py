@@ -2,9 +2,11 @@ import pybullet as p
 
 from server.engine.actuators.collectorActuator import collectorActuator
 from server.engine.actuators.depositActuator import depositActuator
+from server.engine.actuators.destroyerActuator import destroyActuator
 from server.engine.actuators.finderActuator import finderActuator
 from server.engine.actuators.holderActuator import holderActuator
 from server.engine.actuators.moveableActuator import moveableActuator
+from server.engine.actuators.openerActuator import openActuator
 from server.utilities.capabilitiesMatch import capabilityMatcher
 
 
@@ -45,3 +47,15 @@ def process_action(agent_id, agent_data, action, entityMapping, client, entities
         case "Depositor":
             if "Depositor" in agentCapability:
                 depositActuator(action, agent_data, entities, indexOfAction)
+
+        case "Destroyer":
+            if "Destroyer" in agentCapability:
+                destroyActuator(
+                    action, agent_data, entities, entityMapping, client, indexOfAction
+                )
+
+        case "Opener":
+            if "Opener" in agentCapability:
+                openActuator(
+                    action, agent_data, entities, entityMapping, client, indexOfAction
+                )

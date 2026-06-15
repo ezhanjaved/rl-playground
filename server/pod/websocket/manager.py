@@ -3,7 +3,7 @@ import torch
 from fastapi import FastAPI, WebSocket
 
 from server.pod.jwt_token.generateJWT import verify_token
-from server.utilities.refined import actionMasking, actionTranslator
+from server.utilities.refined import actionMasking, actionMaskingArray, actionTranslator
 
 model = None
 
@@ -19,10 +19,16 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def predict_action(self, obs: list, capability: list):
+    async def predict_action(self, obs: list, capability: list, current_behavior: str):
         obs = np.array(obs, dtype=np.float32)
         actions, _ = actionMasking(capability)
-        action_predicted, _ = model.predict(obs, deterministic=True)
+
+        mask = [False] * len(actions)
+        maskedArray = actionMaskingArray(mask, actions, current_behavior)
+
+        action_predicted, _ = model.predict(
+            obs, action_masks=maskedArray, deterministic=True
+        )
 
         # added the prob check
         obs_np = np.asarray(obs, dtype=np.float32)
@@ -30,9 +36,10 @@ class ConnectionManager:
             obs_np = obs_np.reshape(1, -1)
 
         obs_tensor = torch.as_tensor(obs_np).float().to(model.device)
+        mask_tensor = torch.as_tensor(maskedArray).to(model.device)
 
         with torch.no_grad():
-            dist = model.policy.get_distribution(obs_tensor)
+            dist = model.policy.get_distribution(obs_tensor, action_masks=mask_tensor)
             probs = dist.distribution.probs.cpu().numpy()[0]
 
         action_idx = (
@@ -55,7 +62,13 @@ class ConnectionManager:
         print("AVAILABLE ACTIONS:", actions, flush=True)
         print("TRANSLATED ACTION:", actionTranslator(action_idx, actions), flush=True)
 
-        return actionTranslator(action_predicted, actions)
+        return {
+            "action": actionTranslator(action_predicted, actions),
+            "probs": [
+                {"action": actions[i], "prob": round(float(prob), 4)}
+                for i, prob in enumerate(probs)
+            ],
+        }
 
 
 app = FastAPI()
@@ -71,17 +84,22 @@ async def websocket_endpoint(websocket: WebSocket):
             token = data["jwt_token"]
             agent_id = data["agentId"]
             capability = data["cap"]
+            current_behavior = data["behavior"]
             seq = data["seq"]
             status = verify_token(token)
             if status:
                 print(f"Received: {data}", flush=True)
                 obs = data["obs"]
-                action = await manager.predict_action(obs, capability)
+                result = await manager.predict_action(obs, capability, current_behavior)
+                action = result["action"]
                 print(f"Sent: {action}", flush=True)
+                result = await manager.predict_action(obs, capability, current_behavior)
+
                 await websocket.send_json(
                     {
                         "seq": seq,
-                        "action": action,
+                        "action": result["action"],
+                        "probs": result["probs"],
                         "session_id": data["session_token"],
                         "agent_id": agent_id,
                     }

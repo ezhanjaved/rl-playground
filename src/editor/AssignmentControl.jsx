@@ -1,7 +1,7 @@
 import "../styling/AssignmentControl.css";
 import { useGraphStore } from "../stores/useGraphStore";
 import { useSceneStore } from "../stores/useSceneStore";
-import { FaInfo, FaLink, FaUnlink, FaBolt } from "react-icons/fa";
+import { FaInfo, FaLink, FaUnlink, FaBolt, FaBrain } from "react-icons/fa";
 import { useEffect, useState } from "react";
 
 export default function AssignmentControl() {
@@ -11,6 +11,8 @@ export default function AssignmentControl() {
   const addAssignment = useSceneStore((s) => s.addAssignment);
   const deleteAssignment = useSceneStore((s) => s.deleteAssignment);
   const assignments = useSceneStore((s) => s.assignments);
+  const [pickedBehavior, setPickedBehavior] = useState(null);
+  const [behaviorCount, setBehaviorCount] = useState(1);
 
   useEffect(() => {
     console.log("Assignments: " + JSON.stringify(assignments, null, 2));
@@ -22,6 +24,14 @@ export default function AssignmentControl() {
 
   const selectedEntity = entities?.[pickedEntity];
   const isAgent = selectedEntity?.tag === "agent";
+
+  useEffect(() => {
+    if (!pickedBehavior) return;
+    const beh = (selectedEntity?.behavior ?? []).find(
+      (b) => b.type === pickedBehavior,
+    );
+    setBehaviorCount(beh?.requiredCount ?? 1);
+  }, [pickedBehavior, selectedEntity]);
 
   return (
     <div className="ac-root">
@@ -122,7 +132,6 @@ export default function AssignmentControl() {
           </div>
         ) : (
           <div className="ac-agent-config">
-            {/* Meta row */}
             <div className="ac-meta-row">
               <div className="ac-meta-chip">
                 <span className="ac-meta-label">Tag</span>
@@ -173,6 +182,118 @@ export default function AssignmentControl() {
               </div>
             </div>
 
+            {/* ── BEHAVIOR EDITOR ── place between Speed Multiplier and Bind/Unbind ── */}
+            <div className="ac-field-group">
+              <label className="ac-field-label">
+                <FaBrain style={{ marginRight: 6, opacity: 0.6 }} />
+                Behavior Editor
+              </label>
+
+              {/* Behavior selector dropdown */}
+              <div className="ac-field-row" style={{ marginBottom: 8 }}>
+                <select
+                  className="ac-input ac-select"
+                  value={pickedBehavior ?? ""}
+                  onChange={(e) => setPickedBehavior(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Select a behavior…
+                  </option>
+                  {(selectedEntity.behavior ?? []).map((b, i) => (
+                    <option key={i} value={b.type}>
+                      {b.type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Detail card — only when one is selected */}
+              {pickedBehavior &&
+                (() => {
+                  const beh = (selectedEntity.behavior ?? []).find(
+                    (b) => b.type === pickedBehavior,
+                  );
+                  if (!beh) return null;
+                  return (
+                    <div className="ac-behavior-card">
+                      {/* Required count row */}
+                      <div className="ac-behavior-row">
+                        <span className="ac-behavior-row-label">
+                          Required count
+                        </span>
+                        <span className="ac-behavior-current">
+                          current: {beh.requiredCount}
+                        </span>
+                        <div className="ac-field-row ac-behavior-input-row">
+                          <input
+                            className="ac-input ac-input--sm"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={behaviorCount}
+                            onChange={(e) => setBehaviorCount(e.target.value)}
+                          />
+                          <button
+                            className="ac-btn ac-btn--ghost"
+                            onClick={() => {
+                              const updatedBehavior =
+                                selectedEntity.behavior.map((b) =>
+                                  b.type === pickedBehavior
+                                    ? {
+                                        ...b,
+                                        requiredCount: Number(behaviorCount),
+                                      }
+                                    : b,
+                                );
+                              updateEntity(pickedEntity, {
+                                behavior: updatedBehavior,
+                              });
+                            }}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Taught toggle row */}
+                      <div className="ac-behavior-row ac-behavior-row--taught">
+                        <div className="ac-behavior-taught-info">
+                          <span className="ac-behavior-row-label">Taught</span>
+                          <span
+                            className={`ac-taught-badge ${beh.status ? "ac-taught-badge--yes" : "ac-taught-badge--no"}`}
+                          >
+                            {beh.status ? "Yes" : "No"}
+                          </span>
+                        </div>
+                        <button
+                          className={`ac-btn ac-btn--taught ${beh.status ? "ac-btn--taught-revoke" : "ac-btn--taught-grant"}`}
+                          onClick={() => {
+                            const nextStatus = !beh.status;
+                            const updatedBehavior = selectedEntity.behavior.map(
+                              (b) =>
+                                b.type === pickedBehavior
+                                  ? { ...b, status: nextStatus }
+                                  : b,
+                            );
+                            updateEntity(pickedEntity, {
+                              behavior: updatedBehavior,
+                            });
+                            simpleChange(
+                              pickedBehavior,
+                              selectedEntity,
+                              nextStatus,
+                              beh.requiredCount,
+                            );
+                          }}
+                        >
+                          {beh.status ? "Revoke" : "Mark as taught"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+            </div>
+
             {/* Bind / Unbind */}
             <div className="ac-actions">
               <button
@@ -203,4 +324,62 @@ export default function AssignmentControl() {
       </div>
     </div>
   );
+}
+
+const PROGRESS_FIELD_MAP = {
+  Collect: "total_items_collected",
+  Holding: "holding",
+  Deposit: "items_deposited",
+  Open: "gates_open",
+  Destroy: "items_destroyed",
+  Find: "in_target_radius",
+};
+
+const SIDE_EFFECTS = {
+  Collect: {
+    taught: (rc) => ({ items_collected: rc, total_items_collected: rc }),
+    revoked: () => ({ items_collected: 0, total_items_collected: 0 }),
+  },
+  Deposit: {
+    taught: (rc) => ({ items_collected: 0, items_deposited: rc }),
+    revoked: () => ({ items_deposited: 0 }),
+  },
+  Open: {
+    taught: (rc) => ({ keys_collected: rc }),
+    revoked: () => ({ keys_collected: 0 }),
+  },
+};
+
+/**
+ * Syncs state_space after a behavior's taught status changes.
+ * @param {string} behaviorType  - The behavior type string (e.g. "Collect")
+ * @param {object} entity        - The entity object as it existed before the update
+ * @param {boolean} nextStatus   - The NEW status value (true = taught, false = revoked)
+ * @param {number} requiredCount - The behavior's requiredCount at the time of the toggle
+ */
+
+function simpleChange(behaviorType, entity, nextStatus, requiredCount) {
+  const { entities, updateEntity } = useSceneStore.getState();
+  const freshData = entities[entity.id];
+  const newStateSpace = { ...freshData.state_space };
+
+  const primaryField = PROGRESS_FIELD_MAP[behaviorType];
+
+  if (nextStatus) {
+    if (primaryField) {
+      newStateSpace[primaryField] = requiredCount;
+    }
+    const sideEffects =
+      SIDE_EFFECTS[behaviorType]?.taught?.(requiredCount) ?? {};
+    Object.assign(newStateSpace, sideEffects);
+  } else {
+    if (primaryField) {
+      newStateSpace[primaryField] = 0;
+    }
+    const sideEffects =
+      SIDE_EFFECTS[behaviorType]?.revoked?.(requiredCount) ?? {};
+    Object.assign(newStateSpace, sideEffects);
+  }
+
+  updateEntity(freshData.id, { state_space: newStateSpace });
 }

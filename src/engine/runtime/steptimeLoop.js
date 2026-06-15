@@ -3,7 +3,7 @@ import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
 import buildObsSpace from "./observationBuilder.js";
 import { sendObsToCloud } from "../../websocket/ccWebsocket.js";
 import { useSceneStore } from "../../stores/useSceneStore.js";
-
+import { BehaviorBuilder } from "./behaviorBuilder.js";
 export default function stepTimeLoop(entities) {
   const {
     playing,
@@ -42,7 +42,11 @@ export default function stepTimeLoop(entities) {
 
     if (isDecor || !entity.action_space || isPickable || isTarget || isDeposit)
       return;
-    const observation_space = buildObsSpace(entity);
+    const observation_vector = buildObsSpace(entity);
+    const { behaviorOBSvector, currentBehavior } = BehaviorBuilder(
+      observation_vector,
+      entity,
+    );
     const wFa = waitingForAction[entity.id];
     if (wFa === true) return;
 
@@ -56,15 +60,16 @@ export default function stepTimeLoop(entities) {
     const jwt_token = localStorage.getItem("jwt_token");
     updateEntityStat(entity.id, {
       seq: nextSeq,
-      observation_vector: observation_space,
+      observation_vector: observation_vector,
     });
     sendObsToCloud(
       nextSeq,
-      observation_space,
+      behaviorOBSvector,
       session_token,
       jwt_token,
       entity.id,
       entity.capabilities,
+      currentBehavior,
     );
   });
 }

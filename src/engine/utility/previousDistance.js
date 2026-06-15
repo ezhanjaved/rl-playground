@@ -1,111 +1,74 @@
 import { useSceneStore } from "../../stores/useSceneStore";
 import { getIndexOfObs } from "./getIndex";
 import { convertRot } from "./rotationCal";
+
+const PREVIOUS_DISTANCE_BY_BEHAVIOR = {
+  Find: "previous_distance_target",
+  Collect: "previous_distance_collect",
+  Holding: "previous_distance_pickable",
+  Deposit: "previous_distance_deposit",
+  Destroy: "previous_distance_destroyable",
+  Open: "previous_distance_gate",
+};
+
 export default function previousDistanceCorrection(
-  obs_space,
+  behaviorOBSvector,
   agent,
   current_action,
   position,
   rotation,
 ) {
-  const capabilities = agent?.capabilities; //["Moveable", "Finder"]
-  const { updateEntity } = useSceneStore.getState();
-  let index = null;
-  let value = null;
-  let best = null;
+  const { updateEntity, entities, updateEntityStat } = useSceneStore.getState();
+  const freshAgent = entities[agent.id];
+
+  const behaviorOBSspace = freshAgent.behaviorObs;
+  const currentBehavior = freshAgent.current_behavior;
+
   let newStateSpace = { ...agent.state_space };
-  const action_space = agent?.action_space; //array of actions
+
+  const action_space = agent?.action_space ?? [];
   const indexOfAction = getIndexOfObs(action_space, current_action);
 
-  capabilities.forEach((cap) => {
-    switch (cap) {
-      case "Finder":
-        index = getIndexOfObs(
-          agent?.observation_space,
-          "dist_to_nearest_target",
-        );
-        value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_target; //current best
-        if (value < best) {
-          newStateSpace.previous_distance_target = value;
-        }
-        break;
+  const distIndex = getIndexOfObs(behaviorOBSspace, "dist_to_current_goal");
 
-      case "Holder":
-        index = getIndexOfObs(
-          agent?.observation_space,
-          "dist_to_nearest_pickable",
-        );
-        value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_pickable; //current best
-        if (value < best) {
-          newStateSpace.previous_distance_pickable = value;
-        }
-        break;
+  const currentGoalDistance =
+    distIndex === -1 ? null : behaviorOBSvector[distIndex];
 
-      case "Collector":
-        index = getIndexOfObs(
-          agent?.observation_space,
-          "dist_to_nearest_collectable",
-        );
-        value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_collect; //current best
-        if (value < best) {
-          newStateSpace.previous_distance_collect = value;
-        }
-        break;
+  const previousDistanceKey = PREVIOUS_DISTANCE_BY_BEHAVIOR[currentBehavior];
 
-      case "Depositor":
-        index = getIndexOfObs(
-          agent?.observation_space,
-          "dist_to_nearest_deposit",
-        );
-        value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_deposit; //current best
-        if (value < best) {
-          newStateSpace.previous_distance_deposit = value;
-        }
-        break;
+  if (
+    previousDistanceKey &&
+    currentGoalDistance !== null &&
+    currentGoalDistance !== undefined
+  ) {
+    const best = newStateSpace[previousDistanceKey] ?? Infinity;
 
-      case "Destroyer":
-        index = getIndexOfObs(
-          agent?.observation_space,
-          "dist_to_nearest_destroyable",
-        );
-        value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_destroyable; //current best
-        if (value < best) {
-          newStateSpace.previous_distance_destroyable = value;
-        }
-        break;
-
-      case "Opener":
-        index = getIndexOfObs(agent?.observation_space, "dist_to_nearest_gate");
-        value = obs_space[index]; //pre step obs value
-        best = newStateSpace.previous_distance_gate; //current best
-        if (value < best) {
-          newStateSpace.previous_distance_gate = value;
-        }
-        break;
-
-      case "TemporalMemory":
-        newStateSpace.last_action_index = indexOfAction;
-        //if current action is same as last was we will increment counter.
-        if (current_action === agent.last_action) {
-          newStateSpace.last_action_counter += 1;
-        } else {
-          newStateSpace.last_action_counter = 1;
-        }
-        break;
+    if (currentGoalDistance < best) {
+      newStateSpace[previousDistanceKey] = currentGoalDistance;
     }
-  });
+  }
+
+  if (agent?.capabilities?.includes("TemporalMemory")) {
+    newStateSpace.last_action_index = indexOfAction;
+
+    if (current_action === agent.last_action) {
+      newStateSpace.last_action_counter =
+        (newStateSpace.last_action_counter ?? 0) + 1;
+    } else {
+      newStateSpace.last_action_counter = 1;
+    }
+  }
 
   const quat = convertRot(rotation);
+
   updateEntity(agent.id, {
     last_action: current_action,
     position,
     rotation,
     quatRotation: quat ? [quat.x, quat.y, quat.z, quat.w] : [0, 0, 0, 1],
+    state_space: newStateSpace,
+  });
+  updateEntityStat(agent.id, {
     state_space: newStateSpace,
   });
 }

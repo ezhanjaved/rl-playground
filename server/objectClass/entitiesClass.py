@@ -4,6 +4,7 @@ from typing import TypedDict, cast
 
 class StateSpace(TypedDict, total=False):
     last_action_index: float
+    last_action_counter: float
 
     targetReached: bool
     previous_distance_target: float
@@ -14,12 +15,25 @@ class StateSpace(TypedDict, total=False):
 
     lastItemCollected: str
     items_collected: int
+    keys_collected: int
+    total_items_collected: int
     previous_distance_collect: float
 
     items_deposited: float
     nearDeposit: bool
-    previous_distance_deposit: float
     lastDepositSuccess: bool
+    previous_distance_deposit: float
+
+    items_destroyed: int
+    nearDestroyable: bool
+    lastDestroySuccess: bool
+    previous_distance_destroyable: float
+
+    gates_open: int
+    nearGate: bool
+    hasKey: bool
+    lastOpenSuccess: bool
+    previous_distance_gate: float
 
 
 @dataclass(kw_only=True)
@@ -36,6 +50,8 @@ class Entities:
     isCollectable: bool
     isTarget: bool
     isDeposit: bool
+    isGate: bool
+    isDestroyable: bool
 
     collider: dict = field(default_factory=dict)
 
@@ -45,7 +61,10 @@ class Agent(Entities):
     isAssigned: bool
     last_action: str
     capabilities: list[str]
+    current_behavior: str
     observation_space: list[str] = field(default_factory=list)
+    behavior: list[dict] = field(default_factory=list)
+    behaviorObs: list[str] = field(default_factory=list)
     action_space: list[str] = field(default_factory=list)
     state_space: StateSpace = field(default_factory=lambda: cast(StateSpace, {}))
     settings: dict = field(default_factory=dict)
@@ -53,4 +72,4 @@ class Agent(Entities):
 
 @dataclass
 class Object(Entities):
-    pass
+    state: dict = field(default_factory=dict)

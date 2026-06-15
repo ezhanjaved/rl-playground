@@ -4,11 +4,12 @@ def capabilityMatcher(action):
         "drop": "Holder",
         "collect": "Collector",
         "move_up": "Moveable",
-        "move_down": "Moveable",
         "move_right": "Moveable",
         "move_left": "Moveable",
         "idle": "Moveable",
         "interact": "Finder",
         "deposit": "Depositor",
+        "destroy": "Destroyer",
+        "open": "Opener",
     }
     return actionLib[action]

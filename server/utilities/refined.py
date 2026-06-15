@@ -1,5 +1,14 @@
 import numpy as np
 
+BEHAVIOR_ACTIONS = {
+    "Collect": ["collect"],
+    "Deposit": ["deposit"],
+    "Holding": ["pick", "drop"],
+    "Open": ["open"],
+    "Destroy": ["destroy"],
+    "Find": ["interact"],
+}
+
 
 def simplify(dictType):
     listType = list(dictType.keys())
@@ -25,9 +34,19 @@ def actionMasking(capabilities):
         "Holder": ["pick", "drop"],
         "Finder": ["interact"],
         "Depositor": ["deposit"],
+        "Destroyer": ["destroy"],
+        "Opener": ["open"],
     }
 
-    ORDER = ["Moveable", "Finder", "Collector", "Holder", "Depositor"]
+    ORDER = [
+        "Moveable",
+        "Finder",
+        "Collector",
+        "Holder",
+        "Depositor",
+        "Destroyer",
+        "Opener",
+    ]
 
     actions = []
 
@@ -35,6 +54,7 @@ def actionMasking(capabilities):
         if cap in capabilities:
             actions.extend(CAPABILITY_MAP[cap])
 
+    # [a1,a2,a3,a4] #4
     return actions, len(actions)
 
 
@@ -50,3 +70,15 @@ def actionTranslator(action, action_list):
         raise ValueError(f"Invalid action index: {action}")
 
     return action_list[action]
+
+
+def actionMaskingArray(mask, action_list, current_behavior):
+    for action in ("move_up", "move_right", "move_left", "idle"):
+        if action in action_list:
+            mask[action_list.index(action)] = True
+
+    for action in BEHAVIOR_ACTIONS.get(current_behavior, []):
+        if action in action_list:
+            mask[action_list.index(action)] = True
+
+    return mask

@@ -44,9 +44,9 @@ export default function runTimeloop(entities) {
     if (isDecor || !entity.action_space || isPickable || isTarget || isDeposit)
       return;
 
-    const observation_space = buildObsSpace(entity);
+    const observation_vector = buildObsSpace(entity);
     const { behaviorOBSvector, behaviorOBSspace } = BehaviorBuilder(
-      observation_space,
+      observation_vector,
       entity,
     );
     const action_space = entity.action_space;
@@ -67,13 +67,21 @@ export default function runTimeloop(entities) {
     // const action = getNextAction(action_space);
     console.log("Action: ", action, " Seq: ", newSeq);
     if (action !== null && action !== undefined) {
-      applyAction(action, entity, observation_space);
+      applyAction(action, entity, behaviorOBSvector);
     }
     setSeq(entity.id, newSeq); //set it back in store
     updateEntityStat(entity.id, {
       seq: newSeq,
       last_action: action,
-      observation_vector: observation_space,
+      observation_vector: observation_vector,
+      probabilities: [
+        { action: "move_up", prob: 0.4231 },
+        { action: "move_left", prob: 0.123 },
+        { action: "idle", prob: 0.2103 },
+        { action: "collect", prob: 0.1843 },
+        { action: "deposit", prob: 0.0 },
+        { action: "drop", prob: 0.0 },
+      ],
     });
   });
 }

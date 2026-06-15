@@ -32,7 +32,12 @@ import ArchGate from "../assets/Arch_Gate.png";
 import Fence from "../assets/Fence.png";
 import YellowPumpkin from "../assets/Yellow_Pumpkin.png";
 import OrangePumpkin from "../assets/Orange_Pumpkin.png";
+import Football from "../assets/Football.png";
+import Box from "../assets/Box.png";
 import PineTree from "../assets/TreePine.png";
+import GoalBlue from "../assets/Goal-Blue.png";
+import GoalRed from "../assets/Goal-Red.png";
+import BlueBarrier from "../assets/Blue-Barrier.png";
 function DraggableItem({ id, payload, imageSrc, ...rest }) {
   const { listeners, setNodeRef, attributes, transform } = useDraggable({
     id,
@@ -117,8 +122,8 @@ export default function EntitiesPanel() {
           0: "agents/skelton/Rig_Medium_MovementBasic.glb",
           1: "agents/skelton/Rig_Medium_General.glb",
         },
-        capabilities: ["Moveable", "Destroyer"],
-        behavior: ["Destroy"],
+        capabilities: ["Moveable", "Finder"],
+        behavior: [{ type: "Find", requiredCount: 1, status: false }],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -136,7 +141,10 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Collector", "Opener"],
-        behavior: ["Collect", "Destroy"],
+        behavior: [
+          { type: "Collect", requiredCount: 1, status: false },
+          { type: "Open", requiredCount: 1, status: false },
+        ],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -154,7 +162,10 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Finder", "Holder"],
-        behavior: ["Holding", "Find"],
+        behavior: [
+          { type: "Holding", requiredCount: 1, status: false },
+          { type: "Find", requiredCount: 1, status: false },
+        ],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -172,7 +183,7 @@ export default function EntitiesPanel() {
           1: "agents/skelton/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Navigator", "Finder"],
-        behavior: ["Find"],
+        behavior: [{ type: "Find", requiredCount: 1, status: false }],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -190,7 +201,10 @@ export default function EntitiesPanel() {
           1: "agents/heroes/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Holder", "Depositor"],
-        behavior: ["Holding", "Deposit"],
+        behavior: [
+          { type: "Holding", requiredCount: 1, status: false },
+          { type: "Deposit", requiredCount: 1, status: false },
+        ],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -208,7 +222,10 @@ export default function EntitiesPanel() {
           1: "agents/heroes/Rig_Medium_General.glb",
         },
         capabilities: ["Moveable", "Collector", "Depositor"],
-        behavior: ["Collect", "Deposit"],
+        behavior: [
+          { type: "Collect", requiredCount: 2, status: false },
+          { type: "Deposit", requiredCount: 2, status: false },
+        ],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -234,7 +251,13 @@ export default function EntitiesPanel() {
           "Finder",
           "Navigator",
         ],
-        behavior: ["Collect", "Deposit", "Destroy", "Open", "Find"],
+        behavior: [
+          { type: "Collect", requiredCount: 2, status: false },
+          { type: "Deposit", requiredCount: 2, status: false },
+          { type: "Destroy", requiredCount: 1, status: false },
+          { type: "Open", requiredCount: 1, status: false },
+          { type: "Find", requiredCount: 1, status: false },
+        ],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -260,7 +283,13 @@ export default function EntitiesPanel() {
           "Finder",
           "Navigator",
         ],
-        behavior: ["Holding", "Deposit", "Destroy", "Open", "Find"],
+        behavior: [
+          { type: "Holding", requiredCount: 1, status: false },
+          { type: "Deposit", requiredCount: 1, status: false },
+          { type: "Open", requiredCount: 1, status: false },
+          { type: "Destroy", requiredCount: 2, status: false },
+          { type: "Find", requiredCount: 1, status: false },
+        ],
         isDecor: false,
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -307,6 +336,62 @@ export default function EntitiesPanel() {
         isDecor: "true",
         assetRef: "resources/arch_gate.gltf",
         collider: { shape: "box", w: 4.5, h: 2.5, d: 1.0 },
+        state: { isOpen: false },
+      },
+    },
+    {
+      id: "lib_state_obj_2",
+      image: Box,
+      payload: {
+        name: "arch_gate",
+        tag: "push-obj",
+        isGate: "true",
+        isDecor: "true",
+        assetRef: "resources/box_large.gltf",
+        collider: { shape: "box", w: 2.0, h: 1.5, d: 1.5 },
+        state: { isOpen: false },
+      },
+    },
+    {
+      id: "lib_state_obj_3",
+      image: Football,
+      payload: {
+        name: "arch_gate",
+        tag: "ball",
+        isGate: "true",
+        isDecor: "true",
+        assetRef: "dynamic/football.gltf",
+        collider: { shape: "ball", r: 0.25 },
+        state: { isOpen: false },
+      },
+    },
+    {
+      id: "lib_state_obj_4",
+      image: GoalRed,
+      payload: {
+        name: "arch_gate",
+        tag: "post",
+        isGate: "true",
+        isDecor: "true",
+        isGoalPost: "true",
+        goalId: "red",
+        assetRef: "resources/arch_red.gltf",
+        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
+        state: { isOpen: false },
+      },
+    },
+    {
+      id: "lib_state_obj_5",
+      image: GoalBlue,
+      payload: {
+        name: "arch_gate",
+        tag: "post",
+        isGate: "true",
+        isDecor: "true",
+        isGoalPost: "true",
+        goalId: "blue",
+        assetRef: "resources/arch_blue.gltf",
+        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
         state: { isOpen: false },
       },
     },
@@ -399,6 +484,17 @@ export default function EntitiesPanel() {
         isDecor: "true",
         assetRef: "resources/fence.gltf",
         collider: { shape: "box", w: 4.0, h: 1.5, d: 1.0 },
+      },
+    },
+    {
+      id: "lib_non_state_obj_9",
+      image: BlueBarrier,
+      payload: {
+        name: "Blue Barrier",
+        tag: "non_state",
+        isDecor: "true",
+        assetRef: "resources/barrier_4x1x1_blue.gltf",
+        collider: { shape: "box", w: 4.0, h: 1.0, d: 1.0 },
       },
     },
   ];

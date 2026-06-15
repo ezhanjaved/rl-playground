@@ -21,7 +21,7 @@ def finderActuator(action, agentData, entities, indexOfAction):
         return
 
     pos = agentData.position
-    found, distance, radius = getNearestTargetInfo(pos, entities, "target")
+    found, distance, radius, _ = getNearestTargetInfo(pos, entities, "target")
     if found and distance <= radius:
         targetReached = True
     else:

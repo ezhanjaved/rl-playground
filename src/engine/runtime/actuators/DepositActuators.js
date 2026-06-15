@@ -3,7 +3,7 @@ import { useSceneStore } from "../../../stores/useSceneStore";
 import { getIndexOfObs } from "../../utility/getIndex";
 
 export default function depositAdapter(action, ent, actionSpace) {
-  const { updateEntity, entities } = useSceneStore.getState();
+  const { updateEntity, entities, updateEntityStat } = useSceneStore.getState();
   const agent = entities[ent.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
   const capabilities = agent.capabilities;
@@ -23,6 +23,9 @@ export default function depositAdapter(action, ent, actionSpace) {
       last_action: action,
       state_space: newStateSpace,
     });
+    updateEntityStat(agent.id, {
+      state_space: newStateSpace,
+    });
     return;
   }
 
@@ -35,6 +38,9 @@ export default function depositAdapter(action, ent, actionSpace) {
     newStateSpace.nearDeposit = targetReached;
     updateEntity(agent.id, {
       last_action: action,
+      state_space: newStateSpace,
+    });
+    updateEntityStat(agent.id, {
       state_space: newStateSpace,
     });
     return;
@@ -53,6 +59,9 @@ export default function depositAdapter(action, ent, actionSpace) {
     newStateSpace.nearDeposit = targetReached;
     updateEntity(agent.id, {
       last_action: action,
+      state_space: newStateSpace,
+    });
+    updateEntityStat(agent.id, {
       state_space: newStateSpace,
     });
     return;
@@ -92,6 +101,10 @@ export default function depositAdapter(action, ent, actionSpace) {
 
   updateEntity(agent.id, {
     last_action: action,
+    state_space: newStateFragment,
+  });
+
+  updateEntityStat(agent.id, {
     state_space: newStateFragment,
   });
 }

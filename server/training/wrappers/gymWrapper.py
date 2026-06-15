@@ -2,7 +2,13 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
-from server.utilities.refined import actionMasking, actionTranslator, refined, simplify
+from server.utilities.refined import (
+    actionMasking,
+    actionMaskingArray,
+    actionTranslator,
+    refined,
+    simplify,
+)
 
 
 class GymWrapper(gym.Env):
@@ -23,9 +29,6 @@ class GymWrapper(gym.Env):
         _, shape = refined(obs_list)
         self.obs_shape = shape
 
-        # FIX: observation values are normalized to [-1, 1] or [0, 1] by
-        # observationBuilder.py. Using (-inf, inf) prevents SB3 normalization
-        # wrappers from working correctly and disables bounds sanity checks.
         self.observation_space = spaces.Box(
             low=-1.0,
             high=1.0,
@@ -78,8 +81,15 @@ class GymWrapper(gym.Env):
         return refined_obs, reward, terminated, truncated, info  # type: ignore
 
     def action_masks(self):
-        """Return a boolean mask of valid actions for MaskablePPO."""
-        return [True] * self.action_space.n
+        current_behavior = self.engine.core.runtime.entities[
+            self.agent_id
+        ].current_behavior
+
+        mask = [False] * len(self.action_list)
+
+        maskedArray = actionMaskingArray(mask, self.action_list, current_behavior)
+
+        return maskedArray
 
     def render(self):
         pass

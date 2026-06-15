@@ -21,7 +21,9 @@ def depositActuator(action, agent_data, entities, indexOfAction):
         agent.state_space = new_state_space
         return
 
-    found, distance, radius = getNearestTargetInfo(agent.position, entities, "deposit")
+    found, distance, radius, _ = getNearestTargetInfo(
+        agent.position, entities, "deposit"
+    )
 
     is_near_deposit = found and distance <= radius
 

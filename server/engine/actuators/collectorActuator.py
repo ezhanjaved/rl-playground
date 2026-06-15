@@ -32,7 +32,13 @@ def collectorActuator(action, agent, entities, eM, client, indexOfAction):
         numberItemsCollected = agent.state_space["items_collected"]
         updatedNum = numberItemsCollected + 1
 
+        if targetObj.name == "Key":
+            numberOfKeysPresent = agent.state_space["keys_collected"]
+            updatedKey = numberOfKeysPresent + 1
+            new_state_space["keys_collected"] = updatedKey
+
         new_state_space["lastItemCollected"] = targetObj.tag
+        new_state_space["total_items_collected"] = updatedNum
         new_state_space["items_collected"] = updatedNum
         new_state_space["lastPickSuccess"] = True
         # Update to RUNTIME

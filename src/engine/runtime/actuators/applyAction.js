@@ -1,5 +1,6 @@
 import { CapabilityMatcher } from "../../capabilities/capabilitiesMatcher.js";
 import previousDistanceCorrection from "../../utility/previousDistance.js";
+import { useSceneStore } from "../../../stores/useSceneStore.js";
 import moveAdapter from "./MoveableActuators.js";
 import holderAdapter from "./HolderActuators.js";
 import collectorAdapter from "./CollectorActuators.js";
@@ -9,6 +10,13 @@ import destoryAdapter from "./DestroyActuator.js";
 import openAdapter from "./OpenActuators.js";
 
 export default function applyAction(action_picked, agent, observation_space) {
+  const { bodies } = useSceneStore.getState();
+  const body = bodies[agent.id];
+  // Reset old movement before new action, like PyBullet
+  const currentVel = body.linvel();
+  body.setLinvel({ x: 0, y: currentVel.y, z: 0 }, true);
+  body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+
   const capabilityMatched = CapabilityMatcher(action_picked);
   const actionSpace = agent.action_space;
   switch (capabilityMatched) {

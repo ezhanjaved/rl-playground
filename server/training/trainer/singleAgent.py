@@ -1,7 +1,7 @@
 import copy
 import os
 
-from stable_baselines3 import PPO
+from sb3_contrib import MaskablePPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import FloatSchedule
@@ -18,6 +18,8 @@ N_ENVS = 8
 def make_env(scenario, runtime):
 
     def _init():
+        from sb3_contrib.common.wrappers import ActionMasker  # add this
+
         from server.training.simulationBase import SimulationEnv
         from server.training.wrappers.gymWrapper import GymWrapper
 
@@ -26,6 +28,7 @@ def make_env(scenario, runtime):
             SimulationEnv(scenario, runtime_copy),
             runtime_copy,
         )
+        env = ActionMasker(env, lambda e: e.action_masks())  # add this
         return Monitor(env)
 
     return _init
@@ -137,7 +140,7 @@ class SingleAgentTrainer:
                 print(
                     "No VecNormalize stats found for final model, starting normalizer fresh."
                 )
-            self.model = PPO.load(str(final_path), env=vec_env)
+            self.model = MaskablePPO.load(str(final_path), env=vec_env)
             self._apply_config_to_loaded_model()
             resumed_timesteps = self.already_trained
         else:
@@ -150,7 +153,7 @@ class SingleAgentTrainer:
                 else:
                     print("No VecNormalize stats found, starting normalizer fresh.")
 
-                self.model = PPO.load(str(checkpoint_path), env=vec_env)
+                self.model = MaskablePPO.load(str(checkpoint_path), env=vec_env)
                 self._apply_config_to_loaded_model()
                 try:
                     stem = checkpoint_path.stem
@@ -160,7 +163,7 @@ class SingleAgentTrainer:
                     resumed_timesteps = self.already_trained
             else:
                 print("No checkpoint or final model found, starting fresh.")
-                self.model = PPO(
+                self.model = MaskablePPO(
                     "MlpPolicy",
                     vec_env,
                     n_steps=self.n_steps,
@@ -203,6 +206,7 @@ class SingleAgentTrainer:
             total_timesteps=remaining_timesteps,
             callback=callback,
             reset_num_timesteps=resumed_timesteps == 0,
+            use_masking=True,  # add this
         )
         vec_env.close()
 
@@ -226,5 +230,5 @@ class SingleAgentTrainer:
         path = model_dir / f"model_training_{id}" / model_file_name
         if not path.with_suffix(".zip").exists():
             raise FileNotFoundError(f"No saved model found at {path}.zip")
-        self.model = PPO.load(str(path) + ".zip", env=self.env)
+        self.model = MaskablePPO.load(str(path) + ".zip", env=self.env)
         return self.model

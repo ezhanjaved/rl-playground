@@ -2,7 +2,7 @@ import getNearestTargetInfo from "../../utility/nearByObjects";
 import { useSceneStore } from "../../../stores/useSceneStore";
 import { getIndexOfObs } from "../../utility/getIndex";
 export default function destoryAdapter(action, agent, actionSpace) {
-  const { updateEntity, entities } = useSceneStore.getState();
+  const { updateEntity, entities, updateEntityStat } = useSceneStore.getState();
   const freshAgent = entities[agent.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
   const capabilities = freshAgent.capabilities;
@@ -20,6 +20,9 @@ export default function destoryAdapter(action, agent, actionSpace) {
   if (action !== "destroy") {
     updateEntity(agent.id, {
       last_action: action,
+      state_space: newStateSpace,
+    });
+    updateEntityStat(agent.id, {
       state_space: newStateSpace,
     });
     return;
@@ -42,6 +45,9 @@ export default function destoryAdapter(action, agent, actionSpace) {
         last_action: action,
         state_space: newStateSpace,
       });
+      updateEntityStat(agent.id, {
+        state_space: newStateSpace,
+      });
       return;
     }
 
@@ -62,6 +68,11 @@ export default function destoryAdapter(action, agent, actionSpace) {
       collider: { shape: "box", w: 0.0, h: 0.0, d: 0.0 },
       state: { isDestroyed: true },
     });
+
+    updateEntityStat(agent.id, {
+      state_space: newStateSpace,
+    });
+
     return;
   }
 
@@ -71,6 +82,9 @@ export default function destoryAdapter(action, agent, actionSpace) {
   console.log("Hitting here");
   updateEntity(agent.id, {
     last_action: action,
+    state_space: newStateSpace,
+  });
+  updateEntityStat(agent.id, {
     state_space: newStateSpace,
   });
   return;

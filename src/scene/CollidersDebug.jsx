@@ -8,13 +8,18 @@ export default function ColliderDebug({ entity }) {
   const { isTarget } = entity;
   const radius = isTarget ? entity?.targetVisual?.radius : null;
 
-  const halfHeight = (h / 2) - (r ?? 0);
+  const halfHeight = h / 2 - (r ?? 0);
 
   return (
     <>
-      {shape === "box" ? (
+      {shape === "box" || shape === "goal-post" ? (
         <mesh visible={debugMode} position={[0, h / 2, 0]}>
           <boxGeometry args={[w, h, d]} />
+          <meshBasicMaterial color={"#000000"} wireframe />
+        </mesh>
+      ) : shape === "ball" ? (
+        <mesh visible={debugMode} position={[0, r, 0]}>
+          <sphereGeometry args={[r, 32, 32]} />
           <meshBasicMaterial color={"#000000"} wireframe />
         </mesh>
       ) : (
@@ -24,7 +29,11 @@ export default function ColliderDebug({ entity }) {
         </mesh>
       )}
       {isTarget && radius && (
-        <mesh visible={true} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <mesh
+          visible={true}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.01, 0]}
+        >
           <ringGeometry args={[radius - 0.05, radius, 64]} />
           <meshBasicMaterial color={"#ff0000"} side={DoubleSide} />
         </mesh>

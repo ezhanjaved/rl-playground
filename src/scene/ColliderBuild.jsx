@@ -6,6 +6,7 @@ import {
 } from "@react-three/rapier";
 import { useRef, useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
+
 export default function ColliderBuilder({ entity, children }) {
   const bodyRef = useRef(null);
 
@@ -19,16 +20,64 @@ export default function ColliderBuilder({ entity, children }) {
 
   if (!entity.collider) return;
 
+  const goalId = entity.goalId;
   const { shape, h, r, w, d } = entity.collider;
+  const isGoalPost = entity?.isGoalPost || false;
   const halfHeight = h / 2 - (r ?? 0);
-
-  const { isTarget } = entity;
-  const radius = isTarget ? entity?.targetVisual?.radius : null;
 
   const renderCollider = () => {
     if (shape === "box") {
+      if (isGoalPost) {
+        return (
+          <CuboidCollider
+            name={`goal_sensor_${goalId}`}
+            args={[w / 2, h / 2, d / 2]}
+            position={[0, h / 2, 0]}
+            sensor
+            onIntersectionEnter={(event) => {
+              const rigidBodyName = event.other.rigidBodyObject?.name;
+              const colliderName = event.other.colliderObject?.name;
+              const postName = event.target.colliderObject?.name;
+
+              const isBall =
+                rigidBodyName === "ball" || colliderName === "ball_collider";
+
+              if (!isBall) {
+                console.log(
+                  "Ignored non-ball object:",
+                  rigidBodyName,
+                  colliderName,
+                );
+                return;
+              }
+
+              console.log("Post: " + postName);
+              console.log("GOAL!");
+            }}
+            onIntersectionExit={(event) => {
+              console.log("Something left goal sensor", event);
+            }}
+          />
+        );
+      } else {
+        return (
+          <CuboidCollider
+            args={[w / 2, h / 2, d / 2]}
+            position={[0, h / 2, 0]}
+          />
+        );
+      }
+    }
+
+    if (shape === "ball") {
       return (
-        <CuboidCollider args={[w / 2, h / 2, d / 2]} position={[0, h / 2, 0]} />
+        <BallCollider
+          args={[r]}
+          position={[0, r, 0]}
+          friction={0.5}
+          name="ball_collider"
+          restitution={0.3}
+        />
       );
     }
     return (
@@ -45,29 +94,26 @@ export default function ColliderBuilder({ entity, children }) {
         ref={bodyRef}
         position={entity.position}
         rotation={entity.rotation ?? [0, 0, 0]}
-        type={entity.tag === "agent" ? "dynamic" : "fixed"}
+        type={
+          entity.tag === "agent" ||
+          entity.tag === "ball" ||
+          entity.tag === "push-obj"
+            ? "dynamic"
+            : "fixed"
+        }
         colliders={false}
-        lockRotations
-        linearDamping={4}
-        angularDamping={4}
+        enabledRotations={
+          entity.tag === "agent"
+            ? [false, true, false]
+            : entity.tag === "ball"
+              ? [true, true, true]
+              : [true, true, false]
+        }
+        linearDamping={entity.tag === "agent" ? 0.0 : 0.5}
+        angularDamping={entity.tag === "agent" ? 0.0 : 0.5}
       >
         <group position={[0, 0, 0]}>{children}</group>
         {renderCollider()}
-        {/* {isTarget && (
-                    <BallCollider
-                        args={[radius / 2]}
-                        position={[0, 0.01, 0]}
-                        sensor
-                        name="targetSensor"
-                        onIntersectionEnter={({ other }) => {
-                            console.log("ENTER sensor");
-                            console.log("object", other);
-                        }}
-                        onIntersectionExit={({ other }) => {
-                            console.log("EXIT sensor");
-                        }}
-                    />
-                )}*/}
       </RigidBody>
     </>
   );

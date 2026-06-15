@@ -1,6 +1,6 @@
 import random
+import time
 
-# import time
 import pybullet as p
 import pybullet_data
 
@@ -20,7 +20,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.DIRECT)
+        self.client = p.connect(p.GUI)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -46,8 +46,10 @@ class PyBulletWorld:
             "agent": 0,
             "Pickable Object": 1,
             "Collectible Object": 1,
-            "target": 2,
-            "deposit": 3,
+            "deposit": 2,
+            "destroyable": 3,
+            "static-obj": 4,
+            "target": 5,
         }
 
         entConfigCopy = sorted(entConfigCopy, key=lambda e: TAG_PRIORITY.get(e.tag, 99))
@@ -123,7 +125,7 @@ class PyBulletWorld:
         bullet_id = None
         if entity.tag == "agent":
             bullet_id = self.spawn_agent(positionEntity, rotationEntity, colliderEntity)
-        elif entity.tag == "non_state":
+        elif entity.tag == "non_state" or entity.tag == "static-obj":
             bullet_id = self.spawn_non_state(
                 positionEntity, rotationEntity, colliderEntity
             )
@@ -139,6 +141,18 @@ class PyBulletWorld:
             bullet_id = self.spawn_deposit(
                 positionEntity, rotationEntity, colliderEntity
             )
+        elif entity.tag == "destroyable":
+            bullet_id = self.spawn_destroyable(
+                positionEntity, rotationEntity, colliderEntity
+            )
+        elif entity.tag == "ball":
+            bullet_id = self.spawn_ball(
+                positionEntity, rotationEntity, 1.0, colliderEntity
+            )
+        elif entity.tag == "push-obj":
+            bullet_id = self.push_objs(
+                positionEntity, rotationEntity, 1.0, colliderEntity
+            )
         elif entity.tag == "generic":
             pass
         else:
@@ -152,7 +166,7 @@ class PyBulletWorld:
     def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
-            # time.sleep(1 / 60)
+            time.sleep(1 / 60)
 
     def settle(self, steps=2):
         for _ in range(steps):
@@ -183,9 +197,114 @@ class PyBulletWorld:
             localInertiaDiagonal=(0, 0, 0.05),
             physicsClientId=self.client,
         )
+
         p.setCollisionFilterGroupMask(body_id, -1, 1, 1, physicsClientId=self.client)
 
         return body_id
+
+    def spawn_ball(self, pos, rot, mass, collider):
+        radius = collider.get("r", 0.3)
+        collision_shape = p.createCollisionShape(
+            p.GEOM_SPHERE, radius=radius, physicsClientId=self.client
+        )
+
+        visual_shape = p.createVisualShape(
+            p.GEOM_SPHERE,
+            radius=radius,
+            rgbaColor=[1, 1, 1, 1],
+            physicsClientId=self.client,
+        )
+
+        ball_id = p.createMultiBody(
+            baseMass=mass,
+            baseCollisionShapeIndex=collision_shape,
+            baseVisualShapeIndex=visual_shape,
+            basePosition=pos,
+            baseOrientation=rot,
+            physicsClientId=self.client,
+        )
+
+        p.changeDynamics(
+            ball_id,
+            -1,
+            linearDamping=0.5,
+            angularDamping=0.5,
+            physicsClientId=self.client,
+        )
+
+        return ball_id
+
+    def push_objs(self, pos, rot, mass, collider):
+        shape = collider.get("shape", "capsule")
+        if shape == "box":
+            h = collider["h"]
+            collision_shape = p.createCollisionShape(
+                p.GEOM_BOX,
+                halfExtents=[collider["w"] / 2, collider["d"] / 2, h / 2],
+                physicsClientId=self.client,
+            )
+            visual_shape = p.createVisualShape(
+                p.GEOM_BOX,
+                halfExtents=[collider["w"] / 2, collider["d"] / 2, h / 2],
+                physicsClientId=self.client,
+            )
+            px, py, _ = pos
+            pos = (px, py, h / 2)
+        else:
+            r = collider.get("r", 0.3)
+            h = collider.get("h", 1.0)
+            cylinder_height = max(0.0, h - 2 * r)
+            collision_shape = p.createCollisionShape(
+                p.GEOM_CAPSULE,
+                radius=r,
+                height=cylinder_height,
+                physicsClientId=self.client,
+            )
+            visual_shape = p.createVisualShape(
+                p.GEOM_CAPSULE,
+                radius=r,
+                height=cylinder_height,
+                physicsClientId=self.client,
+            )
+            px, py, _ = pos
+            pos = (px, py, h / 2)
+
+        push_obj_id = p.createMultiBody(
+            baseMass=mass,
+            baseCollisionShapeIndex=collision_shape,
+            baseVisualShapeIndex=visual_shape,
+            basePosition=pos,
+            baseOrientation=rot,
+            physicsClientId=self.client,
+        )
+
+        p.changeDynamics(
+            push_obj_id,
+            -1,
+            linearDamping=0.5,
+            angularDamping=0.5,
+            physicsClientId=self.client,
+        )
+
+        return push_obj_id
+
+    def spawn_destroyable(self, pos, rot, collider):
+        h = collider["h"]
+        collision_shape = p.createCollisionShape(
+            p.GEOM_BOX,
+            halfExtents=[collider["w"] / 2, collider["d"] / 2, h / 2],
+            physicsClientId=self.client,
+        )
+        h = collider["h"]
+        px, py, pz = pos
+        pos = (px, py, h / 2)
+        return p.createMultiBody(
+            baseMass=0,
+            baseCollisionShapeIndex=collision_shape,
+            basePosition=pos,
+            baseOrientation=rot,
+            physicsClientId=self.client,
+        )
 
     def spawn_non_state(self, pos, rot, collider):
         shape = collider.get("shape", "capsule")

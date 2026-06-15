@@ -1,6 +1,3 @@
-import { getIndexOfObs } from "../utility/getIndex";
-import { useSceneStore } from "../../stores/useSceneStore";
-
 const NAVIGATOR_FIELDS = [
   "obstacle_forward",
   "obstacle_left",
@@ -113,7 +110,7 @@ const BEHAVIOR_CONFIG = {
 };
 
 function hasCapability(capabilities, capabilityName) {
-  return capabilities.some((cap) => cap === capabilityName);
+  return capabilities?.some((cap) => cap === capabilityName);
 }
 
 function buildProgressFields(behavior) {
@@ -127,7 +124,7 @@ function buildProgressFields(behavior) {
   ];
 }
 
-function buildBehaviorObsSpace(behavior, capabilities) {
+export function buildBehaviorObsSpace(behavior, capabilities) {
   const goalFlags = behavior
     .map((stage) => {
       const type = getStageType(stage);
@@ -146,115 +143,10 @@ function buildBehaviorObsSpace(behavior, capabilities) {
   return obsSpace;
 }
 
-function pickCurrentBehavior(behavior, state) {
-  for (const stage of behavior) {
-    const type = getStageType(stage);
-    const config = BEHAVIOR_CONFIG[type];
-    console.log("State: " + JSON.stringify(state, null, 2));
-    console.log("Stage: " + JSON.stringify(stage, null, 2));
-    if (!config) continue;
-
-    if (!config.done(state, stage)) {
-      return type;
-    }
-  }
-
-  const lastStage = behavior[behavior.length - 1];
-  return getStageType(lastStage) ?? "Find";
-}
-
-function getObsValue(observationSpace, obsVector, obsName, defaultValue = 0) {
-  const index = getIndexOfObs(observationSpace, obsName);
-
-  if (index === -1) return defaultValue;
-
-  return Number(obsVector[index] ?? defaultValue);
-}
-
-function getState(obsVector, agent) {
-  const observationSpace = agent?.observation_space ?? [];
-  const stateObj = {};
-
-  for (const progressIndicator of PROGRESS_FIELDS) {
-    stateObj[progressIndicator] = getObsValue(
-      observationSpace,
-      obsVector,
-      progressIndicator,
-      0,
-    );
-  }
-
-  return stateObj;
-}
-
 function getStageType(stage) {
   return typeof stage === "string" ? stage : stage?.type;
 }
 
 function getRequiredCount(stage) {
-  return typeof stage === "object" ? stage?.requiredCount / 10.0 : 1;
-}
-
-export function BehaviorBuilder(obsVector, agent) {
-  const behavior = agent?.behavior;
-  const capabilities = agent?.capabilities;
-  const { updateEntityStat, updateEntity } = useSceneStore.getState();
-  const observationSpace = agent?.observation_space ?? [];
-  const behavior_obs_space =
-    agent?.behaviorObs ?? buildBehaviorObsSpace(behavior, capabilities) ?? [];
-
-  const state = getState(obsVector, agent);
-  const currentBehavior = pickCurrentBehavior(behavior, state);
-  const config = BEHAVIOR_CONFIG[currentBehavior];
-
-  const output = {};
-
-  for (const field of behavior_obs_space) {
-    output[field] = 0;
-  }
-
-  const progressFields = buildProgressFields(behavior);
-
-  for (const field of progressFields) {
-    output[field] = state[field] ?? 0;
-  }
-
-  if (hasCapability(capabilities, "Navigator")) {
-    for (const field of NAVIGATOR_FIELDS) {
-      output[field] = getObsValue(observationSpace, obsVector, field, 0);
-    }
-  }
-
-  if (config?.fields) {
-    for (const [behaviorField, rawField] of Object.entries(config.fields)) {
-      output[behaviorField] =
-        rawField === null
-          ? 0
-          : getObsValue(observationSpace, obsVector, rawField, 0);
-    }
-  }
-
-  if (config?.goalFlag) {
-    output[config.goalFlag] = 1;
-  }
-
-  const behaviorOBSvector = behavior_obs_space.map((key) =>
-    Number(output[key] ?? 0),
-  );
-
-  updateEntityStat(agent?.id, {
-    current_behavior: currentBehavior,
-    behaviorObsVector: behaviorOBSvector,
-  });
-
-  updateEntity(agent?.id, {
-    current_behavior: currentBehavior,
-  });
-
-  return {
-    currentBehavior,
-    behaviorOBSvector,
-    behaviorOBSspace: behavior_obs_space,
-    behaviorObsObject: output,
-  };
+  return typeof stage === "object" ? (stage?.requiredCount ?? 1) : 1;
 }

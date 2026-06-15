@@ -1,5 +1,6 @@
 import copy
 
+from server.engine.behaviorBuilder import BehaviorBuilderResult, behavior_builder
 from server.engine.eval import evaluator
 from server.engine.observationBuilder import buildObs, partition_entities
 from server.utilities.previousDist import previousDistanceCorrection
@@ -32,14 +33,20 @@ class EnvironmentCore:
 
     def get_observation(self):  # will call it to build observation of agents
         obs = {}
+        behavior_obs = {}
         runtimeSnapShot = self.runtime.entities
         entity_buckets = partition_entities(runtimeSnapShot)
         for agent_id in self.runtime.agents_ids:
             agentData = self.runtime.entities[agent_id]  # Single Agent Data
-            obs[agent_id] = buildObs(
-                agent_id, agentData, runtimeSnapShot, entity_buckets
-            )
-        return obs
+            # calculates raw obs vector
+            obs_vector = buildObs(agent_id, agentData, runtimeSnapShot, entity_buckets)
+            # saves it into dict by agent id
+            obs[agent_id] = obs_vector
+            # calculates behavior-oriented obs
+            behaviorOBJ: BehaviorBuilderResult = behavior_builder(obs_vector, agentData)
+            behavior_obs_vector_cal = behaviorOBJ.behavior_obs_vector
+            behavior_obs[agent_id] = behavior_obs_vector_cal
+        return behavior_obs
 
     def update_previous_distances(self, obs, actions, runTime):
         entities = runTime.entities

@@ -1,7 +1,77 @@
 import { useSceneStore } from "../../../stores/useSceneStore";
 import { getForwardVectorFromYaw } from "../../utility/rotationCal";
+// export default function moveAdapter(action, position, rotation, agentId) {
+//   const { bodies, entities } = useSceneStore.getState();
+//   const speed = entities[agentId]?.settings?.speed ?? 2.0;
+//   const body = bodies[agentId];
+
+//   if (!body) {
+//     console.log("Body is not there!", {
+//       agentId,
+//       bodyKeys: Object.keys(bodies ?? {}),
+//       entityExists: !!entities?.[agentId],
+//       entityName: entities?.[agentId]?.name,
+//     });
+//     return {
+//       updatedPosition: position,
+//       updatedRotation: rotation,
+//     };
+//   }
+
+//   const turnSpeed = 0.1;
+//   let [rx, ry, rz] = rotation;
+//   const { x: Rx, z: Rz } = getForwardVectorFromYaw(ry);
+
+//   let vx = 0;
+//   let vz = 0;
+
+//   switch (action) {
+//     case "move_up":
+//       vx = Rx * speed;
+//       vz = Rz * speed;
+//       break;
+
+//     case "move_left":
+//       ry += turnSpeed;
+//       break;
+
+//     case "move_right":
+//       ry -= turnSpeed;
+//       break;
+
+//     case "idle":
+//       vx = 0;
+//       vz = 0;
+//       break;
+//   }
+
+//   const currentVel = body.linvel();
+//   if (action === "move_left" || action === "move_right") {
+//     body.setLinvel({ x: currentVel.x, y: currentVel.y, z: currentVel.z }, true);
+//   } else {
+//     body.setLinvel({ x: vx, y: currentVel.y, z: vz }, true);
+//   }
+
+//   const t = body.translation();
+//   const updatedPosition = [t.x, t.y, t.z];
+//   const updatedRotation = [rx, ry, rz];
+
+//   return { updatedPosition, updatedRotation };
+// }
+import * as THREE from "three";
+
+function getYawFromRapierBody(body) {
+  const q = body.rotation();
+
+  const quat = new THREE.Quaternion(q.x, q.y, q.z, q.w);
+  const euler = new THREE.Euler().setFromQuaternion(quat, "XYZ");
+
+  return euler.y;
+}
+
 export default function moveAdapter(action, position, rotation, agentId) {
   const { bodies, entities } = useSceneStore.getState();
+
   const speed = entities[agentId]?.settings?.speed ?? 2.0;
   const body = bodies[agentId];
 
@@ -12,49 +82,65 @@ export default function moveAdapter(action, position, rotation, agentId) {
       entityExists: !!entities?.[agentId],
       entityName: entities?.[agentId]?.name,
     });
+
     return {
       updatedPosition: position,
       updatedRotation: rotation,
     };
   }
 
-  const turnSpeed = 0.1;
-  let [rx, ry, rz] = rotation;
-  const { x: Rx, z: Rz } = getForwardVectorFromYaw(ry);
+  const turnSpeed = 0.1 * 60.0;
 
-  let vx = 0;
-  let vz = 0;
+  const yaw = getYawFromRapierBody(body);
+  const { x: Rx, z: Rz } = getForwardVectorFromYaw(yaw);
+
+  let vx = 0.0;
+  let vz = 0.0;
+  let wy = 0.0;
 
   switch (action) {
     case "move_up":
-      vx = Rx * speed;
-      vz = Rz * speed;
+      vx = Rx * Number(speed);
+      vz = Rz * Number(speed);
       break;
 
     case "move_left":
-      ry += turnSpeed;
+      wy = turnSpeed;
       break;
 
     case "move_right":
-      ry -= turnSpeed;
+      wy = -turnSpeed;
       break;
 
     case "idle":
-      vx = 0;
-      vz = 0;
+    default:
       break;
   }
 
   const currentVel = body.linvel();
-  if (action === "move_left" || action === "move_right") {
-    body.setLinvel({ x: currentVel.x, y: currentVel.y, z: currentVel.z }, true);
-  } else {
-    body.setLinvel({ x: vx, y: currentVel.y, z: vz }, true);
-  }
+
+  body.setLinvel(
+    {
+      x: vx,
+      y: currentVel.y,
+      z: vz,
+    },
+    true,
+  );
+
+  body.setAngvel(
+    {
+      x: 0.0,
+      y: wy,
+      z: 0.0,
+    },
+    true,
+  );
 
   const t = body.translation();
-  const updatedPosition = [t.x, t.y, t.z];
-  const updatedRotation = [rx, ry, rz];
 
-  return { updatedPosition, updatedRotation };
+  return {
+    updatedPosition: [t.x, t.y, t.z],
+    updatedRotation: [0, yaw, 0],
+  };
 }

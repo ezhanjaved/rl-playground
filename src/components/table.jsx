@@ -344,7 +344,7 @@ export function Table({
     (podUrl) => {
       setModeltoReady(true);
       setModeltoLoading(false);
-      connectCloudSocket(podUrl, (action, id, actionSeq) => {
+      connectCloudSocket(podUrl, (action, id, probs) => {
         const { inferenceMode, setWaitingForAction } =
           useRunTimeStore.getState();
         const { entities, updateEntityStat } = useSceneStore.getState();
@@ -357,6 +357,7 @@ export function Table({
           }
           updateEntityStat(agent.id, {
             last_action: action,
+            probabilities: [probs],
           });
           applyAction(action, agent, []);
           setWaitingForAction(agent.id, false);

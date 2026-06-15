@@ -128,7 +128,6 @@ export const CAPABILITY_SCHEMAS = {
     state: {
       gates_open: 0,
       nearGate: false,
-      hasKey: false,
       lastOpenSuccess: false,
       previous_distance_gate: Infinity,
     },

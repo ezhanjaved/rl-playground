@@ -214,14 +214,14 @@ function visitNode(NodeId, graph, ctxObj) {
     if (
       entityTwo === "Target Object" ||
       entityTwo === "Pickable Object" ||
-      entityTwo === "Deposit Object"
+      entityTwo === "Deposit Object" ||
+      entityTwo === "Destroyable Object" ||
+      entityTwo === "Opener Object"
     ) {
       const currentDeltaX = getObs("delta_x_to_current_goal");
       if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
         deltaX = true;
     }
-    // Any other entityTwo (including unrecognized values) falls through with
-    // deltaX = false, so no edges fire. This is intentional.
 
     const edges = findEdges(NodeId, graph);
     const chosenEdges = edges.filter((e) =>
@@ -256,7 +256,9 @@ function visitNode(NodeId, graph, ctxObj) {
     if (
       entityTwo === "Target Object" ||
       entityTwo === "Pickable Object" ||
-      entityTwo === "Deposit Object"
+      entityTwo === "Deposit Object" ||
+      entityTwo === "Destroyable Object" ||
+      entityTwo === "Opener Object"
     ) {
       const currentDeltaZ = getObs("delta_z_to_current_goal");
       if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck) deltaZ = true;

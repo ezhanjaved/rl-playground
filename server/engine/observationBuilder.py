@@ -30,6 +30,14 @@ def deposit_predicate(e):
     return getattr(e, "isDeposit", False) in (True, "true", 1)
 
 
+def destroyable_predicate(e):
+    return getattr(e, "isDestroyable", False) in (True, "true", 1)
+
+
+def gate_predicate(e):
+    return getattr(e, "isGate", False) in (True, "true", 1)
+
+
 def partition_entities(entities):
     buckets = {
         "target": [],
@@ -37,6 +45,8 @@ def partition_entities(entities):
         "collectable": [],
         "obstacle": [],
         "deposit": [],
+        "destroyable": [],
+        "gate": [],
     }
     for entity in entities.values():
         if not entity:
@@ -51,6 +61,10 @@ def partition_entities(entities):
             buckets["obstacle"].append(entity)
         if deposit_predicate(entity):
             buckets["deposit"].append(entity)
+        if destroyable_predicate(entity):
+            buckets["destroyable"].append(entity)
+        if gate_predicate(entity):
+            buckets["gate"].append(entity)
     return buckets
 
 
@@ -233,14 +247,6 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 )
 
             # --- (Navigator) ---
-            case "delta_x_to_obstacle":
-                dist, _ = cache.get("obstacle", "delta-x")
-                constructed_obs.append(dist)
-
-            case "delta_z_to_obstacle":
-                dist, _ = cache.get("obstacle", "delta-z")
-                constructed_obs.append(dist)
-
             case "obstacle_forward":
                 constructed_obs.append(
                     distance_in_direction(
@@ -287,7 +293,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 dist, _ = cache.get("target", "both")
                 target_bucket = entity_buckets["target"]
                 if target_bucket:
-                    found, best, radius = getNearestTargetInfo(
+                    found, best, radius, _ = getNearestTargetInfo(
                         position, runTimeSnapShot, "target"
                     )
                     constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
@@ -309,6 +315,12 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
 
             case "holding":
                 constructed_obs.append(1.0 if state_space.get("holding") else 0.0)
+
+            case "in_radius_holder":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, "pickable"
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
 
             case "lastPickSuccess":
                 lps = state_space.get("lastPickSuccess")
@@ -335,6 +347,22 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     min(float(state_space.get("items_collected", 0)) / 10.0, 1.0)
                 )
 
+            case "keys_collected":
+                constructed_obs.append(
+                    min(float(state_space.get("keys_collected", 0)) / 10.0, 1.0)
+                )
+
+            case "total_items_collected":
+                constructed_obs.append(
+                    min(float(state_space.get("total_items_collected", 0)) / 10.0, 1.0)
+                )
+
+            case "in_radius_collect":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, "collectable"
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
             # --- (Depositor) ---
             case "dist_to_nearest_deposit":
                 dist, _ = cache.get("deposit", "both")
@@ -353,12 +381,85 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     min(float(state_space.get("items_deposited", 0)) / 10.0, 1.0)
                 )
 
+            case "in_radius_deposit":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, "deposit"
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
             case "last_deposit_success":
                 lds = state_space.get("lastDepositSuccess")
                 if lds is None:
                     constructed_obs.append(0.5)
                 else:
                     constructed_obs.append(1.0 if lds else 0.0)
+
+            # --- (Destroyer) ---
+            case "dist_to_nearest_destroyable":
+                dist, _ = cache.get("destroyable", "both")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_destroyable":
+                dist, _ = cache.get("destroyable", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_destroyable":
+                dist, _ = cache.get("destroyable", "delta-z")
+                constructed_obs.append(dist)
+
+            case "items_destroyed":
+                constructed_obs.append(
+                    min(float(state_space.get("items_destroyed", 0)) / 10.0, 1.0)
+                )
+
+            case "in_radius_destroyed":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, "destroyable"
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
+            case "last_destroy_success":
+                lds = state_space.get("lastDestroySuccess")
+                if lds is None:
+                    constructed_obs.append(0.5)
+                else:
+                    constructed_obs.append(1.0 if lds else 0.0)
+
+            # --- (Opener) ---
+            case "dist_to_nearest_gate":
+                dist, _ = cache.get("gate", "both")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_gate":
+                dist, _ = cache.get("gate", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_gate":
+                dist, _ = cache.get("gate", "delta-z")
+                constructed_obs.append(dist)
+
+            case "in_radius_gate":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, "gate"
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
+            case "hasKey":
+                constructed_obs.append(
+                    1.0 if state_space.get("keys_collected", 0) > 0 else 0.0
+                )
+
+            case "gates_open":
+                constructed_obs.append(
+                    min(float(state_space.get("gates_open", 0)) / 10.0, 1.0)
+                )
+
+            case "last_open_success":
+                los = state_space.get("lastOpenSuccess")
+                if los is None:
+                    constructed_obs.append(0.5)
+                else:
+                    constructed_obs.append(1.0 if los else 0.0)
 
             case _:
                 constructed_obs.append(0.0)

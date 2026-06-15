@@ -80,10 +80,11 @@ export function InRadiusNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
 
         <br />
@@ -96,10 +97,11 @@ export function InRadiusNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
       </div>
     </div>
@@ -675,10 +677,11 @@ export function IsDistanceLessNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
-          <option value="Navigator Object">Navigator Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
 
         <br />
@@ -691,10 +694,11 @@ export function IsDistanceLessNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
-          <option value="Navigator Object">Navigator Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
       </div>
     </div>
@@ -778,10 +782,11 @@ export function IsDistanceMoreNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
-          <option value="Navigator Object">Navigator Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
 
         <br />
@@ -794,10 +799,11 @@ export function IsDistanceMoreNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
-          <option value="Navigator Object">Navigator Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
       </div>
     </div>
@@ -881,11 +887,11 @@ export function IsDeltaXLessNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
-          <option value="Navigator Object">Navigator Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
 
         <br />
@@ -898,11 +904,11 @@ export function IsDeltaXLessNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
-          <option value="Navigator Object">Navigator Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
       </div>
     </div>
@@ -986,10 +992,11 @@ export function IsDeltaZPosNode({ data, id }) {
           value={data.entityOne ?? "Agent"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
 
         <br />
@@ -1002,10 +1009,11 @@ export function IsDeltaZPosNode({ data, id }) {
           value={data.entityTwo ?? "Pickable Object"}
         >
           <option value="Agent">Agent</option>
-          <option value="Non-State Object">Non-State Object</option>
+          <option value="Opener Object">Opener Object</option>
           <option value="Pickable Object">Pickable Object</option>
           <option value="Target Object">Target Object</option>
           <option value="Deposit Object">Deposit Object</option>
+          <option value="Destroyable Object">Destroyable Object</option>
         </select>
       </div>
     </div>

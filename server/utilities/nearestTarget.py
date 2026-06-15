@@ -8,7 +8,7 @@ def getNearestTargetInfo(agentPos, entities, type):
     best = float("inf")
     targetRadius = 2.0
     distance = float("inf")
-
+    entityId = None
     for entity in entities.values():
         if not entity or getattr(entity, "tag", None) != type:
             continue
@@ -16,6 +16,7 @@ def getNearestTargetInfo(agentPos, entities, type):
         bulletPos = positionSwap(targetObjPos)
         distance = distance3D(agentPos, bulletPos)
         if distance < best:
+            entityId = entity.id
             best = distance
             targetRadius = (
                 getattr(entity, "radius", None)
@@ -25,7 +26,7 @@ def getNearestTargetInfo(agentPos, entities, type):
 
     if not math.isfinite(best):
         found = False
-        return found, float("-inf"), targetRadius
+        return found, float("-inf"), targetRadius, None
 
     found = True
-    return found, best, targetRadius
+    return found, best, targetRadius, entityId

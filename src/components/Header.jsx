@@ -26,6 +26,7 @@ import { uploadEnv, uploadGraph } from "../export/exportTemplate";
 import { viewEnvs, viewGraphs } from "../export/viewTemplate";
 import { importEnv, importGraph } from "../export/importTemplate";
 import { deleteTemplate } from "../export/deleteTemplate";
+import { stopAllAgents } from "../engine/utility/stopMovement";
 
 const Header = () => {
   const location = useLocation();
@@ -477,6 +478,7 @@ const Header = () => {
             }}
             onClick={() => {
               if (!training) togglePlaying();
+              stopAllAgents();
             }}
           >
             {playing ? <FaPause /> : <FaPlay />}

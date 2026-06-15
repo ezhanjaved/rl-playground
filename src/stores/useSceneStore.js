@@ -4,7 +4,7 @@ import { addCapabilitySchemas } from "../engine/capabilities/registry";
 import * as THREE from "three";
 import { highestDistance } from "../engine/utility/highestDistance";
 import { useRunTimeStore } from "./useRunTimeStore";
-
+import { buildBehaviorObsSpace } from "../engine/runtime/buildBehaviorOBS";
 export const useSceneStore = create((set) => ({
   entities: {},
   entitiesStats: {},
@@ -142,6 +142,8 @@ const buildEntityStat = (partial) => {
   const type = partial.capabilities || [];
   const { actionSpace, observationsSpace, stateSpace } =
     addCapabilitySchemas(type);
+  const behavior = partial.behavior || [];
+  const behaviorObsSpace = buildBehaviorObsSpace(behavior, type);
   let entity = {
     tag: partial.tag,
     capabilities: type,
@@ -151,18 +153,21 @@ const buildEntityStat = (partial) => {
     state_space: stateSpace,
     observation_vector: [],
 
-    current_behavior: partial.current_behavior || null,
     behavior: partial.behavior || [],
-    behaviorObs: [],
+    current_behavior: partial.current_behavior || null,
+    behaviorObs: behaviorObsSpace || [],
     behaviorObsVector: [],
 
     last_action: partial.last_action || "idle",
+    probabilities: [],
   };
   return entity;
 };
 
 const buildEntitiyFromPartial = (partial, id) => {
   const type = partial.capabilities || [];
+  const behavior = partial.behavior || [];
+  const behaviorObsSpace = buildBehaviorObsSpace(behavior, type);
   const { actionSpace, observationsSpace, stateSpace, settingSpace } =
     addCapabilitySchemas(type);
   const euler = new THREE.Euler(...(partial.rotation || [0, 0, 0]));
@@ -183,12 +188,15 @@ const buildEntitiyFromPartial = (partial, id) => {
     actuator_type: partial.actuator_type || "walker",
     state: partial.state || {}, //added this will have to sync it on Object Class in python
 
-    behavior: partial.behavior || [],
-    behaviorObs: partial.behaviorObs || [],
+    behavior: behavior || [],
+    behaviorObs: behaviorObsSpace || [],
+    current_behavior: partial.current_behavior || null,
 
     targetVisual: partial.targetStat || null,
     isDecor: partial.isDecor || false,
     isGate: partial.isGate || false,
+    isGoalPost: partial.isGoalPost || false,
+    goalId: partial.goalId || "",
     isDeposit: partial.isDeposit || false,
     isPickable: partial.isPickable || false,
     isDestroyable: partial.isDestroyable || false,

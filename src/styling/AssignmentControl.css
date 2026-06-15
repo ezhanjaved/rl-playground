@@ -393,3 +393,98 @@
     display: flex;
     gap: 10px;
 }
+
+.ac-select {
+    flex: 1;
+    cursor: pointer;
+}
+
+.ac-behavior-card {
+    background: var(--ac-surface, #f0f4fa);
+    border: 1px solid #dde3ef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ac-behavior-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ac-behavior-row-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #7a8aaa;
+    min-width: 110px;
+}
+
+.ac-behavior-current {
+    font-size: 12px;
+    color: #7a8aaa;
+    margin-left: auto;
+}
+
+.ac-behavior-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.ac-input--sm {
+    width: 72px;
+}
+
+.ac-behavior-row--taught {
+    border-top: 1px solid #dde3ef;
+    padding-top: 10px;
+}
+
+.ac-behavior-taught-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.ac-taught-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.ac-taught-badge--yes {
+    background: #e0f5ec;
+    color: #1a7a4a;
+}
+
+.ac-taught-badge--no {
+    background: #f0f0f0;
+    color: #888;
+}
+
+.ac-btn--taught-grant {
+    margin-left: auto;
+    color: #1a7a4a;
+    border-color: #a8dfc2;
+}
+
+.ac-btn--taught-grant:hover {
+    background: #e0f5ec;
+}
+
+.ac-btn--taught-revoke {
+    margin-left: auto;
+    color: #b94040;
+    border-color: #f0b8b8;
+}
+
+.ac-btn--taught-revoke:hover {
+    background: #fdf0f0;
+}

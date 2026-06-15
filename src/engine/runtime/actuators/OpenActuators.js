@@ -2,7 +2,7 @@ import getNearestTargetInfo from "../../utility/nearByObjects";
 import { useSceneStore } from "../../../stores/useSceneStore";
 import { getIndexOfObs } from "../../utility/getIndex";
 export default function openAdapter(action, agent, actionSpace) {
-  const { updateEntity, entities } = useSceneStore.getState();
+  const { updateEntity, entities, updateEntityStat } = useSceneStore.getState();
   const freshAgent = entities[agent.id];
   const indexOfAction = getIndexOfObs(actionSpace, action);
   const capabilities = freshAgent.capabilities;
@@ -22,6 +22,9 @@ export default function openAdapter(action, agent, actionSpace) {
       last_action: action,
       state_space: newStateSpace,
     });
+    updateEntityStat(agent.id, {
+      state_space: newStateSpace,
+    });
     return;
   }
 
@@ -37,6 +40,9 @@ export default function openAdapter(action, agent, actionSpace) {
       newStateSpace.lastOpenSuccess = false;
       updateEntity(agent.id, {
         last_action: action,
+        state_space: newStateSpace,
+      });
+      updateEntityStat(agent.id, {
         state_space: newStateSpace,
       });
       return;
@@ -61,12 +67,19 @@ export default function openAdapter(action, agent, actionSpace) {
         collider: { shape: "box", w: 0.0, h: 0.0, d: 0.0 },
         state: { isOpen: true },
       });
+
+      updateEntityStat(agent.id, {
+        state_space: newStateSpace,
+      });
       return;
     } else {
       //open was attempted + gate was not open + gate near but no key
       newStateSpace.lastOpenSuccess = false;
       updateEntity(agent.id, {
         last_action: action,
+        state_space: newStateSpace,
+      });
+      updateEntityStat(agent.id, {
         state_space: newStateSpace,
       });
       return;
@@ -78,6 +91,9 @@ export default function openAdapter(action, agent, actionSpace) {
   newStateSpace.lastOpenSuccess = false;
   updateEntity(agent.id, {
     last_action: action,
+    state_space: newStateSpace,
+  });
+  updateEntityStat(agent.id, {
     state_space: newStateSpace,
   });
   return;
