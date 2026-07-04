@@ -14,6 +14,7 @@ export async function sendServer() {
     envMode,
     percentageFixedEp,
     maxStepPerEp,
+    topographyMode,
   } = useRunTimeStore.getState();
   const { user } = useAuthStore.getState();
 
@@ -44,6 +45,7 @@ export async function sendServer() {
     highestDistance: highestDistance,
     spawnMode: envMode,
     randomSpawnAfterEp: random_spawn_after_episode,
+    topographyMode,
   };
 
   console.log("Body: " + JSON.stringify(data, null, 2));

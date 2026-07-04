@@ -80,37 +80,18 @@ def _resolve_goal_context(ctx):
         return v == 1 or v is True
 
     if is_set("goal_is_target"):
-        return {
-            "predicate": lambda e: getattr(e, "isTarget", False) in (True, "true", 1),
-            "state_key": "previous_distance_target",
-        }
+        return {"bucket_key": "target", "state_key": "previous_distance_target"}
     if is_set("goal_is_collectable"):
-        return {
-            "predicate": lambda e: (
-                getattr(e, "isCollectable", False) in (True, "true", 1)
-            ),
-            "state_key": "previous_distance_collect",
-        }
+        return {"bucket_key": "collectable", "state_key": "previous_distance_collect"}
     if is_set("goal_is_holding"):
-        return {
-            "predicate": lambda e: getattr(e, "isPickable", False) in (True, "true", 1),
-            "state_key": "previous_distance_pickable",
-        }
+        return {"bucket_key": "pickable", "state_key": "previous_distance_pickable"}
     if is_set("goal_is_deposit"):
-        return {
-            "predicate": lambda e: getattr(e, "isDeposit", False) in (True, "true", 1),
-            "state_key": "previous_distance_deposit",
-        }
+        return {"bucket_key": "deposit", "state_key": "previous_distance_deposit"}
     if is_set("goal_is_gate"):
-        return {
-            "predicate": lambda e: getattr(e, "isGate", False) in (True, "true", 1),
-            "state_key": "previous_distance_gate",
-        }
+        return {"bucket_key": "gate", "state_key": "previous_distance_gate"}
     if is_set("goal_is_destroyable"):
         return {
-            "predicate": lambda e: (
-                getattr(e, "isDestroyable", False) in (True, "true", 1)
-            ),
+            "bucket_key": "destroyable",
             "state_key": "previous_distance_destroyable",
         }
     return None
@@ -205,6 +186,7 @@ def _visit_node(node_id, graph, ctx):
             "Higher Than": lambda a, b: a > b,
             "Less Than Equal To": lambda a, b: a <= b,
             "Higher Than Equal To": lambda a, b: a >= b,
+            "Equal To": lambda a, b: a == b,
         }
         key = node_data.data.get("entityState")
         try:
@@ -228,14 +210,6 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "InRadiusNode":
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
-
         in_radius_raw = _get_obs("in_radius_current_goal", ctx)
         in_radius = in_radius_raw == 1 or in_radius_raw is True
 
@@ -247,26 +221,11 @@ def _visit_node(node_id, graph, ctx):
 
     elif ntype == "IsDeltaXLessNode":
         DELTA_X_CHECK = 0.05
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
 
         delta_x = False
-        if entity_two in (
-            "Target Object",
-            "Pickable Object",
-            "Deposit Object",
-            "Destroyable Object",
-            "Opener Object",
-        ):
-            val = _get_obs("delta_x_to_current_goal", ctx)
-            if val is not None and abs(val) <= DELTA_X_CHECK:
-                delta_x = True
-        # Any other entityTwo falls through with delta_x = False (matches JS).
+        val = _get_obs("delta_x_to_current_goal", ctx)
+        if val is not None and abs(val) <= DELTA_X_CHECK:
+            delta_x = True
 
         for edge in _find_bool_edges(node_id, graph, delta_x):
             _visit_node(edge.target, graph, ctx)
@@ -276,25 +235,11 @@ def _visit_node(node_id, graph, ctx):
 
     elif ntype == "IsDeltaZPosNode":
         DELTA_Z_CHECK = 0.05
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
 
         delta_z = False
-        if entity_two in (
-            "Target Object",
-            "Pickable Object",
-            "Deposit Object",
-            "Destroyable Object",
-            "Opener Object",
-        ):
-            val = _get_obs("delta_z_to_current_goal", ctx)
-            if val is not None and val > DELTA_Z_CHECK:
-                delta_z = True
+        val = _get_obs("delta_z_to_current_goal", ctx)
+        if val is not None and val > DELTA_Z_CHECK:
+            delta_z = True
 
         for edge in _find_bool_edges(node_id, graph, delta_z):
             _visit_node(edge.target, graph, ctx)
@@ -303,21 +248,15 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "IsDistanceLessNode":
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
         mode = node_data.data.get("mode") or "Best Record"
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
 
         goal_ctx = _resolve_goal_context(ctx)
         if goal_ctx is None:
             return  # no recognized goal flag active; skip node
 
         distance_less = False
-        bucket = ctx["bucket"]
+
+        bucket = ctx["buckets"].get(goal_ctx["bucket_key"], [])
         if mode == "Best Record":
             agent_pos = ctx["facts"]["position"]
             agent_rot = ctx["facts"]["rotation"]
@@ -347,21 +286,13 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "IsDistanceMoreNode":
-        entity_one = node_data.data.get("entityOne")
-        entity_two = node_data.data.get("entityTwo")
-        is_agent_1 = entity_one == "Agent"
-        is_agent_2 = entity_two == "Agent"
-
-        if is_agent_1 == is_agent_2:
-            return
-
         tolerance = 0.2
 
         goal_ctx = _resolve_goal_context(ctx)
         if goal_ctx is None:
             return
 
-        bucket = ctx["bucket"]
+        bucket = ctx["buckets"].get(goal_ctx["bucket_key"], [])
         agent_pos = ctx["facts"]["position"]
         agent_rot = ctx["facts"]["rotation"]
         current_distance, _ = nearestDistance(

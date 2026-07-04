@@ -1,6 +1,5 @@
 import { CapabilityMatcher } from "../../capabilities/capabilitiesMatcher.js";
 import previousDistanceCorrection from "../../utility/previousDistance.js";
-import { useSceneStore } from "../../../stores/useSceneStore.js";
 import moveAdapter from "./MoveableActuators.js";
 import holderAdapter from "./HolderActuators.js";
 import collectorAdapter from "./CollectorActuators.js";
@@ -8,14 +7,12 @@ import finderAdapter from "./finderActuators.js";
 import depositAdapter from "./DepositActuators.js";
 import destoryAdapter from "./DestroyActuator.js";
 import openAdapter from "./OpenActuators.js";
+import footballAdapter from "./FootballActuator.js";
+import { resetMovement } from "../../utility/stopMovement.js";
 
 export default function applyAction(action_picked, agent, observation_space) {
-  const { bodies } = useSceneStore.getState();
-  const body = bodies[agent.id];
   // Reset old movement before new action, like PyBullet
-  const currentVel = body.linvel();
-  body.setLinvel({ x: 0, y: currentVel.y, z: 0 }, true);
-  body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+  resetMovement(agent.id);
 
   const capabilityMatched = CapabilityMatcher(action_picked);
   const actionSpace = agent.action_space;
@@ -40,6 +37,10 @@ export default function applyAction(action_picked, agent, observation_space) {
       break;
     case "Opener":
       openWorker(action_picked, agent, actionSpace);
+      break;
+    case "Footballer":
+      console.log("Hit here");
+      footballWorker(action_picked, agent, actionSpace);
       break;
     default:
       break;
@@ -84,4 +85,8 @@ function destroyWorker(action, entity, actionSpace) {
 
 function openWorker(action, entity, actionSpace) {
   openAdapter(action, entity, actionSpace);
+}
+
+function footballWorker(action, entity, actionSpace) {
+  footballAdapter(action, entity, actionSpace);
 }

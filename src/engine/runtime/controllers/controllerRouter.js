@@ -1,6 +1,7 @@
 // ControllerRouter.js
 import { useSceneStore } from "../../../stores/useSceneStore";
 import randomController from "./randomController";
+import manualController from "./manualController";
 import { qLearningAct } from "./policyController";
 import { PPOController } from "./ppoController";
 import { useRunTimeStore } from "../../../stores/useRunTimeStore";
@@ -16,8 +17,14 @@ export default function ControllerRouter(
   mode,
   isModelReady,
 ) {
-  const { assignments } = useSceneStore.getState();
+  const { assignments, entities } = useSceneStore.getState();
   const config = assignments?.[agentId]?.assignedConfig ?? null;
+  const agentController = entities[agentId]?.controller;
+
+  if (agentController === "manual") {
+    const manual_action = manualController();
+    return manual_action;
+  }
 
   const hasQLearning = config?.algorithm === "q-learning";
   const hasPPO = isModelReady;

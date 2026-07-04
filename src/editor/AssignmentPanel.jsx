@@ -456,6 +456,8 @@ const PPOSection = ({ setThree }) => {
     setTimestep,
     percentageFixedEp,
     setPercentageFixed,
+    topographyMode,
+    setTopographyMode,
   } = useRunTimeStore.getState();
 
   useEffect(() => {
@@ -564,6 +566,33 @@ const PPOSection = ({ setThree }) => {
                 type="number"
                 onChange={(e) => setPercentageFixed(Number(e.target.value))}
               />
+            </>
+          )}
+          {envMode != "Fixed" && (
+            <>
+              <label htmlFor="">Topography Mode</label>
+              <div
+                style={{ display: "flex", flexDirection: "row", gap: "10px" }}
+              >
+                <label>
+                  <input
+                    checked={topographyMode === "True"}
+                    onChange={(e) => setTopographyMode(e.target.value)}
+                    type="radio"
+                    value="True"
+                  />{" "}
+                  True{" "}
+                </label>
+                <label>
+                  <input
+                    checked={topographyMode === "False"}
+                    onChange={(e) => setTopographyMode(e.target.value)}
+                    type="radio"
+                    value="False"
+                  />{" "}
+                  False{" "}
+                </label>
+              </div>
             </>
           )}
           <label htmlFor="">Spawn Mode</label>

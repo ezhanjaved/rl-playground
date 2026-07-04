@@ -35,7 +35,6 @@ export default function CanvasPad() {
       const { playing, training, inferenceMode, isModelReady } =
         useRunTimeStore.getState();
       const { entities } = useSceneStore.getState();
-
       if (inferenceMode === "lockstep" && isModelReady) {
         if (!playing || training) return;
         stepTimeLoop(entities);
@@ -114,9 +113,7 @@ export default function CanvasPad() {
         if (!activeEntity) return;
         const entity = entities[activeEntity];
         const currentRot = entity?.rotation ?? [0, 0, 0];
-        console.log("New Euler Rot: " + currentRot);
         const quat = convertRot(currentRot);
-        console.log("New Quat Rot: " + quat.w);
         updateEntity(activeEntity, {
           rotation: [currentRot[0], newRotY, currentRot[2]],
           quatRotation: quat ? [quat.x, quat.y, quat.z, quat.w] : [0, 0, 0, 1],

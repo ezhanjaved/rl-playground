@@ -6,7 +6,8 @@ import {
 } from "@react-three/rapier";
 import { useRef, useEffect } from "react";
 import { useSceneStore } from "../stores/useSceneStore";
-
+import { footballRef } from "../engine/utility/footballRef";
+import { footballBallTouchRef } from "../engine/utility/footballTouchRef";
 export default function ColliderBuilder({ entity, children }) {
   const bodyRef = useRef(null);
 
@@ -22,7 +23,7 @@ export default function ColliderBuilder({ entity, children }) {
 
   const goalId = entity.goalId;
   const { shape, h, r, w, d } = entity.collider;
-  const isGoalPost = entity?.isGoalPost || false;
+  const isGoalPost = entity?.isGoalPostRed || entity?.isGoalPostBlue;
   const halfHeight = h / 2 - (r ?? 0);
 
   const renderCollider = () => {
@@ -35,27 +36,7 @@ export default function ColliderBuilder({ entity, children }) {
             position={[0, h / 2, 0]}
             sensor
             onIntersectionEnter={(event) => {
-              const rigidBodyName = event.other.rigidBodyObject?.name;
-              const colliderName = event.other.colliderObject?.name;
-              const postName = event.target.colliderObject?.name;
-
-              const isBall =
-                rigidBodyName === "ball" || colliderName === "ball_collider";
-
-              if (!isBall) {
-                console.log(
-                  "Ignored non-ball object:",
-                  rigidBodyName,
-                  colliderName,
-                );
-                return;
-              }
-
-              console.log("Post: " + postName);
-              console.log("GOAL!");
-            }}
-            onIntersectionExit={(event) => {
-              console.log("Something left goal sensor", event);
+              footballRef(event);
             }}
           />
         );
@@ -77,11 +58,14 @@ export default function ColliderBuilder({ entity, children }) {
           friction={0.5}
           name="ball_collider"
           restitution={0.3}
+          onCollisionEnter={footballBallTouchRef}
         />
       );
     }
+
     return (
       <CapsuleCollider
+        name={`${entity.id}_collider`}
         args={[halfHeight, r]}
         position={[0, halfHeight + r, 0]}
       />
@@ -91,6 +75,7 @@ export default function ColliderBuilder({ entity, children }) {
   return (
     <>
       <RigidBody
+        name={entity.id}
         ref={bodyRef}
         position={entity.position}
         rotation={entity.rotation ?? [0, 0, 0]}
@@ -107,10 +92,10 @@ export default function ColliderBuilder({ entity, children }) {
             ? [false, true, false]
             : entity.tag === "ball"
               ? [true, true, true]
-              : [true, true, false]
+              : [false, false, false]
         }
-        linearDamping={entity.tag === "agent" ? 0.0 : 0.5}
-        angularDamping={entity.tag === "agent" ? 0.0 : 0.5}
+        linearDamping={entity.tag === "agent" ? 0.2 : 0.8}
+        angularDamping={entity.tag === "agent" ? 0.2 : 0.8}
       >
         <group position={[0, 0, 0]}>{children}</group>
         {renderCollider()}

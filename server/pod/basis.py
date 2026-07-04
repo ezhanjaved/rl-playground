@@ -1,6 +1,7 @@
 from server.objectClass.sceneClass import make_runtime_state
 from server.storage.downloadModel import download_from_s3
 from server.training.debug_training import debugPipeline
+from server.training.manualTesting import manualTesting
 from server.training.training import TrainingLoop
 from server.utilities.compile import compiler
 from server.utilities.extractor import extact_graph_per_agent, extract_agent_list
@@ -20,7 +21,7 @@ def basis(uid):
     )  # form a runtime obj that will mutate while training
     if mode == "debug":
         print("Entering Debugging Mode")
-        debugPipeline(scenarioObject, runTimeState, uid)
+        manualTesting(scenarioObject, runTimeState, uid)
         return
     else:
         instanceTl = basis_second(scenarioObject, runTimeState, uid)

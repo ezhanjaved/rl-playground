@@ -36,6 +36,7 @@ class RequestModel(BaseModel):
     highestDistance: float
     spawnMode: str
     randomSpawnAfterEp: int | None = None
+    topographyMode: str | None = None
 
 
 class RunModel(BaseModel):
@@ -75,6 +76,7 @@ async def getData(data: RequestModel):
         model_name = data.dict()["modelName"]
         highestDistance = data.dict()["highestDistance"]
         spawnMode = data.dict()["spawnMode"]
+        topographyFixed = data.dict()["topographyMode"]
         randomSpawnAfterEp = data.dict().get(
             "randomSpawnAfterEp"
         )  # None if not provided
@@ -90,6 +92,7 @@ async def getData(data: RequestModel):
                 "highest_dist": highestDistance,
                 "spawn_mode": spawnMode,
                 "fixed_episode_per": randomSpawnAfterEp,
+                "topography_fixed": topographyFixed,
             },
             "models",
         )
@@ -124,6 +127,7 @@ async def getDataDebug(data: RequestModel):
         model_name = data.dict()["modelName"]
         highestDistance = data.dict()["highestDistance"]
         spawnMode = data.dict()["spawnMode"]
+        topographyFixed = data.dict()["topographyMode"]
         randomSpawnAfterEp = data.dict().get(
             "randomSpawnAfterEp"
         )  # None if not provided
@@ -139,6 +143,7 @@ async def getDataDebug(data: RequestModel):
                 "highest_dist": highestDistance,
                 "spawn_mode": spawnMode,
                 "fixed_episode_per": randomSpawnAfterEp,
+                "topography_fixed": topographyFixed,
             },
             "models",
         )

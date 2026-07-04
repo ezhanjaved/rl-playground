@@ -59,7 +59,6 @@ function EntityRenderer({ entity }) {
 
   useEffect(() => {
     if (!handRef.current) {
-      console.log(`${entity?.name || entity.id} does not have a hand`);
       return;
     }
     handRef.current.children.forEach((child) => handRef.current.remove(child));
@@ -80,7 +79,6 @@ function EntityRenderer({ entity }) {
     if (!handRef.current) return;
     const isHolding = entity.state_space?.holding;
     if (!isHolding) {
-      console.log("We are removing OBJ from hand!");
       handRef.current.children.forEach((child) =>
         handRef.current.remove(child),
       );
@@ -121,28 +119,64 @@ function EntityRenderer({ entity }) {
     deleteEntity(entity.id);
   };
 
+  const animationStateRef = useRef({ activeClip: null });
+
   useFrame(() => {
     if (!playing) return;
     if (entity.tag !== "agent" || !actions) return;
     const actionPerformed = entity.last_action;
     const name = entity.name;
-    animationLoop(name, actionPerformed, actions, playing);
+    animationLoop(name, actionPerformed, actions, playing, animationStateRef);
   });
 
   useEffect(() => {
     if (!actions) return;
     if (!playing) {
-      Object.values(actions.actions).forEach((action) => action.stop());
+      Object.values(actions.actions).forEach((action) => {
+        clearTimeout(action._fadeOutHandle);
+        action.stop();
+      });
+      animationStateRef.current.activeClip = null;
     }
   }, [playing, actions]);
 
-  function animationLoop(name, last_action, actions, playing) {
+  function animationLoop(
+    name,
+    last_action,
+    actions,
+    playing,
+    animationStateRef,
+  ) {
     const animationName = animationsMapper(name, last_action) || null;
-    if (actions && animationName && playing) {
-      actions["actions"][animationName].play();
-    } else {
-      actions["actions"][animationName].pause();
+    if (!actions?.actions) return;
+
+    const fadeDuration = 0.6;
+    const targetClip = playing ? animationName : null;
+    const state = animationStateRef.current;
+
+    if (targetClip === state.activeClip) return;
+
+    const incomingAction = targetClip ? actions.actions[targetClip] : null;
+    const outgoingClip = state.activeClip;
+    const outgoingAction = outgoingClip ? actions.actions[outgoingClip] : null;
+
+    if (outgoingAction && outgoingAction !== incomingAction) {
+      outgoingAction.fadeOut(fadeDuration);
+      clearTimeout(outgoingAction._fadeOutHandle);
+      outgoingAction._fadeOutHandle = setTimeout(
+        () => {
+          outgoingAction.stop();
+        },
+        fadeDuration * 1000 + 16,
+      );
     }
+
+    if (incomingAction) {
+      clearTimeout(incomingAction._fadeOutHandle); // cancel any pending stop if reused quickly
+      incomingAction.reset().setEffectiveWeight(1).fadeIn(fadeDuration).play();
+    }
+
+    state.activeClip = targetClip;
   }
 
   return (
@@ -159,7 +193,7 @@ function EntityRenderer({ entity }) {
         onContextMenu={onContextMenu}
       >
         <boxGeometry args={[size.x, size.y, size.z]} />
-        <meshBasicMaterial color="orange" opacity={0.2} transparent />
+        <meshBasicMaterial color="orange" opacity={0.3} transparent />
       </mesh>
     </group>
   );

@@ -38,6 +38,18 @@ def gate_predicate(e):
     return getattr(e, "isGate", False) in (True, "true", 1)
 
 
+def blue_goal_post_predicate(e):
+    return getattr(e, "isGoalPostBlue", False) in (True, "true", 1)
+
+
+def red_goal_post_predicate(e):
+    return getattr(e, "isGoalPostRed", False) in (True, "true", 1)
+
+
+def ball_predicate(e):
+    return getattr(e, "isBall", False) in (True, "true", 1)
+
+
 def partition_entities(entities):
     buckets = {
         "target": [],
@@ -47,6 +59,9 @@ def partition_entities(entities):
         "deposit": [],
         "destroyable": [],
         "gate": [],
+        "goalPostBlue": [],
+        "goalPostRed": [],
+        "ball": [],
     }
     for entity in entities.values():
         if not entity:
@@ -65,6 +80,12 @@ def partition_entities(entities):
             buckets["destroyable"].append(entity)
         if gate_predicate(entity):
             buckets["gate"].append(entity)
+        if blue_goal_post_predicate(entity):
+            buckets["goalPostBlue"].append(entity)
+        if red_goal_post_predicate(entity):
+            buckets["goalPostRed"].append(entity)
+        if ball_predicate(entity):
+            buckets["ball"].append(entity)
     return buckets
 
 
@@ -221,6 +242,14 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
     cache = _DistCache(position, rotation, entity_buckets)
     constructed_obs = []
 
+    # --- This section is for Football Ability ---
+    team_id = getattr(agentData, "teamId", None)
+    goal_bucket_key = None
+    goal_flag = None
+    if team_id:
+        goal_bucket_key = "goalPostRed" if team_id == "blue" else "goalPostBlue"
+        goal_flag = "red-post" if team_id == "blue" else "blue-post"
+
     for obs in obs_space:
         match obs:
             # --- (Moveable) ---
@@ -318,7 +347,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
 
             case "in_radius_holder":
                 found, best, radius, _ = getNearestTargetInfo(
-                    position, runTimeSnapShot, "pickable"
+                    position, runTimeSnapShot, "Pickable Object"
                 )
                 constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
 
@@ -348,9 +377,9 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 )
 
             case "keys_collected":
-                constructed_obs.append(
-                    min(float(state_space.get("keys_collected", 0)) / 10.0, 1.0)
-                )
+                val = float(state_space.get("keys_collected", 0))
+                val = min(val / 10.0, 1.0)
+                constructed_obs.append(val)
 
             case "total_items_collected":
                 constructed_obs.append(
@@ -359,7 +388,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
 
             case "in_radius_collect":
                 found, best, radius, _ = getNearestTargetInfo(
-                    position, runTimeSnapShot, "collectable"
+                    position, runTimeSnapShot, "Collectible Object"
                 )
                 constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
 
@@ -376,7 +405,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 dist, _ = cache.get("deposit", "delta-z")
                 constructed_obs.append(dist)
 
-            case "items_deposit":
+            case "items_deposited":
                 constructed_obs.append(
                     min(float(state_space.get("items_deposited", 0)) / 10.0, 1.0)
                 )
@@ -444,14 +473,14 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 )
                 constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
 
-            case "hasKey":
-                constructed_obs.append(
-                    1.0 if state_space.get("keys_collected", 0) > 0 else 0.0
-                )
-
             case "gates_open":
                 constructed_obs.append(
                     min(float(state_space.get("gates_open", 0)) / 10.0, 1.0)
+                )
+
+            case "hasKey":
+                constructed_obs.append(
+                    1.0 if state_space.get("keys_collected", 0) > 0 else 0.0
                 )
 
             case "last_open_success":
@@ -460,6 +489,78 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     constructed_obs.append(0.5)
                 else:
                     constructed_obs.append(1.0 if los else 0.0)
+
+            # --- (Footballer) ---
+            case "dist_to_nearest_ball":
+                dist, _ = cache.get("ball", "both")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_ball":
+                dist, _ = cache.get("ball", "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_ball":
+                dist, _ = cache.get("ball", "delta-z")
+                constructed_obs.append(dist)
+
+            case "in_radius_ball":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, "isBall"
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
+            case "dist_to_target_goal":
+                dist, _ = cache.get(goal_bucket_key, "both")
+                constructed_obs.append(dist)
+
+            case "delta_x_to_goal":
+                dist, _ = cache.get(goal_bucket_key, "delta-x")
+                constructed_obs.append(dist)
+
+            case "delta_z_to_goal":
+                dist, _ = cache.get(goal_bucket_key, "delta-z")
+                constructed_obs.append(dist)
+
+            case "in_radius_goal":
+                found, best, radius, _ = getNearestTargetInfo(
+                    position, runTimeSnapShot, goal_flag
+                )
+                constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
+            case "last_kick_success":
+                lks = state_space.get("lastKickSuccess")
+                if lks is None:
+                    constructed_obs.append(0.5)
+                else:
+                    constructed_obs.append(1.0 if lks else 0.0)
+
+            case "my_goals_scored":
+                constructed_obs.append(
+                    min(float(state_space.get("my_goals_scored", 0)) / 10.0, 1.0)
+                )
+
+            case "my_own_goals_scored":
+                constructed_obs.append(
+                    min(float(state_space.get("my_own_goals_scored", 0)) / 10.0, 1.0)
+                )
+
+            case "team_goals_scored":
+                constructed_obs.append(
+                    min(float(state_space.get("team_goals_scored", 0)) / 10.0, 1.0)
+                )
+
+            case "team_goals_conceded":
+                constructed_obs.append(
+                    min(float(state_space.get("team_goals_conceded", 0)) / 10.0, 1.0)
+                )
+
+            case "last_goal_type":
+                # None/missing = none (0.5), True = normal_goal (1), False = own_goal (0)
+                lgt = state_space.get("last_goal_type")
+                if lgt is None:
+                    constructed_obs.append(0.5)
+                else:
+                    constructed_obs.append(1.0 if lgt else 0.0)
 
             case _:
                 constructed_obs.append(0.0)

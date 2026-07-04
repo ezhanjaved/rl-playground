@@ -1,5 +1,6 @@
 from server.training.bulletWorld import PyBulletWorld
 from server.training.enviornmentBase import EnvironmentCore
+from server.utilities.refined import actionMasking, actionMaskingArray
 
 
 class SimulationEnv:
@@ -12,8 +13,10 @@ class SimulationEnv:
     def reset(self):
         self.core.reset()
         self.world.load()
-
         runtime = self.core.runtime
+        self.agent_id = runtime.agents_ids[0]
+        self.topographyFixed = runtime.topographyFixed
+        print("Topo Mode:", self.topographyFixed)
         episode = runtime.episode_count
         threshold = runtime.randomSpawnAfterEp
         if runtime.spawn_mode == "Curriculum" and threshold is not None:
@@ -24,6 +27,7 @@ class SimulationEnv:
             self.core.runtime.entities.values(),
             self.core.runtime.highest_dist,
             effective_mode,
+            self.topographyFixed,
         )
 
         self.world.settle()
@@ -33,12 +37,35 @@ class SimulationEnv:
 
     def step(self, actions):
         obs_before = self.core.get_observation()
+        current_behavior = self.core.runtime.entities[self.agent_id].current_behavior
+        print("Current Behavior: ", current_behavior)
+
+        # checking mask
+        # capabilities = self.core.runtime.entities[self.agent_id].capabilities
+        # actionList, _ = actionMasking(capabilities)
+        # print("Action List: ", actionList)
+        # mask = [False] * len(actionList)
+        # returned_mask = actionMaskingArray(
+        #     mask, actionList, current_behavior, obs_before[self.agent_id]
+        # )
+        # print("Mask Returned: ", returned_mask)
+
         self.world.apply_actions(actions, self.core.runtime.entities)
         self.world.step_simulation()
         self.core.sync_state_from_world(self.world)
+        self.utility_routines()
         self.core.update_previous_distances(obs_before, actions, self.core.runtime)
         obs_after = self.core.get_observation()  # NEW
         reward, terminated, truncated, info = self.core.compute_reward(
             obs_before, obs_after
         )  # NEW
         return obs_after, reward, terminated, truncated, info
+
+    def utility_routines(self):
+        # self.core.runtime.entities contains mutable data about each entity and it is what each actuator use to update/change it during each action so I will use it to change data into OnEnter function
+        # I was doing the same on JS (using entities from Zustand store and changing them into call back function)
+        # Since self.core.runtime.entities is also used by evaluator (self.core.compute_reward) graph evalualor will always see updated figure to assign reward
+        self.world.check_post(
+            self.core.runtime.entities
+        )  # Once simulation would have been stepped I will check for ball in the goal
+        self.world.collision_check_ball_agent(self.core.runtime.entities)

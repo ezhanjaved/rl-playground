@@ -13,7 +13,9 @@ def fetchModels(uid, table, id):
 def fetchExtactModel(model_id):
     response = (
         supabase.table("models")
-        .select("total_timestep, highest_dist, spawn_mode, fixed_episode_per")
+        .select(
+            "total_timestep, highest_dist, spawn_mode, fixed_episode_per, topography_fixed"
+        )
         .eq("training_id", str(model_id))  # training id
         .single()
         .execute()

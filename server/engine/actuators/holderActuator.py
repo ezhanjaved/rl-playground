@@ -98,6 +98,12 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
             isDestroyable=droppedObj["isDestroyable"],
             isCollectable=droppedObj["isCollectable"],
             isTarget=droppedObj["isTarget"],
+            isBall=droppedObj["isBall"],
+            isGoalPostBlue=droppedObj["isGoalPostBlue"],
+            isGoalPostRed=droppedObj["isGoalPostRed"],
+            goalId=droppedObj["goalId"],
+            teamId=droppedObj["teamId"],
+            positionSpawned=droppedObj["positionSpawned"],
         )
         new_state_space["holding"] = False
         new_state_space["lastPickSuccess"] = False

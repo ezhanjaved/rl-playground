@@ -8,6 +8,13 @@ const NAVIGATOR_FIELDS = [
   "obstacle_in_path",
 ];
 
+const FOOTBALL_FIELDS = [
+  "dist_to_target_goal",
+  "delta_x_to_goal",
+  "delta_z_to_goal",
+  "in_radius_goal",
+];
+
 const BASE_GOAL_FIELDS = [
   "dist_to_current_goal",
   "delta_x_to_current_goal",
@@ -26,6 +33,11 @@ const PROGRESS_FIELDS = [
   "gates_open",
   "items_destroyed",
   "in_target_radius",
+  "my_goals_scored",
+  "team_goals_scored",
+  "team_goals_conceded",
+  "my_own_goals_scored",
+  "last_goal_type",
 ];
 
 const BEHAVIOR_CONFIG = {
@@ -93,7 +105,7 @@ const BEHAVIOR_CONFIG = {
       dist_to_current_goal: "dist_to_nearest_destroyable",
       delta_x_to_current_goal: "delta_x_to_destroyable",
       delta_z_to_current_goal: "delta_z_to_destroyable",
-      in_radius_current_goal: "in_radius_destroy",
+      in_radius_current_goal: "in_radius_destroyed",
       last_action_success: "last_destroy_success",
     },
   },
@@ -108,6 +120,25 @@ const BEHAVIOR_CONFIG = {
       delta_z_to_current_goal: "delta_z_to_target",
       in_radius_current_goal: "in_target_radius",
       last_action_success: null,
+    },
+  },
+
+  Football: {
+    goalFlag: "goal_is_football",
+    done: (s, stage) => s.team_goals_scored >= getRequiredCount(stage),
+    progressFields: [
+      "team_goals_scored",
+      "my_goals_scored",
+      "team_goals_conceded",
+      "my_own_goals_scored",
+      "last_goal_type",
+    ],
+    fields: {
+      dist_to_current_goal: "dist_to_nearest_ball",
+      delta_x_to_current_goal: "delta_x_to_ball",
+      delta_z_to_current_goal: "delta_z_to_ball",
+      in_radius_current_goal: "in_radius_ball",
+      last_action_success: "last_kick_success",
     },
   },
 };
@@ -143,6 +174,10 @@ function buildBehaviorObsSpace(behavior, capabilities) {
     obsSpace.push(...NAVIGATOR_FIELDS);
   }
 
+  if (hasCapability(capabilities, "Footballer")) {
+    obsSpace.push(...FOOTBALL_FIELDS);
+  }
+
   return obsSpace;
 }
 
@@ -150,8 +185,6 @@ function pickCurrentBehavior(behavior, state) {
   for (const stage of behavior) {
     const type = getStageType(stage);
     const config = BEHAVIOR_CONFIG[type];
-    console.log("State: " + JSON.stringify(state, null, 2));
-    console.log("Stage: " + JSON.stringify(stage, null, 2));
     if (!config) continue;
 
     if (!config.done(state, stage)) {
@@ -192,7 +225,7 @@ function getStageType(stage) {
 }
 
 function getRequiredCount(stage) {
-  return typeof stage === "object" ? stage?.requiredCount / 10.0 : 1;
+  return typeof stage === "object" ? (stage?.requiredCount ?? 10) / 10.0 : 1;
 }
 
 export function BehaviorBuilder(obsVector, agent) {
@@ -221,6 +254,12 @@ export function BehaviorBuilder(obsVector, agent) {
 
   if (hasCapability(capabilities, "Navigator")) {
     for (const field of NAVIGATOR_FIELDS) {
+      output[field] = getObsValue(observationSpace, obsVector, field, 0);
+    }
+  }
+
+  if (hasCapability(capabilities, "Footballer")) {
+    for (const field of FOOTBALL_FIELDS) {
       output[field] = getObsValue(observationSpace, obsVector, field, 0);
     }
   }

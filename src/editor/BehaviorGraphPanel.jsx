@@ -24,7 +24,7 @@ export function BehaviorGraphPanel() {
     {
       id: "in-radius-node",
       payload: {
-        data: { label: "WithInRadius", entityOne: null, entityTwo: null },
+        data: { label: "WithInRadius" },
         type: "InRadiusNode",
       },
     },
@@ -33,8 +33,6 @@ export function BehaviorGraphPanel() {
       payload: {
         data: {
           label: "IsDistanceLess",
-          entityOne: null,
-          entityTwo: null,
           mode: null,
         },
         type: "IsDistanceLessNode",
@@ -43,21 +41,21 @@ export function BehaviorGraphPanel() {
     {
       id: "is-distance-more-node",
       payload: {
-        data: { label: "IsDistanceMore", entityOne: null, entityTwo: null },
+        data: { label: "IsDistanceMore" },
         type: "IsDistanceMoreNode",
       },
     },
     {
       id: "is-delta-x-less-node",
       payload: {
-        data: { label: "IsDeltaXLess", entityOne: null, entityTwo: null },
+        data: { label: "IsDeltaXLess" },
         type: "IsDeltaXLessNode",
       },
     },
     {
       id: "is-delta-z-pos-node",
       payload: {
-        data: { label: "IsDeltaZPos", entityOne: null, entityTwo: null },
+        data: { label: "IsDeltaZPos" },
         type: "IsDeltaZPosNode",
       },
     },

@@ -23,7 +23,7 @@ def openActuator(action, agent, entities, eM, client, indexOfAction):
         return
 
     found, best, targetRadius, entityId = getNearestTargetInfo(
-        agent.position, entities, "static-obj"
+        agent.position, entities, "gate"
     )
     target_reached = found and best <= targetRadius
 

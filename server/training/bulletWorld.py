@@ -1,3 +1,4 @@
+import math
 import random
 import time
 
@@ -5,7 +6,10 @@ import pybullet as p
 import pybullet_data
 
 from server.engine.actuators.mainActuator import process_action
+from server.utilities.ball import Ball
 from server.utilities.distance3D import distance3D
+from server.utilities.footballref import footballRef
+from server.utilities.goalSensor import GoalSensor
 from server.utilities.positionSwap import positionSwap, rotationSwap
 
 
@@ -13,6 +17,10 @@ class PyBulletWorld:
     def __init__(self):
         self.client = None
         self.entity_mapping = {}
+        self.ball_id = None
+        self.ball_obj = None
+        self.red_goal_post = None
+        self.blue_goal_post = None
 
     def load(self):
         if self.client is not None:
@@ -27,29 +35,219 @@ class PyBulletWorld:
         p.setTimeStep(1 / 60, physicsClientId=self.client)
         p.loadURDF("plane.urdf", physicsClientId=self.client)
 
-    def spawn_entities(self, entities_config, highestDistance, spawn_mode):
+    def spawn_entities(
+        self, entities_config, highestDistance, spawn_mode, topographyFixed
+    ):
         # IMPORTANT: must use shallow list — randomize_entities_open_space mutates
         # entity.position in-place on the original objects so that runtime.entities
         # stays in sync. deepcopy here would break OBS for all non-agent entities.
         entities_config = list(entities_config)
+
         if spawn_mode == "Random":
-            entities_config = self.randomize_entities_open_space(
-                entities_config, highestDistance
-            )
+            self.grid = None
+            self.min_x, self.min_y = -10.0, -10.0
+            self.max_x, self.max_y = 10.0, 10.0
+            # This is a flag that will come from client side which user will have to use to
+            # let system know if what env they have designed they want to preserve its topography
+            # if yes then system will ensure that obstacles are not randomized and we use grid to properly place
+            # objects within it.
+            # if not then system will randomize everything without any rule/regulation - just using highestDist to maintain chain
+            self.non_state_ent_configs = None
+            self.excluded_ent_configs = None
+            self.merged = []
+            self.temp_ent_config = None
+            if topographyFixed:
+                self.cell_size = 0.2
+                excluded_tags = ("non_state", "red-post", "blue-post")
+                self.non_state_ent_configs = [
+                    ent for ent in entities_config if ent.tag in excluded_tags
+                ]
+                self.define_grid_bounds(self.non_state_ent_configs)
+                self.grid = self.create_a_grid(self.non_state_ent_configs)
+                self.visualize_grid(
+                    self.grid
+                )  # debug only — remove or gate before shipping
+                self.excluded_ent_configs = [
+                    ent for ent in entities_config if ent.tag not in excluded_tags
+                ]
+                self.temp_ent_config = self.randomize_entities(
+                    self.excluded_ent_configs, highestDistance, self.grid
+                )
+                self.merged = self.temp_ent_config + self.non_state_ent_configs
+            else:
+                entities_config = self.randomize_entities(
+                    entities_config, highestDistance, self.grid
+                )
+                self.merged = entities_config
+            entities_config = self.merged
         for entity in entities_config:
             bullet_id = self.spawn(entity)
             self.entity_mapping[entity.id] = bullet_id
 
-    def randomize_entities_open_space(self, entConfigCopy, highestDistance):
+    def utility_for_grid_making(self, ent):
+        half_w, half_d, r = 0.0, 0.0, 0.0
+        pos = ent.position
+        postSwapPos = positionSwap(pos)
+        wx, wy, _ = postSwapPos
+
+        collider = ent.collider
+        shape = collider.get("shape", "box")
+        if shape == "box":
+            w = collider["w"]
+            half_w = w / 2
+            d = collider["d"]
+            half_d = d / 2
+        elif shape == "capsule":
+            r = collider["r"]
+
+        preSwapRot = ent.quatRotation
+        postSwapRot = rotationSwap(preSwapRot)
+        _, _, rz, rw = postSwapRot
+        yaw = 2 * math.atan2(rz, rw)
+
+        return wx, wy, half_w, half_d, r, yaw, shape
+
+    def visualize_grid(self, grid, show_free=False, persist=False):
+        if not persist:
+            if hasattr(self, "_grid_debug_ids") and self._grid_debug_ids:
+                for debug_id in self._grid_debug_ids:
+                    p.removeUserDebugItem(debug_id, physicsClientId=self.client)
+            self._grid_debug_ids = []
+
+        cols = len(grid)
+        rows = len(grid[0]) if cols > 0 else 0
+
+        blocked_points, blocked_colors = [], []
+        free_points, free_colors = [], []
+
+        for col in range(cols):
+            for row in range(rows):
+                wx = self.min_x + (col + 0.5) * self.cell_size
+                wy = self.min_y + (row + 0.5) * self.cell_size
+                point = [wx, wy, 0.05]
+
+                if grid[col][row]:
+                    blocked_points.append(point)
+                    blocked_colors.append([1, 0, 0])  # red = blocked
+                elif show_free:
+                    free_points.append(point)
+                    free_colors.append([0, 1, 0])  # green = free
+
+        if blocked_points:
+            debug_id = p.addUserDebugPoints(
+                blocked_points,
+                blocked_colors,
+                pointSize=6,
+                physicsClientId=self.client,
+            )
+            if not persist:
+                self._grid_debug_ids.append(debug_id)
+
+        if free_points:
+            debug_id = p.addUserDebugPoints(
+                free_points,
+                free_colors,
+                pointSize=6,  # smaller, so they don't visually drown out blocked cells
+                physicsClientId=self.client,
+            )
+            if not persist:
+                self._grid_debug_ids.append(debug_id)
+
+    def define_grid_bounds(self, entitiesConfig):
+        min_x, min_y = float("inf"), float("inf")
+        max_x, max_y = float("-inf"), float("-inf")
+        for ent in entitiesConfig:
+            wx, wy, half_w, half_d, r, yaw, shape = self.utility_for_grid_making(ent)
+
+            if shape == "box":
+                effective_half_w = abs(half_w * math.cos(yaw)) + abs(
+                    half_d * math.sin(yaw)
+                )
+                effective_half_d = abs(half_w * math.sin(yaw)) + abs(
+                    half_d * math.cos(yaw)
+                )
+
+                left_edge = wx - effective_half_w
+                right_edge = wx + effective_half_w
+
+                min_x = min(min_x, left_edge)
+                max_x = max(max_x, right_edge)
+
+                bottom_edge = wy - effective_half_d
+                top_edge = wy + effective_half_d
+
+                min_y = min(min_y, bottom_edge)
+                max_y = max(max_y, top_edge)
+
+            if shape == "capsule":
+                left_edge = wx - r
+                right_edge = wx + r
+                min_x = min(min_x, left_edge)
+                max_x = max(max_x, right_edge)
+
+                bottom_edge = wy - r
+                top_edge = wy + r
+                min_y = min(min_y, bottom_edge)
+                max_y = max(max_y, top_edge)
+
+        if max_x != float("-inf") and max_y != float("-inf"):
+            self.max_x = max_x
+            self.max_y = max_y
+
+        if min_x != float("inf") and min_y != float("inf"):
+            self.min_x = min_x
+            self.min_y = min_y
+
+        print("Min X: ", min_x, "Max X: ", max_x)
+        print("Min Y: ", min_y, "Max Y: ", max_y)
+        return
+
+    # grid[col][row]
+    def create_a_grid(
+        self, entitiesConfig
+    ):  # entitiesConfig would only include (obstacles + posts)
+        cols = int((self.max_x - self.min_x) / self.cell_size)  # 40.0 / 0.2 = 200
+        rows = int((self.max_y - self.min_y) / self.cell_size)  # 40.0 / 0.2 = 200
+        grid = [[False for _ in range(rows)] for _ in range(cols)]
+        for col in range(cols):
+            for row in range(rows):
+                for entity in entitiesConfig:
+                    sx = self.min_x + (col + 0.5) * self.cell_size
+                    sy = self.min_y + (row + 0.5) * self.cell_size
+                    wx, wy, half_w, half_d, r, yaw, shape = (
+                        self.utility_for_grid_making(entity)
+                    )
+                    if shape == "box":
+                        dx = sx - wx
+                        dy = sy - wy
+                        local_x = dx * math.cos(-yaw) - dy * math.sin(-yaw)
+                        local_y = dx * math.sin(-yaw) + dy * math.cos(-yaw)
+
+                        if -half_w < local_x < half_w and -half_d < local_y < half_d:
+                            grid[col][row] = True
+
+                    if shape == "capsule":
+                        distance_to_capsule_center = math.sqrt(
+                            (sx - wx) ** 2 + (sy - wy) ** 2
+                        )
+                        if distance_to_capsule_center < r:
+                            grid[col][row] = True
+        return grid
+
+    def randomize_entities(self, entConfigCopy, highestDistance, grid):
 
         TAG_PRIORITY = {
             "agent": 0,
-            "Pickable Object": 1,
-            "Collectible Object": 1,
-            "deposit": 2,
-            "destroyable": 3,
-            "static-obj": 4,
-            "target": 5,
+            "non_state": 1,
+            "ball": 1,
+            "red-post": 2,
+            "blue-post": 2,
+            "Pickable Object": 3,
+            "Collectible Object": 4,
+            "deposit": 5,
+            "destroyable": 6,
+            "gate": 7,
+            "target": 8,
         }
 
         entConfigCopy = sorted(entConfigCopy, key=lambda e: TAG_PRIORITY.get(e.tag, 99))
@@ -59,7 +257,10 @@ class PyBulletWorld:
             return entConfigCopy
 
         agentRandomPos = self.random_position_around(
-            agentConfig.position, min_dist=2.0, max_dist=highestDistance
+            agentConfig.position,
+            min_dist=2.0,
+            max_dist=highestDistance,
+            grid=grid,
         )
         if agentRandomPos is None:
             return entConfigCopy
@@ -74,7 +275,10 @@ class PyBulletWorld:
             success = False
             for _ in range(100):
                 objRandomPos = self.random_position_around(
-                    lastPos, min_dist=2.0, max_dist=highestDistance * 0.75
+                    lastPos,
+                    min_dist=2.0,
+                    max_dist=highestDistance * 0.75,
+                    grid=grid,
                 )
                 if objRandomPos:
                     obj.position = objRandomPos
@@ -87,19 +291,27 @@ class PyBulletWorld:
 
         return entConfigCopy
 
-    def random_position_around(self, center, min_dist, max_dist):
+    def random_position_around(self, center, min_dist, max_dist, grid):
+        center_bullet = positionSwap(center)
+        cx, cy, cz = center_bullet
         for _ in range(100):
-            x = random.uniform(center[0] - max_dist, center[0] + max_dist)
-            z = random.uniform(center[2] - max_dist, center[2] + max_dist)
-            y = center[1]
+            x = random.uniform(cx - max_dist, cx + max_dist)
+            y = random.uniform(cy - max_dist, cy + max_dist)
 
-            dist = distance3D(center, [x, y, z])
+            x = max(self.min_x, min(self.max_x, x))
+            y = max(self.min_y, min(self.max_y, y))
 
-            x = max(-20, min(20, x))
-            z = max(-20, min(20, z))
+            dist = distance3D(center_bullet, [x, y, cz])
 
-            if min_dist < dist < max_dist:
-                return [x, y, z]
+            if min_dist < dist < 3.0:
+                if grid is None:
+                    return positionSwap([x, y, cz])
+                col = int((x - self.min_x) / self.cell_size)
+                row = int((y - self.min_y) / self.cell_size)
+                col = max(0, min(len(grid) - 1, col))
+                row = max(0, min(len(grid[0]) - 1, row))
+                if not grid[col][row]:
+                    return positionSwap([x, y, cz])
 
         return None
 
@@ -125,7 +337,7 @@ class PyBulletWorld:
         bullet_id = None
         if entity.tag == "agent":
             bullet_id = self.spawn_agent(positionEntity, rotationEntity, colliderEntity)
-        elif entity.tag == "non_state" or entity.tag == "static-obj":
+        elif entity.tag == "non_state" or entity.tag == "gate":
             bullet_id = self.spawn_non_state(
                 positionEntity, rotationEntity, colliderEntity
             )
@@ -146,13 +358,40 @@ class PyBulletWorld:
                 positionEntity, rotationEntity, colliderEntity
             )
         elif entity.tag == "ball":
-            bullet_id = self.spawn_ball(
-                positionEntity, rotationEntity, 1.0, colliderEntity
+            self.ball_obj = Ball(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                1.0,
+                entity.id,
+                self.client,
             )
+            self.ball_id = self.ball_obj.get_ball_id()
+            bullet_id = self.ball_obj.get_ball_id()
         elif entity.tag == "push-obj":
             bullet_id = self.push_objs(
                 positionEntity, rotationEntity, 1.0, colliderEntity
             )
+        elif entity.tag == "red-post":
+            self.red_goal_post = GoalSensor(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                "red",
+                self.client,
+                footballRef,
+            )
+            bullet_id = self.red_goal_post.get_goal_sensor()
+        elif entity.tag == "blue-post":
+            self.blue_goal_post = GoalSensor(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                "blue",
+                self.client,
+                footballRef,
+            )
+            bullet_id = self.blue_goal_post.get_goal_sensor()
         elif entity.tag == "generic":
             pass
         else:
@@ -162,6 +401,20 @@ class PyBulletWorld:
             )
 
         return bullet_id
+
+    def check_post(self, entities):
+        if self.ball_id is None:
+            print("Returning because of no ball")
+            return
+        if self.blue_goal_post is not None:
+            self.blue_goal_post.check(self.ball_id, entities, self.entity_mapping)
+        if self.red_goal_post is not None:
+            self.red_goal_post.check(self.ball_id, entities, self.entity_mapping)
+
+    def collision_check_ball_agent(self, entities):
+        if self.ball_id is None:
+            return
+        self.ball_obj.collision_check(entities, self.entity_mapping)
 
     def step_simulation(self, steps=1):
         for _ in range(steps):
@@ -201,38 +454,6 @@ class PyBulletWorld:
         p.setCollisionFilterGroupMask(body_id, -1, 1, 1, physicsClientId=self.client)
 
         return body_id
-
-    def spawn_ball(self, pos, rot, mass, collider):
-        radius = collider.get("r", 0.3)
-        collision_shape = p.createCollisionShape(
-            p.GEOM_SPHERE, radius=radius, physicsClientId=self.client
-        )
-
-        visual_shape = p.createVisualShape(
-            p.GEOM_SPHERE,
-            radius=radius,
-            rgbaColor=[1, 1, 1, 1],
-            physicsClientId=self.client,
-        )
-
-        ball_id = p.createMultiBody(
-            baseMass=mass,
-            baseCollisionShapeIndex=collision_shape,
-            baseVisualShapeIndex=visual_shape,
-            basePosition=pos,
-            baseOrientation=rot,
-            physicsClientId=self.client,
-        )
-
-        p.changeDynamics(
-            ball_id,
-            -1,
-            linearDamping=0.5,
-            angularDamping=0.5,
-            physicsClientId=self.client,
-        )
-
-        return ball_id
 
     def push_objs(self, pos, rot, mass, collider):
         shape = collider.get("shape", "capsule")
@@ -295,7 +516,6 @@ class PyBulletWorld:
             halfExtents=[collider["w"] / 2, collider["d"] / 2, h / 2],
             physicsClientId=self.client,
         )
-        h = collider["h"]
         px, py, pz = pos
         pos = (px, py, h / 2)
         return p.createMultiBody(
@@ -315,7 +535,6 @@ class PyBulletWorld:
                 halfExtents=[collider["w"] / 2, collider["d"] / 2, h / 2],
                 physicsClientId=self.client,
             )
-            h = collider["h"]
             px, py, pz = pos
             pos = (px, py, h / 2)
         else:

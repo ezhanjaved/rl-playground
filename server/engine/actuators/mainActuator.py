@@ -4,6 +4,7 @@ from server.engine.actuators.collectorActuator import collectorActuator
 from server.engine.actuators.depositActuator import depositActuator
 from server.engine.actuators.destroyerActuator import destroyActuator
 from server.engine.actuators.finderActuator import finderActuator
+from server.engine.actuators.footballActuator import footballActuator
 from server.engine.actuators.holderActuator import holderActuator
 from server.engine.actuators.moveableActuator import moveableActuator
 from server.engine.actuators.openerActuator import openActuator
@@ -13,6 +14,7 @@ from server.utilities.capabilitiesMatch import capabilityMatcher
 def process_action(agent_id, agent_data, action, entityMapping, client, entities):
     capabilityMatched = capabilityMatcher(action)
     agentCapability = agent_data.capabilities
+    print("Agent Cap: ", agentCapability)
     actionSpace = agent_data.action_space  # array
     indexOfAction = actionSpace.index(action)
 
@@ -57,5 +59,11 @@ def process_action(agent_id, agent_data, action, entityMapping, client, entities
         case "Opener":
             if "Opener" in agentCapability:
                 openActuator(
+                    action, agent_data, entities, entityMapping, client, indexOfAction
+                )
+
+        case "Footballer":
+            if "Footballer" in agentCapability:
+                footballActuator(
                     action, agent_data, entities, entityMapping, client, indexOfAction
                 )

@@ -31,6 +31,19 @@ const destroyablePredicate = (e) =>
 const gatePredicate = (e) =>
   e.isGate === true || e.isGate === "true" || e.isGate === 1;
 
+const BlueGoalPostPredicate = (e) =>
+  e.isGoalPostBlue === true ||
+  e.isGoalPostBlue === "true" ||
+  e.isGoalPostBlue === 1;
+
+const RedGoalPostPredicate = (e) =>
+  e.isGoalPostRed === true ||
+  e.isGoalPostRed === "true" ||
+  e.isGoalPostRed === 1;
+
+const ballPredicate = (e) =>
+  e.isBall === true || e.isBall === "true" || e.isBall === 1;
+
 export function distanceInDirection(
   position,
   rotation,
@@ -182,6 +195,16 @@ export default function buildObsSpace(agent) {
   const rotation = agent?.rotation;
   const stateSpace = agent?.state_space;
 
+  //This section is for Football Ability
+  const teamId = agent?.teamId || null;
+  let predicatePickedForPost = null;
+  let flag = null;
+  if (teamId) {
+    predicatePickedForPost =
+      teamId === "blue" ? RedGoalPostPredicate : BlueGoalPostPredicate;
+    flag = teamId === "blue" ? "isGoalPostRed" : "isGoalPostBlue";
+  }
+
   const constructedObs = [];
   const cached = makeCache(position, rotation, entities);
 
@@ -298,6 +321,7 @@ export default function buildObsSpace(agent) {
 
       case "in_target_radius": {
         const info = getNearestTargetInfo(position, entities, "isTarget");
+        console.log("Is Target Radius: " + info.entityName);
         const targetReached = info?.found && info?.distance <= info?.radius;
         constructedObs.push(targetReached ? 1 : 0);
         break;
@@ -513,6 +537,101 @@ export default function buildObsSpace(agent) {
       case "last_open_success": {
         // null = never tried (0.5), true = success (1), false = failed (0)
         const lds = stateSpace?.lastOpenSuccess;
+        const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
+        constructedObs.push(val);
+        break;
+      }
+
+      // --- (Footballer) ---
+      case "dist_to_nearest_ball": {
+        const { min } = cached(ballPredicate, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_x_to_ball": {
+        const { min } = cached(ballPredicate, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_ball": {
+        const { min } = cached(ballPredicate, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "in_radius_ball": {
+        const info = getNearestTargetInfo(position, entities, "isBall");
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
+      case "dist_to_target_goal": {
+        const { min } = cached(predicatePickedForPost, "both");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_x_to_goal": {
+        const { min } = cached(predicatePickedForPost, "x-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "delta_z_to_goal": {
+        const { min } = cached(predicatePickedForPost, "z-delta");
+        constructedObs.push(min);
+        break;
+      }
+
+      case "in_radius_goal": {
+        const info = getNearestTargetInfo(position, entities, flag);
+        const targetReached = info?.found && info?.distance <= info?.radius;
+        constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
+      case "last_kick_success": {
+        // null = never tried (0.5), true = success (1), false = failed (0)
+        const lds = stateSpace?.lastKickSuccess;
+        const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
+        constructedObs.push(val);
+        break;
+      }
+
+      case "my_goals_scored": {
+        let val = parseFloat(stateSpace?.my_goals_scored);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "my_own_goals_scored": {
+        let val = parseFloat(stateSpace?.my_own_goals_scored);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "team_goals_scored": {
+        let val = parseFloat(stateSpace?.team_goals_scored);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "team_goals_conceded": {
+        let val = parseFloat(stateSpace?.team_goals_conceded);
+        val = Math.min(val / 10.0, 1.0);
+        constructedObs.push(val);
+        break;
+      }
+
+      case "last_goal_type": {
+        // null = none (0.5), true = normal_goal (1), false = own_goal (0)
+        const lds = stateSpace?.last_goal_type;
         const val = lds === null || lds === undefined ? 0.5 : lds ? 1 : 0;
         constructedObs.push(val);
         break;

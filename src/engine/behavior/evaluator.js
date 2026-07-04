@@ -135,6 +135,7 @@ function visitNode(NodeId, graph, ctxObj) {
       "Higher Than": (a, b) => a > b,
       "Less Than Equal To": (a, b) => a <= b,
       "Higher Than Equal To": (a, b) => a >= b,
+      "Equal To": (a, b) => a === b,
     };
 
     const key = currentNodeData?.data?.entityState;
@@ -164,13 +165,6 @@ function visitNode(NodeId, graph, ctxObj) {
   }
 
   if (currentNodeData.type === "InRadiusNode") {
-    const entityOne = currentNodeData.data.entityOne;
-    const entityTwo = currentNodeData.data.entityTwo;
-    const isAgent1 = entityOne === "Agent";
-    const isAgent2 = entityTwo === "Agent";
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
-
     const getObs = (key) => {
       const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
       return idx === -1 ? null : ctxObj.preObs?.[idx];
@@ -199,29 +193,14 @@ function visitNode(NodeId, graph, ctxObj) {
     // Delta X NEG: object is to the right.
     // If |deltaX| > threshold, there is meaningful lateral deviation.
 
-    const entityOne = currentNodeData.data.entityOne;
-    const entityTwo = currentNodeData.data.entityTwo;
-    const isAgent1 = entityOne === "Agent";
-    const isAgent2 = entityTwo === "Agent";
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
-
     const getObs = (key) => {
       const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
       return idx === -1 ? null : ctxObj.preObs?.[idx];
     };
 
-    if (
-      entityTwo === "Target Object" ||
-      entityTwo === "Pickable Object" ||
-      entityTwo === "Deposit Object" ||
-      entityTwo === "Destroyable Object" ||
-      entityTwo === "Opener Object"
-    ) {
-      const currentDeltaX = getObs("delta_x_to_current_goal");
-      if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
-        deltaX = true;
-    }
+    const currentDeltaX = getObs("delta_x_to_current_goal");
+    if (currentDeltaX !== null && Math.abs(currentDeltaX) <= deltaXCheck)
+      deltaX = true;
 
     const edges = findEdges(NodeId, graph);
     const chosenEdges = edges.filter((e) =>
@@ -241,28 +220,13 @@ function visitNode(NodeId, graph, ctxObj) {
     let deltaZ = false;
     // Delta Z POS: target is ahead (forward of the agent).
 
-    const entityOne = currentNodeData.data.entityOne;
-    const entityTwo = currentNodeData.data.entityTwo;
-    const isAgent1 = entityOne === "Agent";
-    const isAgent2 = entityTwo === "Agent";
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
-
     const getObs = (key) => {
       const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
       return idx === -1 ? null : ctxObj.preObs?.[idx];
     };
 
-    if (
-      entityTwo === "Target Object" ||
-      entityTwo === "Pickable Object" ||
-      entityTwo === "Deposit Object" ||
-      entityTwo === "Destroyable Object" ||
-      entityTwo === "Opener Object"
-    ) {
-      const currentDeltaZ = getObs("delta_z_to_current_goal");
-      if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck) deltaZ = true;
-    }
+    const currentDeltaZ = getObs("delta_z_to_current_goal");
+    if (currentDeltaZ !== null && currentDeltaZ > deltaZCheck) deltaZ = true;
 
     const edges = findEdges(NodeId, graph);
     const chosenEdges = edges.filter((e) =>
@@ -279,14 +243,7 @@ function visitNode(NodeId, graph, ctxObj) {
 
   if (currentNodeData.type === "IsDistanceLessNode") {
     let distanceLess = false;
-
-    const entityOne = currentNodeData.data.entityOne;
-    const entityTwo = currentNodeData.data.entityTwo;
     let mode = currentNodeData.data.mode ?? "Best Record";
-    const isAgent1 = entityOne === "Agent";
-    const isAgent2 = entityTwo === "Agent";
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
     const getObs = (key) => {
       const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);
@@ -342,13 +299,6 @@ function visitNode(NodeId, graph, ctxObj) {
   if (currentNodeData.type === "IsDistanceMoreNode") {
     let distanceMore = false;
     const tolerance = 0.2;
-
-    const entityOne = currentNodeData.data.entityOne;
-    const entityTwo = currentNodeData.data.entityTwo;
-    const isAgent1 = entityOne === "Agent";
-    const isAgent2 = entityTwo === "Agent";
-
-    if ((isAgent1 && isAgent2) || (!isAgent1 && !isAgent2)) return;
 
     const getObs = (key) => {
       const idx = (ctxObj.facts?.obs_space ?? []).indexOf(key);

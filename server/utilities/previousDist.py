@@ -5,6 +5,7 @@ PREVIOUS_DISTANCE_BY_BEHAVIOR = {
     "Deposit": "previous_distance_deposit",
     "Destroy": "previous_distance_destroyable",
     "Open": "previous_distance_gate",
+    "Football": "previous_distance_ball",
 }
 
 
@@ -57,6 +58,21 @@ def previousDistanceCorrection(entities, obs, current_action, agent):
             ) + 1
         else:
             new_state_space["last_action_counter"] = 1
+
+    if "Footballer" in agent.capabilities:
+        previous_distance_key = "previous_distance_goal"
+        dist_index = getIndexOfObs(obs_space, "dist_to_target_goal")
+        current_goal_distance = (
+            obs[dist_index]
+            if dist_index is not None and dist_index < len(obs)
+            else None
+        )
+        if previous_distance_key and current_goal_distance is not None:
+            best = new_state_space.get(previous_distance_key, float("inf"))
+            if best is None:
+                best = float("inf")
+            if current_goal_distance < best:
+                new_state_space[previous_distance_key] = current_goal_distance
 
     fresh_agent.last_action = current_action
     fresh_agent.state_space = new_state_space

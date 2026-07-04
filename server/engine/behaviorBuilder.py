@@ -15,6 +15,13 @@ BASE_GOAL_FIELDS = [
     "last_action_success",
 ]
 
+FOOTBALL_FIELDS = [
+    "dist_to_target_goal",
+    "delta_x_to_goal",
+    "delta_z_to_goal",
+    "in_radius_goal",
+]
+
 PROGRESS_FIELDS = [
     "items_collected",
     "keys_collected",
@@ -25,6 +32,11 @@ PROGRESS_FIELDS = [
     "gates_open",
     "items_destroyed",
     "in_target_radius",
+    "my_goals_scored",
+    "team_goals_scored",
+    "team_goals_conceded",
+    "my_own_goals_scored",
+    "last_goal_type",
 ]
 
 BEHAVIOR_CONFIG = {
@@ -90,7 +102,7 @@ BEHAVIOR_CONFIG = {
             "dist_to_current_goal": "dist_to_nearest_destroyable",
             "delta_x_to_current_goal": "delta_x_to_destroyable",
             "delta_z_to_current_goal": "delta_z_to_destroyable",
-            "in_radius_current_goal": "in_radius_destroy",
+            "in_radius_current_goal": "in_radius_destroyed",
             "last_action_success": "last_destroy_success",
         },
     },
@@ -104,6 +116,24 @@ BEHAVIOR_CONFIG = {
             "delta_z_to_current_goal": "delta_z_to_target",
             "in_radius_current_goal": "in_target_radius",
             "last_action_success": None,
+        },
+    },
+    "Football": {
+        "goalFlag": "goal_is_football",
+        "done": lambda s, stage: s["team_goals_scored"] >= get_required_count(stage),
+        "progressFields": [
+            "team_goals_scored",
+            "my_goals_scored",
+            "team_goals_conceded",
+            "my_own_goals_scored",
+            "last_goal_type",
+        ],
+        "fields": {
+            "dist_to_current_goal": "dist_to_nearest_ball",
+            "delta_x_to_current_goal": "delta_x_to_ball",
+            "delta_z_to_current_goal": "delta_z_to_ball",
+            "in_radius_current_goal": "in_radius_ball",
+            "last_action_success": "last_kick_success",
         },
     },
 }
@@ -160,6 +190,9 @@ def build_behavior_obs_space(behavior: list, capabilities: list[str]) -> list[st
 
     if has_capability(capabilities, "Navigator"):
         obs_space.extend(NAVIGATOR_FIELDS)
+
+    if has_capability(capabilities, "Footballer"):
+        obs_space.extend(FOOTBALL_FIELDS)
 
     return obs_space
 
@@ -219,6 +252,10 @@ def behavior_builder(obs_vector: list, agent) -> BehaviorBuilderResult:
 
     if has_capability(capabilities, "Navigator"):
         for field in NAVIGATOR_FIELDS:
+            output[field] = get_obs_value(observation_space, obs_vector, field, 0.0)
+
+    if has_capability(capabilities, "Footballer"):
+        for field in FOOTBALL_FIELDS:
             output[field] = get_obs_value(observation_space, obs_vector, field, 0.0)
 
     if config and config.get("fields"):

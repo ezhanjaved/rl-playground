@@ -11,5 +11,6 @@ def capabilityMatcher(action):
         "deposit": "Depositor",
         "destroy": "Destroyer",
         "open": "Opener",
+        "kick": "Footballer",
     }
     return actionLib[action]

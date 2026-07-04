@@ -5,27 +5,8 @@ import { useState, useEffect } from "react";
 
 export function InRadiusNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
-  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
 
   return (
     <div
@@ -72,37 +53,9 @@ export function InRadiusNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
+        <span>
+          <strong>Usage:</strong> checks if agent is within radius!
+        </span>
       </div>
     </div>
   );
@@ -121,15 +74,9 @@ export function LastActionIsNode({ data, id }) {
   const collectorAction = ["collect"];
   const depositAction = ["deposit"];
   const finderAction = ["interact"];
-
-  const handleCheckbox = (e) => {
-    const value = e.target.value;
-    const checked = e.target.checked;
-
-    setOption((prev) =>
-      checked ? [...prev, value] : prev.filter((v) => v !== value),
-    );
-  };
+  const destroyerAction = ["destroy"];
+  const openerAction = ["open"];
+  const footballerAction = ["kick"];
 
   const actionMap = {
     Moveable: moveableAction,
@@ -137,7 +84,17 @@ export function LastActionIsNode({ data, id }) {
     Collector: collectorAction,
     Depositor: depositAction,
     Finder: finderAction,
+    Destroyer: destroyerAction,
+    Opener: openerAction,
+    Footballer: footballerAction,
   };
+
+  const handleCapabilityChange = (e) => {
+    const values = Array.from(e.target.selectedOptions, (opt) => opt.value);
+    setOption(values);
+  };
+
+  const capabilityOptions = Object.keys(actionMap);
 
   useEffect(() => {
     const allActions = selectedOptions.flatMap((option) => actionMap[option]);
@@ -210,37 +167,23 @@ export function LastActionIsNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if agent picked this particular action
+        </span>
+
+        <br></br>
         <span>Agent Capabilities</span>
-        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-          <label>
-            <input type="checkbox" value="Moveable" onChange={handleCheckbox} />{" "}
-            Moveable{" "}
-          </label>
-          <label>
-            <input type="checkbox" value="Holder" onChange={handleCheckbox} />{" "}
-            Holder{" "}
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Collector"
-              onChange={handleCheckbox}
-            />{" "}
-            Collector
-          </label>
-          <label>
-            <input type="checkbox" value="Finder" onChange={handleCheckbox} />{" "}
-            Finder{" "}
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Depositor"
-              onChange={handleCheckbox}
-            />{" "}
-            Depositor{" "}
-          </label>
-        </div>
+        <select
+          value={selectedOptions}
+          onChange={handleCapabilityChange}
+          className="capability-select"
+        >
+          {capabilityOptions.map((cap) => (
+            <option key={cap} value={cap}>
+              {cap}
+            </option>
+          ))}
+        </select>
 
         <br />
 
@@ -278,21 +221,26 @@ export function StateEqualsToNode({ data, id }) {
   const holderState = ["holding", "lastPickSuccess"];
   const collectorState = ["lastPickSuccess"];
   const depositorState = ["nearDeposit", "lastDepositSuccess"];
+  const destroyerState = ["nearDestroyable", "lastDestroySuccess"];
+  const openerState = ["nearGate", "lastOpenSuccess"];
+  const footballerState = ["lastKickSuccess", "last_goal_type "];
 
   const stateMap = {
     Finder: finderState,
     Holder: holderState,
     Collector: collectorState,
     Depositor: depositorState,
+    Destroyer: destroyerState,
+    Opener: openerState,
+    Footballer: footballerState,
   };
 
-  const handleCheckbox = (e) => {
-    const value = e.target.value;
-    const checked = e.target.checked;
-    setOption((prev) =>
-      checked ? [...prev, value] : prev.filter((v) => v !== value),
-    );
+  const handleCapabilityChange = (e) => {
+    const values = Array.from(e.target.selectedOptions, (opt) => opt.value);
+    setOption(values);
   };
+
+  const capabilityOptions = Object.keys(stateMap);
 
   useEffect(() => {
     setAllStates([]);
@@ -363,33 +311,23 @@ export function StateEqualsToNode({ data, id }) {
         }}
       />
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks against selected boolean state value
+        </span>
+
+        <br></br>
         <span>Entity Capabilities</span>
-        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-          <label>
-            <input type="checkbox" value="Finder" onChange={handleCheckbox} />{" "}
-            Finder
-          </label>
-          <label>
-            <input type="checkbox" value="Holder" onChange={handleCheckbox} />{" "}
-            Holder
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Collector"
-              onChange={handleCheckbox}
-            />{" "}
-            Collector
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Depositor"
-              onChange={handleCheckbox}
-            />{" "}
-            Depositor
-          </label>
-        </div>
+        <select
+          value={selectedOptions}
+          onChange={handleCapabilityChange}
+          className="capability-select"
+        >
+          {capabilityOptions.map((cap) => (
+            <option key={cap} value={cap}>
+              {cap}
+            </option>
+          ))}
+        </select>
 
         <br />
 
@@ -425,23 +363,40 @@ export function CompareStateNode({ data, id }) {
 
   const finderState = ["previous_distance_target"];
   const holderState = ["previous_distance_pickable"];
-  const collectorState = ["previous_distance_collect", "items_collected"];
+  const collectorState = [
+    "previous_distance_collect",
+    "items_collected",
+    "keys_collected",
+    "total_items_collected",
+  ];
   const depositorState = ["items_deposited", "previous_distance_deposit"];
+  const destroyerState = ["previous_distance_destroyable", "items_destroyed"];
+  const openerState = ["previous_distance_gate", "gates_open"];
+  const footballerState = [
+    "previous_distance_ball",
+    "previous_distance_goal",
+    "my_own_goals_scored",
+    "my_goals_scored",
+    "team_goals_conceded",
+    "team_goals_scored",
+  ];
 
   const stateMap = {
     Finder: finderState,
     Holder: holderState,
     Collector: collectorState,
     Depositor: depositorState,
+    Destroyer: destroyerState,
+    Opener: openerState,
+    Footballer: footballerState,
   };
 
-  const handleCheckbox = (e) => {
-    const value = e.target.value;
-    const checked = e.target.checked;
-    setOption((prev) =>
-      checked ? [...prev, value] : prev.filter((v) => v !== value),
-    );
+  const handleCapabilityChange = (e) => {
+    const values = Array.from(e.target.selectedOptions, (opt) => opt.value);
+    setOption(values);
   };
+
+  const capabilityOptions = Object.keys(stateMap);
 
   useEffect(() => {
     setAllStates([]);
@@ -522,33 +477,23 @@ export function CompareStateNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks against given numerical state value
+        </span>
+
+        <br></br>
         <span>Entity Capabilities</span>
-        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-          <label>
-            <input type="checkbox" value="Finder" onChange={handleCheckbox} />{" "}
-            Finder
-          </label>
-          <label>
-            <input type="checkbox" value="Holder" onChange={handleCheckbox} />{" "}
-            Holder
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Collector"
-              onChange={handleCheckbox}
-            />{" "}
-            Collector
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Depositor"
-              onChange={handleCheckbox}
-            />{" "}
-            Depositor
-          </label>
-        </div>
+        <select
+          value={selectedOptions}
+          onChange={handleCapabilityChange}
+          className="capability-select"
+        >
+          {capabilityOptions.map((cap) => (
+            <option key={cap} value={cap}>
+              {cap}
+            </option>
+          ))}
+        </select>
 
         <br />
 
@@ -569,6 +514,7 @@ export function CompareStateNode({ data, id }) {
           <option value="Higher Than">Higher Than</option>
           <option value="Less Than Equal To">Less Than Equal To</option>
           <option value="Higher Than Equal To">Higher Than Equal To</option>
+          <option value="Equal To">Equal To</option>
         </select>
 
         <br />
@@ -585,24 +531,6 @@ export function IsDistanceLessNode({ data, id }) {
   const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
 
   function UpdateMode(event) {
     updateNode(activeGraphId, nodeId, {
@@ -658,6 +586,11 @@ export function IsDistanceLessNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if agent has progressed
+        </span>
+
+        <br></br>
         <span>Mode</span>
         <select
           name="in-radius-entity-one"
@@ -668,38 +601,6 @@ export function IsDistanceLessNode({ data, id }) {
           <option value="Best Record">Best Record</option>
           <option value="Raw Distance">Raw Distance</option>
         </select>
-        <br></br>
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
       </div>
     </div>
   );
@@ -707,27 +608,8 @@ export function IsDistanceLessNode({ data, id }) {
 
 export function IsDistanceMoreNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
-  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
 
   return (
     <div
@@ -774,37 +656,9 @@ export function IsDistanceMoreNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
+        <span>
+          <strong>Usage:</strong> checks if agent is going away from target
+        </span>
       </div>
     </div>
   );
@@ -812,27 +666,8 @@ export function IsDistanceMoreNode({ data, id }) {
 
 export function IsDeltaXLessNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
-  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
 
   return (
     <div
@@ -879,37 +714,9 @@ export function IsDeltaXLessNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
+        <span>
+          <strong>Usage:</strong> checks if agent is aligned with target{" "}
+        </span>
       </div>
     </div>
   );
@@ -917,27 +724,8 @@ export function IsDeltaXLessNode({ data, id }) {
 
 export function IsDeltaZPosNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
-  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
-
-  function UpdateEntityOne(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityOne: event.target.value,
-      },
-    });
-  }
-
-  function UpdateEntityTwo(event) {
-    updateNode(activeGraphId, nodeId, {
-      data: {
-        ...data,
-        entityTwo: event.target.value,
-      },
-    });
-  }
 
   return (
     <div
@@ -984,37 +772,9 @@ export function IsDeltaZPosNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
-        <span>Entity One</span>
-        <select
-          name="in-radius-entity-one"
-          id="in-radius-entity-one"
-          onChange={UpdateEntityOne}
-          value={data.entityOne ?? "Agent"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
-
-        <br />
-
-        <span>Entity Two</span>
-        <select
-          name="in-radius-entity-two"
-          id="in-radius-entity-two"
-          onChange={UpdateEntityTwo}
-          value={data.entityTwo ?? "Pickable Object"}
-        >
-          <option value="Agent">Agent</option>
-          <option value="Opener Object">Opener Object</option>
-          <option value="Pickable Object">Pickable Object</option>
-          <option value="Target Object">Target Object</option>
-          <option value="Deposit Object">Deposit Object</option>
-          <option value="Destroyable Object">Destroyable Object</option>
-        </select>
+        <span>
+          <strong>Usage:</strong> checks if target is ahead of agent
+        </span>
       </div>
     </div>
   );
@@ -1026,8 +786,6 @@ export function NumericObsNode({ data, id }) {
   const deleteNode = useGraphStore((s) => s.deleteNode);
 
   const allObsKeys = [
-    // Moveable
-    "agent_rotation_y",
     // Navigator
     "obstacle_forward",
     "obstacle_left",
@@ -1045,10 +803,34 @@ export function NumericObsNode({ data, id }) {
     "delta_x_to_collectable",
     "delta_z_to_collectable",
     "items_collected",
+    "keys_collected",
+    "total_items_collected",
     // Depositor
     "dist_to_nearest_deposit",
     "delta_x_to_deposit",
     "delta_z_to_deposit",
+    "items_deposited",
+    // Destroyer
+    "dist_to_nearest_destroyable",
+    "delta_x_to_destroyable",
+    "delta_z_to_destroyable",
+    "items_destroyed",
+    // Opener
+    "dist_to_nearest_gate",
+    "delta_x_to_gate",
+    "delta_z_to_gate",
+    "gates_open",
+    // Footballer
+    "dist_to_nearest_ball",
+    "delta_x_to_ball",
+    "delta_z_to_ball",
+    "dist_to_target_goal",
+    "delta_x_to_goal",
+    "delta_z_to_goal",
+    "my_goals_scored",
+    "my_own_goals_scored",
+    "team_goals_scored",
+    "team_goals_conceded",
   ];
 
   const operators = [
@@ -1124,6 +906,11 @@ export function NumericObsNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks against given numeric obs value
+        </span>
+
+        <br></br>
         <span>Mode</span>
         <select onChange={updateMode} value={data?.mode ?? "Pre"}>
           <option key="Pre" value="Pre">
@@ -1185,9 +972,26 @@ export function BoolObsNode({ data, id }) {
     "in_target_radius",
     // Holder + Collector
     "holding",
+    "in_radius_holder",
+    //Holder + Collector
     "lastPickSuccess",
+    // Collector
+    "in_radius_collect",
     // Depositor
     "last_deposit_success",
+    "in_radius_deposit",
+    // Destroyer
+    "in_radius_destroyed",
+    "last_destroy_success",
+    // Opener
+    "in_radius_gate",
+    "hasKey",
+    "last_open_success",
+    // Footballer
+    "in_radius_ball",
+    "in_radius_goal",
+    "last_kick_success",
+    "last_goal_type",
   ];
 
   function updateMode(e) {
@@ -1251,6 +1055,11 @@ export function BoolObsNode({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks against given boolean obs value
+        </span>
+
+        <br></br>
         <span>Mode</span>
         <select onChange={updateMode} value={data?.mode ?? "Pre"}>
           <option key="Pre" value="Pre">
@@ -1306,7 +1115,6 @@ export function IsObstacleInPath({ data, id }) {
     <div
       onDoubleClick={() => deleteNode(activeGraphId, id)}
       className="conditional-node"
-      style={{ width: "250px" }}
     >
       <span className="node-heading">{data?.label ?? "Obs Value"}</span>
 
@@ -1346,6 +1154,11 @@ export function IsObstacleInPath({ data, id }) {
       />
 
       <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if agent is facing obstacle
+        </span>
+
+        <br></br>
         <span>Direction</span>
         <select onChange={updateDirection} value={data?.direction ?? "Forward"}>
           <option key="Left" value="Left">

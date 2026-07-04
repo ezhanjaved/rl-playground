@@ -132,6 +132,36 @@ export const CAPABILITY_SCHEMAS = {
       previous_distance_gate: Infinity,
     },
   },
+
+  Footballer: {
+    actions: ["kick"],
+    observations: [
+      "dist_to_nearest_ball",
+      "delta_x_to_ball",
+      "delta_z_to_ball",
+      "in_radius_ball",
+      "dist_to_target_goal",
+      "delta_x_to_goal",
+      "delta_z_to_goal",
+      "in_radius_goal",
+      "last_kick_success",
+      "my_goals_scored",
+      "my_own_goals_scored",
+      "team_goals_scored",
+      "team_goals_conceded",
+      "last_goal_type",
+    ],
+    state: {
+      team_goals_scored: 0,
+      team_goals_conceded: 0,
+      my_goals_scored: 0,
+      my_own_goals_scored: 0,
+      last_goal_type: null,
+      lastKickSuccess: false,
+      previous_distance_ball: Infinity,
+      previous_distance_goal: Infinity,
+    },
+  },
 };
 
 export const addCapabilitySchemas = (type) => {

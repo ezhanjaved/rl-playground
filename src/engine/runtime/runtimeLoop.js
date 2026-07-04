@@ -6,10 +6,11 @@ import applyAction from "./actuators/applyAction.js";
 import { flushActions } from "./actionQueue.js";
 import { useSceneStore } from "../../stores/useSceneStore.js";
 import { BehaviorBuilder } from "./behaviorBuilder.js";
+import { resetMovement } from "../utility/stopMovement.js";
 
 export default function runTimeloop(entities) {
   const { playing, training } = useRunTimeStore.getState();
-  const { updateEntityStat } = useSceneStore.getState();
+  const { updateEntityStat, updateEntity } = useSceneStore.getState();
   const { currentExperimentId, isModelReady, seq, setSeq } =
     useRunTimeStore.getState();
 
@@ -64,24 +65,30 @@ export default function runTimeloop(entities) {
       isModelReady,
     );
 
-    // const action = getNextAction(action_space);
-    console.log("Action: ", action, " Seq: ", newSeq);
-    if (action !== null && action !== undefined) {
+    if (action !== null) {
       applyAction(action, entity, behaviorOBSvector);
+      setSeq(entity.id, newSeq); //set it back in store
+      updateEntityStat(entity.id, {
+        seq: newSeq,
+        last_action: action,
+        observation_vector: observation_vector,
+        probabilities: [
+          { action: "move_up", prob: 0.4231 },
+          { action: "move_left", prob: 0.123 },
+          { action: "idle", prob: 0.2103 },
+          { action: "collect", prob: 0.1843 },
+          { action: "deposit", prob: 0.0 },
+          { action: "drop", prob: 0.0 },
+        ],
+      });
+    } else {
+      resetMovement(entity.id);
+      updateEntity(entity.id, {
+        last_action: "idle",
+      });
+      updateEntityStat(entity.id, {
+        last_action: "idle",
+      });
     }
-    setSeq(entity.id, newSeq); //set it back in store
-    updateEntityStat(entity.id, {
-      seq: newSeq,
-      last_action: action,
-      observation_vector: observation_vector,
-      probabilities: [
-        { action: "move_up", prob: 0.4231 },
-        { action: "move_left", prob: 0.123 },
-        { action: "idle", prob: 0.2103 },
-        { action: "collect", prob: 0.1843 },
-        { action: "deposit", prob: 0.0 },
-        { action: "drop", prob: 0.0 },
-      ],
-    });
   });
 }

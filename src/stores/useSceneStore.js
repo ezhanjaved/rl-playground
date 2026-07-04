@@ -152,6 +152,7 @@ const buildEntityStat = (partial) => {
     observation_space: observationsSpace,
     state_space: stateSpace,
     observation_vector: [],
+    controller: partial.controller || "random",
 
     behavior: partial.behavior || [],
     current_behavior: partial.current_behavior || null,
@@ -186,17 +187,24 @@ const buildEntitiyFromPartial = (partial, id) => {
     animationRef: partial.animationRef || null,
     collider: partial.collider || null,
     actuator_type: partial.actuator_type || "walker",
+    controller: partial.controller || "random",
     state: partial.state || {}, //added this will have to sync it on Object Class in python
+    positionSpawned: partial.position || [0, 0, 0],
 
     behavior: behavior || [],
     behaviorObs: behaviorObsSpace || [],
     current_behavior: partial.current_behavior || null,
 
+    goalId: partial.goalId || "",
+    teamId: partial.teamId || null,
+
     targetVisual: partial.targetStat || null,
+
     isDecor: partial.isDecor || false,
     isGate: partial.isGate || false,
-    isGoalPost: partial.isGoalPost || false,
-    goalId: partial.goalId || "",
+    isBall: partial.isBall || false,
+    isGoalPostRed: partial.isGoalPostRed || false,
+    isGoalPostBlue: partial.isGoalPostBlue || false,
     isDeposit: partial.isDeposit || false,
     isPickable: partial.isPickable || false,
     isDestroyable: partial.isDestroyable || false,

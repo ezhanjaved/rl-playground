@@ -36,6 +36,7 @@ def actionMasking(capabilities):
         "Depositor": ["deposit"],
         "Destroyer": ["destroy"],
         "Opener": ["open"],
+        "Footballer": ["kick"],
     }
 
     ORDER = [
@@ -46,6 +47,7 @@ def actionMasking(capabilities):
         "Depositor",
         "Destroyer",
         "Opener",
+        "Footballer",
     ]
 
     actions = []
@@ -72,13 +74,25 @@ def actionTranslator(action, action_list):
     return action_list[action]
 
 
-def actionMaskingArray(mask, action_list, current_behavior):
+def actionMaskingArray(mask, action_list, current_behavior, current_obs):
     for action in ("move_up", "move_right", "move_left", "idle"):
         if action in action_list:
             mask[action_list.index(action)] = True
 
+    current_dist_to_goal = current_obs[
+        0
+    ]  # it would be normalized - every obs is made with behavior in mind and first thing in all is current_dist_to_goal
+    current_dist_to_goal = current_dist_to_goal * 40.0
+
     for action in BEHAVIOR_ACTIONS.get(current_behavior, []):
         if action in action_list:
-            mask[action_list.index(action)] = True
+            # drop is only action that cannot be restriced based on distance
+            if action == "drop":
+                mask[action_list.index(action)] = True
+            elif (
+                current_dist_to_goal
+                < 2.0  # This is to ensure that collect, destory, deposit, kick, open actions are only available to agent when it is actually in radius to perform them.
+            ):  # I have used 2.0 radius for every actuator in engine
+                mask[action_list.index(action)] = True
 
     return mask

@@ -128,6 +128,12 @@ def build_agents(agent_obj):
         current_behavior=agent_obj.get("current_behavior", None),
         behavior=agent_obj.get("behavior", []),
         behaviorObs=agent_obj.get("behaviorObs", []),
+        isBall=agent_obj.get("isBall", False),
+        isGoalPostBlue=agent_obj.get("isGoalPostBlue", False),
+        isGoalPostRed=agent_obj.get("isGoalPostRed", False),
+        goalId=agent_obj.get("goalId", ""),
+        teamId=agent_obj.get("teamId", ""),
+        positionSpawned=agent_obj.get("positionSpawned", []),
         collider=agent_obj.get("collider", {}),
     )
 
@@ -147,6 +153,12 @@ def build_objects(obj):
         isDeposit=obj.get("isDeposit", False),
         isGate=obj.get("isGate", False),
         isDestroyable=obj.get("isDestroyable", False),
+        isBall=obj.get("isBall", False),
+        isGoalPostBlue=obj.get("isGoalPostBlue", False),
+        isGoalPostRed=obj.get("isGoalPostRed", False),
+        goalId=obj.get("goalId", ""),
+        teamId=obj.get("teamId", ""),
+        positionSpawned=obj.get("positionSpawned", []),
         collider=obj.get("collider", {}),
         state=obj.get("state", {}),
     )
@@ -158,12 +170,14 @@ def build_state_space(ss_dict) -> StateSpace:
     if "last_action_index" in ss_dict:
         state["last_action_index"] = ss_dict["last_action_index"]
 
+    # Finder
     if "targetReached" in ss_dict:
         state["targetReached"] = ss_dict["targetReached"]
 
     if "previous_distance_target" in ss_dict:
         state["previous_distance_target"] = ss_dict["previous_distance_target"]
 
+    # Holder
     if "holding" in ss_dict:
         state["holding"] = ss_dict["holding"]
 
@@ -173,15 +187,23 @@ def build_state_space(ss_dict) -> StateSpace:
     if "previous_distance_pickable" in ss_dict:
         state["previous_distance_pickable"] = ss_dict["previous_distance_pickable"]
 
+    # Collect
     if "lastItemCollected" in ss_dict:
         state["lastItemCollected"] = ss_dict["lastItemCollected"]
 
     if "items_collected" in ss_dict:
         state["items_collected"] = ss_dict["items_collected"]
 
+    if "keys_collected" in ss_dict:
+        state["keys_collected"] = ss_dict["keys_collected"]
+
+    if "total_items_collected" in ss_dict:
+        state["total_items_collected"] = ss_dict["total_items_collected"]
+
     if "previous_distance_collect" in ss_dict:
         state["previous_distance_collect"] = ss_dict["previous_distance_collect"]
 
+    # Deposit
     if "items_deposited" in ss_dict:
         state["items_deposited"] = ss_dict["items_deposited"]
 
@@ -194,6 +216,7 @@ def build_state_space(ss_dict) -> StateSpace:
     if "previous_distance_deposit" in ss_dict:
         state["previous_distance_deposit"] = ss_dict["previous_distance_deposit"]
 
+    # Destroy
     if "items_destroyed" in ss_dict:
         state["items_destroyed"] = ss_dict["items_destroyed"]
 
@@ -208,16 +231,42 @@ def build_state_space(ss_dict) -> StateSpace:
             "previous_distance_destroyable"
         ]
 
+    # Opener
     if "gates_open" in ss_dict:
         state["gates_open"] = ss_dict["gates_open"]
 
     if "nearGate" in ss_dict:
         state["nearGate"] = ss_dict["nearGate"]
 
-    if "hasKey" in ss_dict:
-        state["hasKey"] = ss_dict["hasKey"]
-
     if "lastOpenSuccess" in ss_dict:
         state["lastOpenSuccess"] = ss_dict["lastOpenSuccess"]
+
+    if "previous_distance_gate" in ss_dict:
+        state["previous_distance_gate"] = ss_dict["previous_distance_gate"]
+
+    # Footballer
+    if "team_goals_scored" in ss_dict:
+        state["team_goals_scored"] = ss_dict["team_goals_scored"]
+
+    if "team_goals_conceded" in ss_dict:
+        state["team_goals_conceded"] = ss_dict["team_goals_conceded"]
+
+    if "my_goals_scored" in ss_dict:
+        state["my_goals_scored"] = ss_dict["my_goals_scored"]
+
+    if "my_own_goals_scored" in ss_dict:
+        state["my_own_goals_scored"] = ss_dict["my_own_goals_scored"]
+
+    if "last_goal_type" in ss_dict:
+        state["last_goal_type"] = ss_dict["last_goal_type"]
+
+    if "lastKickSuccess" in ss_dict:
+        state["lastKickSuccess"] = ss_dict["lastKickSuccess"]
+
+    if "previous_distance_ball" in ss_dict:
+        state["previous_distance_ball"] = ss_dict["previous_distance_ball"]
+
+    if "previous_distance_goal" in ss_dict:
+        state["previous_distance_goal"] = ss_dict["previous_distance_goal"]
 
     return state

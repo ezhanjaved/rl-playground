@@ -12,6 +12,7 @@ export function CapabilityMatcher(action) {
     deposit: "Depositor",
     destroy: "Destroyer",
     open: "Opener",
+    kick: "Footballer",
   };
   return actionLibrary[action]; //If action is pick Holder should be returned!
 }

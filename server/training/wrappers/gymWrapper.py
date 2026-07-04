@@ -23,6 +23,7 @@ class GymWrapper(gym.Env):
 
         obs_list, agent_id = simplify(obs_dict)
         self.agent_id = agent_id
+        self._current_obs = obs_list  # NEW: cache raw behavior-obs vector
         self.agent_capabilities = runTimeSnap.entities[self.agent_id].capabilities
         self.action_list, actionNumber = actionMasking(self.agent_capabilities)
 
@@ -51,6 +52,8 @@ class GymWrapper(gym.Env):
         if agent_id != self.agent_id:
             raise ValueError("Agent ID changed between resets.")
 
+        self._current_obs = obs_list
+
         refined_obs, _ = refined(obs_list)
         refined_obs = np.array(refined_obs, dtype=np.float32)
 
@@ -70,6 +73,8 @@ class GymWrapper(gym.Env):
         if agent_id != self.agent_id:
             raise ValueError("Agent ID changed between resets.")
 
+        self._current_obs = obs_list
+
         refined_obs, _ = refined(obs_list)
         refined_obs = np.array(refined_obs, dtype=np.float32)
 
@@ -84,10 +89,13 @@ class GymWrapper(gym.Env):
         current_behavior = self.engine.core.runtime.entities[
             self.agent_id
         ].current_behavior
+        current_obs = self._current_obs  # CHANGED: use cached live vector
 
         mask = [False] * len(self.action_list)
 
-        maskedArray = actionMaskingArray(mask, self.action_list, current_behavior)
+        maskedArray = actionMaskingArray(
+            mask, self.action_list, current_behavior, current_obs
+        )
 
         return maskedArray
 

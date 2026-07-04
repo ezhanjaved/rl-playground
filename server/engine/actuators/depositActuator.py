@@ -39,7 +39,10 @@ def depositActuator(action, agent_data, entities, indexOfAction):
     is_collector = "Collector" in agent.capabilities
 
     holding_item = is_holder and agent.state_space.get("holding", False)
-    collected_items = agent.state_space.get("items_collected", 0) if is_collector else 0
+    collected_items = (
+        agent.state_space.get("total_items_collected", 0) if is_collector else 0
+    )
+    print("Collected Item: ", collected_items)
 
     if not holding_item and collected_items == 0:
         new_state_space["lastDepositSuccess"] = False
@@ -65,6 +68,7 @@ def depositActuator(action, agent_data, entities, indexOfAction):
     new_state_space["items_deposited"] = previous_deposit + items_just_deposited
     new_state_space["nearDeposit"] = is_near_deposit
     new_state_space["lastDepositSuccess"] = True
+
     # Update to RUNTIME
     agent.last_action = action
     agent.state_space = new_state_space

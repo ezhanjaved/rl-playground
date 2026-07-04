@@ -31,9 +31,17 @@ class StateSpace(TypedDict, total=False):
 
     gates_open: int
     nearGate: bool
-    hasKey: bool
     lastOpenSuccess: bool
     previous_distance_gate: float
+
+    team_goals_scored: int
+    team_goals_conceded: int
+    my_goals_scored: int
+    my_own_goals_scored: int
+    last_goal_type: float
+    lastKickSuccess: bool
+    previous_distance_ball: float
+    previous_distance_goal: float
 
 
 @dataclass(kw_only=True)
@@ -45,6 +53,13 @@ class Entities:
     rotation: list[float]
     quatRotation: list[float]
 
+    goalId: str
+    teamId: str
+    positionSpawned: list[float]
+
+    isBall: bool
+    isGoalPostRed: bool
+    isGoalPostBlue: bool
     isDecor: bool
     isPickable: bool
     isCollectable: bool

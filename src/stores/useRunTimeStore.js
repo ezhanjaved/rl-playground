@@ -33,6 +33,9 @@ export const useRunTimeStore = create((set, get) => ({
   envMode: "Fixed",
   setEnvMode: (value) => set({ envMode: value }),
 
+  topographyMode: "False",
+  setTopographyMode: (value) => set({ topographyMode: value }),
+
   percentageFixedEp: 0,
   setPercentageFixed: (value) => set({ percentageFixedEp: value }),
 

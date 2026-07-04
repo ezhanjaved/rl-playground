@@ -9,6 +9,7 @@ const PREVIOUS_DISTANCE_BY_BEHAVIOR = {
   Deposit: "previous_distance_deposit",
   Destroy: "previous_distance_destroyable",
   Open: "previous_distance_gate",
+  Football: "previous_distance_ball",
 };
 
 export default function previousDistanceCorrection(
@@ -20,12 +21,10 @@ export default function previousDistanceCorrection(
 ) {
   const { updateEntity, entities, updateEntityStat } = useSceneStore.getState();
   const freshAgent = entities[agent.id];
-
   const behaviorOBSspace = freshAgent.behaviorObs;
   const currentBehavior = freshAgent.current_behavior;
 
   let newStateSpace = { ...agent.state_space };
-
   const action_space = agent?.action_space ?? [];
   const indexOfAction = getIndexOfObs(action_space, current_action);
 
@@ -56,6 +55,24 @@ export default function previousDistanceCorrection(
         (newStateSpace.last_action_counter ?? 0) + 1;
     } else {
       newStateSpace.last_action_counter = 1;
+    }
+  }
+
+  if (agent?.capabilities?.includes("Footballer")) {
+    const previousDistanceKey = "previous_distance_goal";
+    const distIndex = getIndexOfObs(behaviorOBSspace, "dist_to_target_goal");
+    const currentGoalDistance =
+      distIndex === -1 ? null : behaviorOBSvector[distIndex];
+    if (
+      previousDistanceKey &&
+      currentGoalDistance !== null &&
+      currentGoalDistance !== undefined
+    ) {
+      const best = newStateSpace[previousDistanceKey] ?? Infinity;
+
+      if (currentGoalDistance < best) {
+        newStateSpace[previousDistanceKey] = currentGoalDistance;
+      }
     }
   }
 
