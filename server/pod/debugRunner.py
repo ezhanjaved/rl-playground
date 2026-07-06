@@ -95,3 +95,4 @@ def debugRunner(id):
 # debugRunner("16d5d9fb-4ed8-4868-ba0a-3f62b41326d2") opener check against doc file
 # debugRunner("22b998dc-5fc8-49f0-afe2-3e148aa5f451") finder check against doc file
 # debugRunner("56de781c-b613-44b1-9757-325e7dbeadfa")
+# debugRunner("0670b4a4-3081-4c69-82b3-a5a2642d2820") collect with fourth version graph

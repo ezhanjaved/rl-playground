@@ -42,8 +42,6 @@ def depositActuator(action, agent_data, entities, indexOfAction):
     collected_items = (
         agent.state_space.get("total_items_collected", 0) if is_collector else 0
     )
-    print("Collected Item: ", collected_items)
-
     if not holding_item and collected_items == 0:
         new_state_space["lastDepositSuccess"] = False
         new_state_space["nearDeposit"] = is_near_deposit

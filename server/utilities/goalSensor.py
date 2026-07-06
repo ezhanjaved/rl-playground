@@ -42,7 +42,6 @@ class GoalSensor:
 
         if is_inside_now and not was_inside:
             # Ball entered for first time
-            print("Ball entered for first time")
             self._inside_ids.add(watched_body_id)
             if self.on_enter:
                 # This is the function I will use to update scores.

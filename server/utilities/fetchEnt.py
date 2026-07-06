@@ -6,7 +6,6 @@ def fetchEnt(model_id):
     if not model_id:
         return
     path = download_ent(model_id)
-    print("Ent Path: ", path)
     ent = read_json(path)
     return ent
 

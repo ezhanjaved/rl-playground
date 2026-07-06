@@ -4,7 +4,6 @@ from server.utilities.positionSwap import positionSwap
 
 
 def footballRef(goal_id, ball_id, entities, mapping, client):
-    print("Football Ref Hit")
     scoringTeam = None
     concedingTeam = None
     lastTouchedBy = None

@@ -190,8 +190,6 @@ def nearestDistance(position, rotation, bucket, mode):
         bullet_pos = positionSwap(
             target_pos
         )  # PyBullet space [-x, y, z] // Quanterion [x,z,y,w]
-        if entity.tag == "ball":
-            print("POS: ", bullet_pos)
         if mode == "both":
             d = distance3D(position, bullet_pos)
         elif mode == "x":

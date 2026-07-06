@@ -11,7 +11,6 @@ PREVIOUS_DISTANCE_BY_BEHAVIOR = {
 
 # obs send will be behavior obs vector too
 def previousDistanceCorrection(entities, obs_b, obs_a, current_action, agent):
-    print("BEHAVE OBS: ", obs_b)
     agent_id = agent.id
     fresh_agent = entities[agent_id]
 

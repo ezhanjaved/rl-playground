@@ -140,7 +140,6 @@ def _visit_node(node_id, graph, ctx):
             else getattr(node_data.data, "rewardValue", 0)
         )
 
-        print("Reward Value: ", reward_value)
         ctx["reward"] += reward_value * multiplier
         # fall through to edge traversal below
 
@@ -239,7 +238,6 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "IsDeltaXLessNode":
-        print("Hitting")
         DELTA_X_CHECK = 0.05
 
         delta_x = False
@@ -269,10 +267,8 @@ def _visit_node(node_id, graph, ctx):
 
     elif ntype == "IsDistanceLessNode":
         mode = node_data.data.get("mode") or "Best Record"
-        print("Mode: ", mode)
         goal_ctx = _resolve_goal_context(ctx)
         if goal_ctx is None:
-            print("thiis bs")
             return  # no recognized goal flag active; skip node
 
         distance_less = False
@@ -291,8 +287,6 @@ def _visit_node(node_id, graph, ctx):
             # pre-action and post-action distances from behavior OBS
             previous_dist = _get_obs("dist_to_current_goal", ctx, use_post=False)
             current_distance = _get_obs("dist_to_current_goal", ctx, use_post=True)
-            print("PREV: ", previous_dist)
-            print("CURRENT: ", current_distance)
             if current_distance is not None and previous_dist is not None:
                 if current_distance < previous_dist:
                     distance_less = True

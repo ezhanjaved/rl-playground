@@ -197,9 +197,6 @@ class PyBulletWorld:
         if min_x != float("inf") and min_y != float("inf"):
             self.min_x = min_x
             self.min_y = min_y
-
-        print("Min X: ", min_x, "Max X: ", max_x)
-        print("Min Y: ", min_y, "Max Y: ", max_y)
         return
 
     # grid[col][row]

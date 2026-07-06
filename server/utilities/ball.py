@@ -52,7 +52,6 @@ class Ball:
 
             status, entity = self.is_entity_agent(entity_id, entities)
             if status:
-                print("Collision Contact!")
                 ball_entity = entities[self.ball_id_entities]
                 ball_entity_state = dict(ball_entity.state)
                 ball_entity_state["lastTouchedBy"] = entity_id
