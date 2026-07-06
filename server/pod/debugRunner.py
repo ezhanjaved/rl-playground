@@ -96,3 +96,4 @@ def debugRunner(id):
 # debugRunner("22b998dc-5fc8-49f0-afe2-3e148aa5f451") finder check against doc file
 # debugRunner("56de781c-b613-44b1-9757-325e7dbeadfa")
 # debugRunner("0670b4a4-3081-4c69-82b3-a5a2642d2820") collect with fourth version graph
+# debugRunner("f0c93095-5ad3-457f-a43d-28bb0841284c") final debug run - collect - fixed spawn - fourth version - FAT2
