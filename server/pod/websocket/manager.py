@@ -1,3 +1,5 @@
+import traceback
+
 import numpy as np
 import torch
 from fastapi import FastAPI, WebSocket
@@ -78,6 +80,12 @@ manager = ConnectionManager()
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+
+    if model is None:
+        await websocket.close(code=1013, reason="model not ready")
+        manager.disconnect(websocket)
+        return
+
     try:
         while True:
             data = await websocket.receive_json()
@@ -93,7 +101,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 result = await manager.predict_action(obs, capability, current_behavior)
                 action = result["action"]
                 print(f"Sent: {action}", flush=True)
-                result = await manager.predict_action(obs, capability, current_behavior)
 
                 await websocket.send_json(
                     {
@@ -105,8 +112,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     }
                 )
             else:
-                await websocket.close()
+                await websocket.close(code=1008, reason="invalid token")
+                manager.disconnect(websocket)
                 return
     except Exception as e:
-        print("WebSocket error:", e, flush=True)
+        traceback.print_exc()
+        try:
+            await websocket.close(code=1011, reason=str(e))
+        except Exception:
+            pass
         manager.disconnect(websocket)

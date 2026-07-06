@@ -13,10 +13,10 @@ def rl_inference(self, uid: str):
         # nohup server/venv/bin/python -m server.pod.trigger_inference {uid} > server/pod/trigger_inference.log 2>&1 &
         # exit
         # """
-        remote_cmd = remote_cmd = f"""
+        remote_cmd = f"""
         bash -c '
           cd /workspace/rl-playground
-          setsid nohup server/venv/bin/python -m server.pod.trigger_inference {uid} \
+          setsid nohup server/venv/bin/python -u -m server.pod.trigger_inference {uid} \
             > server/pod/trigger_inference.log 2>&1 &
           CHILD_PID=$!
           echo $CHILD_PID > server/pod/inference_{uid}.pid

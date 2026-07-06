@@ -39,7 +39,7 @@ def connectToPod(remote_cmd: str, uid: str | None = None):
     )
 
     try:
-        stdout, stderr = process.communicate(remote_cmd, timeout=10)
+        stdout, stderr = process.communicate(remote_cmd, timeout=25)
 
         if process.returncode not in (0, None):
             raise ConnectionError(f"[UID={uid}] SSH failed:\n{stderr.strip()}")

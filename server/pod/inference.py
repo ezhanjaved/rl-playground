@@ -17,7 +17,6 @@ def inferencePod(uid):
         )  # if this never prints, download is the hang
         model = runner.load()
         print(f"[inference] runner.load() returned: {model}")
-        call_webhook_for_inference(uid)
         return model
     except Exception:
         print(f"Inference for model {uid}")
