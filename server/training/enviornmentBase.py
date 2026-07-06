@@ -1,8 +1,11 @@
 import copy
 
+from typing_extensions import runtime
+
 from server.engine.behaviorBuilder import BehaviorBuilderResult, behavior_builder
 from server.engine.eval import evaluator
 from server.engine.observationBuilder import buildObs, partition_entities
+from server.utilities.positionSwap import positionSwap
 from server.utilities.previousDist import previousDistanceCorrection
 
 
@@ -30,6 +33,12 @@ class EnvironmentCore:
             pos, rot = world.get_entity_state(agent_id)
             self.runtime.entities[agent_id].position = pos
             self.runtime.entities[agent_id].rotation = rot
+        for ent_id, ent in self.runtime.entities.items():
+            if ent.tag == "ball":
+                pos, rot = world.get_entity_state(ent_id)
+                pos = positionSwap(pos)
+                self.runtime.entities[ent_id].position = pos
+                self.runtime.entities[ent_id].rotation = rot
 
     def get_observation(self):  # will call it to build observation of agents
         obs = {}
@@ -48,12 +57,15 @@ class EnvironmentCore:
             behavior_obs[agent_id] = behavior_obs_vector_cal
         return behavior_obs
 
-    def update_previous_distances(self, obs, actions, runTime):
+    def update_previous_distances(self, obs_b, obs_a, actions, runTime):
         entities = runTime.entities
         for agent_id, action in actions.items():
             agentData = entities[agent_id]
-            agentObs = obs[agent_id]
-            previousDistanceCorrection(entities, agentObs, action, agentData)
+            agentObsBefore = obs_b[agent_id]
+            agentObsAfter = obs_a[agent_id]
+            previousDistanceCorrection(
+                entities, agentObsBefore, agentObsAfter, action, agentData
+            )
 
     def compute_reward(self, obsBefore, obsAfter):  # will call it to calculate reward
         runtimeSnap = self.runtime

@@ -10,8 +10,8 @@ PREVIOUS_DISTANCE_BY_BEHAVIOR = {
 
 
 # obs send will be behavior obs vector too
-def previousDistanceCorrection(entities, obs, current_action, agent):
-    print("BEHAVE OBS: ", obs)
+def previousDistanceCorrection(entities, obs_b, obs_a, current_action, agent):
+    print("BEHAVE OBS: ", obs_b)
     agent_id = agent.id
     fresh_agent = entities[agent_id]
 
@@ -24,7 +24,20 @@ def previousDistanceCorrection(entities, obs, current_action, agent):
     index_of_action = action_space.index(current_action)
 
     # previous distance should be updated only when agent has did an action from MOVEABLE ability - interact/collect does not reduce distance
-    if current_action not in ["move_up", "move_right", "move_left", "idle"]:
+    if current_action not in [
+        "move_up",
+        "move_right",
+        "move_left",
+        "idle",
+        "collect",
+        "deposit",
+        "destroy",
+        "open",
+        "interact",
+        "pick",
+        "drop",
+        "kick",
+    ]:
         agent = entities[agent_id]
         if "TemporalMemory" in agent.capabilities:
             new_state_space["last_action_index"] = index_of_action
@@ -38,7 +51,9 @@ def previousDistanceCorrection(entities, obs, current_action, agent):
 
     dist_index = getIndexOfObs(obs_space, "dist_to_current_goal")
     current_goal_distance = (
-        obs[dist_index] if dist_index is not None and dist_index < len(obs) else None
+        obs_b[dist_index]
+        if dist_index is not None and dist_index < len(obs_b)
+        else None
     )
 
     previous_distance_key = PREVIOUS_DISTANCE_BY_BEHAVIOR.get(current_behavior)
@@ -47,6 +62,14 @@ def previousDistanceCorrection(entities, obs, current_action, agent):
         best = new_state_space.get(previous_distance_key, float("inf"))
         if best is None:
             best = float("inf")
+
+        if best == 1:
+            current_goal_distance = (
+                obs_a[dist_index]
+                if dist_index is not None and dist_index < len(obs_a)
+                else None
+            )
+
         if current_goal_distance < best:
             new_state_space[previous_distance_key] = current_goal_distance
 
@@ -63,8 +86,8 @@ def previousDistanceCorrection(entities, obs, current_action, agent):
         previous_distance_key = "previous_distance_goal"
         dist_index = getIndexOfObs(obs_space, "dist_to_target_goal")
         current_goal_distance = (
-            obs[dist_index]
-            if dist_index is not None and dist_index < len(obs)
+            obs_b[dist_index]
+            if dist_index is not None and dist_index < len(obs_b)
             else None
         )
         if previous_distance_key and current_goal_distance is not None:

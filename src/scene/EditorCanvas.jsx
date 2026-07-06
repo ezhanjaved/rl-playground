@@ -1,5 +1,6 @@
 // R3F <Canvas>; mounts world + debug
 import "../styling/App.css";
+import { useRef } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { OrbitControls, Grid } from "@react-three/drei";
@@ -31,18 +32,39 @@ export default function CanvasPad() {
   const [colorCanvas, colorGrid] = colorLibrary[pickedColor];
 
   function SimulationLoop() {
-    useFrame(() => {
+    const accumulatorRef = useRef(0);
+    const FIXED_DT = 1 / 60;
+    const MAX_DELTA = 0.25; // clamp so tab-backgrounding doesn't cause a catch-up storm
+
+    useFrame((state, delta) => {
       const { playing, training, inferenceMode, isModelReady } =
         useRunTimeStore.getState();
       const { entities } = useSceneStore.getState();
-      if (inferenceMode === "lockstep" && isModelReady) {
-        if (!playing || training) return;
-        stepTimeLoop(entities);
+
+      // Not running: don't accumulate stale time, just bail cleanly.
+      if (!playing && !training) {
+        accumulatorRef.current = 0;
         return;
       }
 
-      if (!playing && !training) return;
-      runTimeloop(entities);
+      accumulatorRef.current += Math.min(delta, MAX_DELTA);
+
+      if (inferenceMode === "lockstep" && isModelReady) {
+        if (training) {
+          accumulatorRef.current = 0;
+          return;
+        }
+        while (accumulatorRef.current >= FIXED_DT) {
+          stepTimeLoop(entities);
+          accumulatorRef.current -= FIXED_DT;
+        }
+        return;
+      }
+
+      while (accumulatorRef.current >= FIXED_DT) {
+        runTimeloop(entities);
+        accumulatorRef.current -= FIXED_DT;
+      }
     });
   }
 

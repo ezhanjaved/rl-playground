@@ -3,7 +3,7 @@ import { useSceneStore } from "../../stores/useSceneStore";
 import getNearestTargetInfo from "../utility/nearByObjects";
 import distance3D from "../utility/3dDistance";
 import { obstacleAvoid } from "../utility/obstacleAvoidance";
-
+import { isAlignedToGoal, BallToGoal } from "../utility/footballRef";
 const MAX_DIST = 40.0;
 
 const targetPredicate = (e) =>
@@ -198,11 +198,16 @@ export default function buildObsSpace(agent) {
   //This section is for Football Ability
   const teamId = agent?.teamId || null;
   let predicatePickedForPost = null;
+  let predicatePickedForMyOwnPost = null;
   let flag = null;
   if (teamId) {
     predicatePickedForPost =
       teamId === "blue" ? RedGoalPostPredicate : BlueGoalPostPredicate;
     flag = teamId === "blue" ? "isGoalPostRed" : "isGoalPostBlue";
+  }
+  if (teamId) {
+    predicatePickedForMyOwnPost =
+      teamId === "red" ? RedGoalPostPredicate : BlueGoalPostPredicate;
   }
 
   const constructedObs = [];
@@ -321,7 +326,6 @@ export default function buildObsSpace(agent) {
 
       case "in_target_radius": {
         const info = getNearestTargetInfo(position, entities, "isTarget");
-        console.log("Is Target Radius: " + info.entityName);
         const targetReached = info?.found && info?.distance <= info?.radius;
         constructedObs.push(targetReached ? 1 : 0);
         break;
@@ -590,6 +594,61 @@ export default function buildObsSpace(agent) {
         const info = getNearestTargetInfo(position, entities, flag);
         const targetReached = info?.found && info?.distance <= info?.radius;
         constructedObs.push(targetReached ? 1 : 0);
+        break;
+      }
+
+      case "alignment_to_goal": {
+        const { min: delta_x } = cached(predicatePickedForPost, "x-delta");
+        const { min: delta_z } = cached(predicatePickedForPost, "z-delta");
+        const aligned = isAlignedToGoal(delta_x, delta_z);
+        console.log("Aligned: ", aligned);
+        constructedObs.push(aligned ? 1 : 0);
+        break;
+      }
+
+      case "ball_dist_to_own_goal": {
+        const { min: delta_x_b } = cached(ballPredicate, "x-delta");
+        const { min: delta_z_b } = cached(ballPredicate, "z-delta");
+        const { min: delta_x_p } = cached(
+          predicatePickedForMyOwnPost,
+          "x-delta",
+        );
+        const { min: delta_z_p } = cached(
+          predicatePickedForMyOwnPost,
+          "z-delta",
+        );
+        const distance = BallToGoal(
+          delta_x_b,
+          delta_z_b,
+          delta_x_p,
+          delta_z_p,
+          "distance-only",
+        );
+        console.log("Distance Of Ball to Post: ", distance);
+        constructedObs.push(distance);
+        break;
+      }
+
+      case "ball_in_own_goal_danger_zone": {
+        const { min: delta_x_b } = cached(ballPredicate, "x-delta");
+        const { min: delta_z_b } = cached(ballPredicate, "z-delta");
+        const { min: delta_x_p } = cached(
+          predicatePickedForMyOwnPost,
+          "x-delta",
+        );
+        const { min: delta_z_p } = cached(
+          predicatePickedForMyOwnPost,
+          "z-delta",
+        );
+        const isInDanger = BallToGoal(
+          delta_x_b,
+          delta_z_b,
+          delta_x_p,
+          delta_z_p,
+          "danger-check",
+        );
+        console.log("Danger?: ", isInDanger);
+        constructedObs.push(isInDanger ? 1 : 0);
         break;
       }
 

@@ -9,7 +9,7 @@ export function obstacleAvoid(agentPos, agentRot, ObstaclePos) {
   const dz = oz - az;
 
   //can be changed - engine defined
-  const lookahead = 3.0;
+  const lookahead = 1.5;
   const agentRad = 0.5;
   const ObsRad = 0.8;
   const { x: Fx, z: Fz } = getForwardVectorFromYaw(ry);

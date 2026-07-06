@@ -5,8 +5,18 @@ import { useState, useEffect } from "react";
 
 export function InRadiusNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
 
   return (
     <div
@@ -56,6 +66,18 @@ export function InRadiusNode({ data, id }) {
         <span>
           <strong>Usage:</strong> checks if agent is within radius!
         </span>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "Upon Entrance"}
+        >
+          <option value="Upon Exit">Upon Exit</option>
+          <option value="Within Radius">While In Radius</option>
+          <option value="Upon Entrance">Upon Entrance</option>
+        </select>
       </div>
     </div>
   );
@@ -71,12 +93,12 @@ export function LastActionIsNode({ data, id }) {
 
   const moveableAction = ["move_up", "move_right", "move_left", "idle"];
   const holderAction = ["pick", "drop"];
-  const collectorAction = ["collect"];
-  const depositAction = ["deposit"];
-  const finderAction = ["interact"];
-  const destroyerAction = ["destroy"];
-  const openerAction = ["open"];
-  const footballerAction = ["kick"];
+  const collectorAction = ["collect", ""];
+  const depositAction = ["deposit", ""];
+  const finderAction = ["interact", ""];
+  const destroyerAction = ["destroy", ""];
+  const openerAction = ["open", ""];
+  const footballerAction = ["kick", ""];
 
   const actionMap = {
     Moveable: moveableAction,
@@ -1111,6 +1133,15 @@ export function IsObstacleInPath({ data, id }) {
     });
   }
 
+  function UpdateMode(event) {
+    updateNode(activeGraphId, id, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
+
   return (
     <div
       onDoubleClick={() => deleteNode(activeGraphId, id)}
@@ -1170,6 +1201,260 @@ export function IsObstacleInPath({ data, id }) {
           <option key="Right" value="Right">
             Right
           </option>
+        </select>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "While Blocked"}
+        >
+          <option value="Upon Leaving">Upon Leaving</option>
+          <option value="While Blocked">While Blocked</option>
+          <option value="Upon Getting Blocked">Upon Getting Blocked</option>
+          <option value="Upon Approaching">Upon Approaching</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function FootballEventNode({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if choosen event occured!
+        </span>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "Team Scored Goal"}
+        >
+          <option value="Team Conceded Goal">Team Conceded Goal</option>
+          <option value="Team Scored Goal">Team Scored Goal</option>
+          <option value="Player Scored Goal">Player Scored Goal</option>
+          <option value="Player Scored Own Goal">Player Scored Own Goal</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function IsPlayerFacingPostNode({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if player is facing goal post!
+        </span>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "While Aligned"}
+        >
+          <option value="While Aligned">While Aligned</option>
+          <option value="Upon Aligning">Upon Aligning</option>
+          <option value="Leaving Alignment">Leaving Alignment</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function IsBallInDanger({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if ball is near our goal!
+        </span>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "While In Danger"}
+        >
+          <option value="While In Danger">While In Danger</option>
+          <option value="Entered Danger Zone">Entered Danger Zone</option>
+          <option value="Left Danger Zone">Left Danger Zone</option>
         </select>
       </div>
     </div>

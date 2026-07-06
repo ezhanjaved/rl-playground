@@ -16,7 +16,7 @@ export default function World() {
 
   return (
     <>
-      <Physics gravity={[0, -9.81, 0]}>
+      <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60}>
         <RigidBody type="fixed" colliders={true}>
           <CuboidCollider args={[50, 0.1, 50]} position={[0, -0.2, 0]} />
         </RigidBody>{" "}

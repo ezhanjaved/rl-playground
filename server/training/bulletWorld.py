@@ -392,7 +392,7 @@ class PyBulletWorld:
                 footballRef,
             )
             bullet_id = self.blue_goal_post.get_goal_sensor()
-        elif entity.tag == "generic":
+        elif entity.tag == "generic" or entity.tag == "":
             pass
         else:
             raise ValueError(

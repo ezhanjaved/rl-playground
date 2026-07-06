@@ -24,6 +24,9 @@ import {
   IsDeltaXLessNode,
   IsDeltaZPosNode,
   IsObstacleInPath,
+  FootballEventNode,
+  IsPlayerFacingPostNode,
+  IsBallInDanger,
 } from "./nodes/conditionalNodes.jsx";
 import {
   EndEpisodeNode,
@@ -56,6 +59,9 @@ export function BehaviorGraphEditor() {
     NumericObsNode: NumericObsNode,
     BoolObsNode: BoolObsNode,
     IsObstacleInPath: IsObstacleInPath,
+    FootballEventNode: FootballEventNode,
+    IsPlayerAlignedNode: IsPlayerFacingPostNode,
+    IsBallNearPostNode: IsBallInDanger,
     TruncateEpisodeNode: TruncateEpisodeNode,
   };
 

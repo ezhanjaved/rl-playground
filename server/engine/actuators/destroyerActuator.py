@@ -45,6 +45,7 @@ def destroyActuator(action, agent, entities, eM, client, indexOfAction):
     new_state_space["nearDestroyable"] = True
     new_state_space["lastDestroySuccess"] = True
     new_state_space["items_destroyed"] = new_state_space["items_destroyed"] + 1
+    new_state_space["previous_distance_destroyable"] = 1.0
 
     agent.last_action = action
     agent.state_space = new_state_space

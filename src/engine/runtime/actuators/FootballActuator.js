@@ -58,7 +58,7 @@ export default function footballAdapter(action, agentData, actionSpace) {
 
   const dist = distance3D(agentPos, ballPos);
   const kickRadius = agent.settings?.kickRadius ?? 1.2;
-  const kickStrength = agent.settings?.kickStrength ?? 1.5;
+  const kickStrength = agent.settings?.kickStrength ?? 15.0;
 
   if (dist > kickRadius) {
     newStateSpace.lastKickSuccess = false;
@@ -78,7 +78,7 @@ export default function footballAdapter(action, agentData, actionSpace) {
 
   const currentVel = ballBody.linvel();
 
-  ballBody.applyImpulse(
+  ballBody.setLinvel(
     {
       x: Rx * kickStrength,
       y: currentVel.y,

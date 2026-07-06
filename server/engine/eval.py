@@ -94,6 +94,8 @@ def _resolve_goal_context(ctx):
             "bucket_key": "destroyable",
             "state_key": "previous_distance_destroyable",
         }
+    if is_set("goal_is_football"):
+        return {"bucket_key": "ball", "state_key": "previous_distance_ball"}
     return None
 
 
@@ -137,6 +139,8 @@ def _visit_node(node_id, graph, ctx):
             if isinstance(node_data.data, dict)
             else getattr(node_data.data, "rewardValue", 0)
         )
+
+        print("Reward Value: ", reward_value)
         ctx["reward"] += reward_value * multiplier
         # fall through to edge traversal below
 
@@ -210,8 +214,23 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "InRadiusNode":
-        in_radius_raw = _get_obs("in_radius_current_goal", ctx)
-        in_radius = in_radius_raw == 1 or in_radius_raw is True
+        mode = node_data.data.get("mode") or "Upon Entrance"
+        in_radius_raw_pre = _get_obs(
+            "in_radius_current_goal", ctx
+        )  # this gives in_target_radius from pre obs
+        in_radius_raw_post = _get_obs("in_radius_current_goal", ctx, use_post=True)
+        in_radius = False
+        if mode == "Upon Entrance":
+            if in_radius_raw_pre == 0.0 and in_radius_raw_post == 1.0:
+                in_radius = True
+
+        if mode == "Within Radius":
+            if in_radius_raw_pre == 1.0:
+                in_radius = True
+
+        if mode == "Upon Exit":
+            if in_radius_raw_pre == 1.0 and in_radius_raw_post == 0.0:
+                in_radius = True
 
         for edge in _find_bool_edges(node_id, graph, in_radius):
             _visit_node(edge.target, graph, ctx)
@@ -220,6 +239,7 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "IsDeltaXLessNode":
+        print("Hitting")
         DELTA_X_CHECK = 0.05
 
         delta_x = False
@@ -249,9 +269,10 @@ def _visit_node(node_id, graph, ctx):
 
     elif ntype == "IsDistanceLessNode":
         mode = node_data.data.get("mode") or "Best Record"
-
+        print("Mode: ", mode)
         goal_ctx = _resolve_goal_context(ctx)
         if goal_ctx is None:
+            print("thiis bs")
             return  # no recognized goal flag active; skip node
 
         distance_less = False
@@ -260,12 +281,7 @@ def _visit_node(node_id, graph, ctx):
         if mode == "Best Record":
             agent_pos = ctx["facts"]["position"]
             agent_rot = ctx["facts"]["rotation"]
-            current_distance, _ = nearestDistance(
-                agent_pos,
-                agent_rot,
-                bucket,
-                "both",
-            )
+            current_distance = _get_obs("dist_to_current_goal", ctx, use_post=True)
             best_distance = ctx["facts"]["state_space"].get(goal_ctx["state_key"])
             if current_distance is not None and best_distance is not None:
                 if current_distance < best_distance:
@@ -275,6 +291,8 @@ def _visit_node(node_id, graph, ctx):
             # pre-action and post-action distances from behavior OBS
             previous_dist = _get_obs("dist_to_current_goal", ctx, use_post=False)
             current_distance = _get_obs("dist_to_current_goal", ctx, use_post=True)
+            print("PREV: ", previous_dist)
+            print("CURRENT: ", current_distance)
             if current_distance is not None and previous_dist is not None:
                 if current_distance < previous_dist:
                     distance_less = True
@@ -383,27 +401,142 @@ def _visit_node(node_id, graph, ctx):
             return
 
         direction = node_data.data.get("direction", "Forward")
+        mode = node_data.data.get("mode", "While Blocked")
         direction_key_map = {
             "Left": "obstacle_left",
             "Right": "obstacle_right",
             "Forward": "obstacle_forward",
         }
-        OBSTACLE_DIST_THRESHOLD = 0.15
+        OBSTACLE_DIST_THRESHOLD_UPPER = 0.35
+        OBSTACLE_DIST_THRESHOLD_LOWER = 0.40
+
         dist_key = direction_key_map.get(direction)
         if not dist_key:
             return
 
-        directional_dist = _get_obs(dist_key, ctx)
-        in_path = _get_obs("obstacle_in_path", ctx)
+        directional_dist_pre = _get_obs(dist_key, ctx)
+        directional_dist_post = _get_obs(dist_key, ctx, use_post=True)
+        in_path_pre = _get_obs("obstacle_in_path", ctx)
+        in_path_post = _get_obs("obstacle_in_path", ctx, use_post=True)
 
-        in_path_bool = in_path is True or in_path == 1
-        is_blocked = (
-            directional_dist is not None
-            and directional_dist <= OBSTACLE_DIST_THRESHOLD
-            and in_path_bool
-        )
+        in_path_bool_pre = in_path_pre is True or in_path_pre == 1
+        in_path_bool_post = in_path_post is True or in_path_post == 1
 
-        for edge in _find_bool_edges(node_id, graph, is_blocked):
+        fires_up = False
+
+        if mode == "Upon Leaving":
+            if in_path_bool_pre is True and in_path_bool_post is False:
+                fires_up = True
+
+        if mode == "Upon Getting Blocked":
+            if in_path_bool_pre is False and in_path_bool_post is True:
+                fires_up = True
+
+        if mode == "While Blocked":
+            if in_path_bool_pre is True and in_path_bool_post is True:
+                fires_up = True
+
+        if mode == "Upon Approaching":
+            distance_decreased = directional_dist_post < directional_dist_pre
+
+            entered_approach_band = (
+                directional_dist_pre >= OBSTACLE_DIST_THRESHOLD_LOWER
+                and OBSTACLE_DIST_THRESHOLD_LOWER
+                > directional_dist_post
+                > OBSTACLE_DIST_THRESHOLD_UPPER
+            )
+
+            if (
+                not in_path_bool_pre
+                and not in_path_bool_post
+                and distance_decreased
+                and entered_approach_band
+            ):
+                fires_up = True
+
+        for edge in _find_bool_edges(node_id, graph, fires_up):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+    elif ntype == "FootballEventNode":
+        mode = node_data.data.get("mode") or "Team Scored Goal"
+        team_goal_scored_pre = _get_obs("team_goals_scored", ctx)
+        team_goal_scored_post = _get_obs("team_goals_scored", ctx, use_post=True)
+        team_goal_conceded_pre = _get_obs("team_goals_conceded", ctx)
+        team_goal_conceded_post = _get_obs("team_goals_conceded", ctx, use_post=True)
+        my_goals_scored_pre = _get_obs("my_goals_scored", ctx)
+        my_goals_scored_post = _get_obs("my_goals_scored", ctx, use_post=True)
+        my_own_goals_scored_pre = _get_obs("my_own_goals_scored", ctx)
+        my_own_goals_scored_post = _get_obs("my_own_goals_scored", ctx, use_post=True)
+
+        fires_up = False
+        if mode == "Team Scored Goal":
+            if team_goal_scored_pre < team_goal_scored_post:
+                fires_up = True
+
+        if mode == "Team Conceded Goal":
+            if team_goal_conceded_pre < team_goal_conceded_post:
+                fires_up = True
+
+        if mode == "Player Scored Goal":
+            if my_goals_scored_pre < my_goals_scored_post:
+                fires_up = True
+
+        if mode == "Player Scored Own Goal":
+            if my_own_goals_scored_pre < my_own_goals_scored_post:
+                fires_up = True
+
+        for edge in _find_bool_edges(node_id, graph, fires_up):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+    elif ntype == "IsPlayerAlignedNode":
+        mode = node_data.data.get("mode") or "While Aligned"
+        is_aligned_pre = _get_obs("alignment_to_goal", ctx)
+        is_aligned_post = _get_obs("alignment_to_goal", ctx, use_post=True)
+        fires_up = False
+
+        if mode == "Upon Aligning":
+            if is_aligned_pre == 0.0 and is_aligned_post == 1.0:
+                fires_up = True
+
+        if mode == "While Aligned":
+            if is_aligned_pre == 1.0 and is_aligned_post == 1.0:
+                fires_up = True
+
+        if mode == "Leaving Alignment":
+            if is_aligned_pre == 1.0 and is_aligned_post == 0.0:
+                fires_up = True
+
+        for edge in _find_bool_edges(node_id, graph, fires_up):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+    elif ntype == "IsBallNearPostNode":
+        mode = node_data.data.get("mode") or "While In Danger"
+        is_danger_pre = _get_obs("ball_in_own_goal_danger_zone", ctx)
+        is_danger_post = _get_obs("ball_in_own_goal_danger_zone", ctx, use_post=True)
+        fires_up = False
+
+        if mode == "Entered Danger Zone":
+            if is_danger_pre == 0.0 and is_danger_post == 1.0:
+                fires_up = True
+
+        if mode == "While In Danger":
+            if is_danger_pre == 1.0 and is_danger_post == 1.0:
+                fires_up = True
+
+        if mode == "Left Danger Zone":
+            if is_danger_pre == 1.0 and is_danger_post == 0.0:
+                fires_up = True
+
+        for edge in _find_bool_edges(node_id, graph, fires_up):
             _visit_node(edge.target, graph, ctx)
             if ctx["_stop"]:
                 return

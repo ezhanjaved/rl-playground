@@ -337,15 +337,23 @@ const PROGRESS_FIELD_MAP = {
 
 const SIDE_EFFECTS = {
   Collect: {
-    taught: (rc) => ({ items_collected: rc, total_items_collected: rc }),
-    revoked: () => ({ items_collected: 0, total_items_collected: 0 }),
+    taught: (rc) => ({
+      items_collected: rc,
+      total_items_collected: rc,
+      keys_collected: rc === 1 ? rc : rc - 1,
+    }),
+    revoked: () => ({
+      items_collected: 0,
+      total_items_collected: 0,
+      keys_collected: 0,
+    }),
   },
   Deposit: {
     taught: (rc) => ({ items_collected: 0, items_deposited: rc }),
     revoked: () => ({ items_deposited: 0 }),
   },
   Open: {
-    taught: (rc) => ({ keys_collected: rc }),
+    taught: () => ({ keys_collected: 0 }),
     revoked: () => ({ keys_collected: 0 }),
   },
 };

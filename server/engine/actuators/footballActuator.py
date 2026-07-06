@@ -54,11 +54,7 @@ def footballActuator(action, agentData, entities, eM, client, indexOfAction):
     Rx, Ry = getForwardVectorFromYaw(yaw)
 
     ballPos, _ = p.getBasePositionAndOrientation(ball_bullet_id, physicsClientId=client)
-    ballPosSwapped = positionSwap(ballPos)
     dist = distance3D(agentPos, ballPos)
-    dist2 = distance3D(agentPos, ballPosSwapped)
-    print("Unswapped Dist: ", dist)
-    print("Swapped Dist: ", dist2)
     kickRadius = 2.0
     kickStrength = 15.0
 
@@ -81,6 +77,7 @@ def footballActuator(action, agentData, entities, eM, client, indexOfAction):
     )
 
     new_state_space_agent["lastKickSuccess"] = True
+    new_state_space_agent["previous_distance_ball"] = 1.0
 
     agent.last_action = action
     agent.state_space = new_state_space_agent

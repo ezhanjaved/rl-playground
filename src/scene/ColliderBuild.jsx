@@ -94,8 +94,8 @@ export default function ColliderBuilder({ entity, children }) {
               ? [true, true, true]
               : [false, false, false]
         }
-        linearDamping={entity.tag === "agent" ? 0.2 : 0.8}
-        angularDamping={entity.tag === "agent" ? 0.2 : 0.8}
+        linearDamping={entity.tag === "agent" ? 0.0 : 0.8}
+        angularDamping={entity.tag === "agent" ? 0.0 : 0.8}
       >
         <group position={[0, 0, 0]}>{children}</group>
         {renderCollider()}

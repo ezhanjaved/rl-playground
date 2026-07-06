@@ -54,11 +54,14 @@ class SimulationEnv:
         self.world.step_simulation()
         self.core.sync_state_from_world(self.world)
         self.utility_routines()
-        self.core.update_previous_distances(obs_before, actions, self.core.runtime)
         obs_after = self.core.get_observation()  # NEW
+        self.core.update_previous_distances(
+            obs_before, obs_after, actions, self.core.runtime
+        )
+
         reward, terminated, truncated, info = self.core.compute_reward(
             obs_before, obs_after
-        )  # NEW
+        )
         return obs_after, reward, terminated, truncated, info
 
     def utility_routines(self):

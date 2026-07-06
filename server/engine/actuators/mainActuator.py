@@ -14,7 +14,6 @@ from server.utilities.capabilitiesMatch import capabilityMatcher
 def process_action(agent_id, agent_data, action, entityMapping, client, entities):
     capabilityMatched = capabilityMatcher(action)
     agentCapability = agent_data.capabilities
-    print("Agent Cap: ", agentCapability)
     actionSpace = agent_data.action_space  # array
     indexOfAction = actionSpace.index(action)
 

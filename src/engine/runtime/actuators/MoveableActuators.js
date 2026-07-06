@@ -1,7 +1,7 @@
 import { useSceneStore } from "../../../stores/useSceneStore";
 import { getForwardVectorFromYaw } from "../../utility/rotationCal";
 
-function getYawFromRapierBody(body) {
+export function getYawFromRapierBody(body) {
   const q = body.rotation();
   return 2 * Math.atan2(q.y, q.w);
 }

@@ -7,7 +7,6 @@ export default function getNearestTargetInfo(agentPos, entities, type) {
   let entityName = null;
 
   for (const e of Object.values(entities)) {
-    console.log("E: " + e?.[type]);
     if (!e?.[type]) continue;
     const pos = e.position ?? [0, 0, 0];
     const distance = distance3D(agentPos, pos);

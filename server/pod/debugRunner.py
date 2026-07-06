@@ -74,8 +74,24 @@ def debugRunner(id):
 # debugRunner("bdb58b3b-d653-4ac3-a84b-d8100cdf4327")
 # debugRunner("b9c2b891-dfc8-4bcf-a37c-6007aa12771f")
 # debugRunner("6cde729a-4ad8-4305-9918-65d18b264a6a")
-
 # debugRunner("6fc41f08-5c84-4d92-83e3-7f704f220aba")
-
-
-debugRunner("a92abf80-70ad-4529-abb1-ea39e8c8859e")
+# debugRunner("a92abf80-70ad-4529-abb1-ea39e8c8859e")
+# debugRunner("63f555b7-4c5b-4523-821b-688607578dc0")
+# debugRunner("da14d18f-1fc0-41e5-8535-3b2368f13499")
+# debugRunner("a0b3d605-2ece-4007-bd44-260e7d66466c") Dep
+# debugRunner("e830557a-7159-4a9e-8131-29472fb4f539") Dep
+# debugRunner("daefaa65-30a5-4936-9851-3dcc0fff7f28") Dest
+# debugRunner("b14c8451-a073-42ed-bbb5-b0fafbe6a96a") Open
+# debugRunner("2b3e3284-6754-473e-8ca0-764a489158ba") Target
+# debugRunner("8b63e8ef-4ceb-441c-9d47-ff2778535aee")
+# debugRunner("8ac7ccab-5e3e-4688-81a6-694deffec903") Obs
+# debugRunner("a7353724-3f51-47d3-bc0d-a22baed54add")
+# debugRunner("1aa77731-1046-4b12-8bd2-32fee73077dd")  # collect
+# debugRunner("1524ac59-c45b-4e5e-b19f-fe22b1332608") collect with obs check as main instead of state
+# debugRunner("486bd52f-c2b6-465b-bb71-0f34218c9025") holder check
+# debugRunner("522bda40-76d9-4f61-9f71-ccda22312c14") collect check against doc file
+# debugRunner("a3424102-7ca2-4376-af5f-c309373ee3d6") deposit check against doc file
+# debugRunner("bcddeb4c-23dc-4896-bc2a-e545ff3993f4") destroy check against doc file
+# debugRunner("16d5d9fb-4ed8-4868-ba0a-3f62b41326d2") opener check against doc file
+# debugRunner("22b998dc-5fc8-49f0-afe2-3e148aa5f451") finder check against doc file
+# debugRunner("56de781c-b613-44b1-9757-325e7dbeadfa")

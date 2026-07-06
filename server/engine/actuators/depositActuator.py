@@ -68,6 +68,7 @@ def depositActuator(action, agent_data, entities, indexOfAction):
     new_state_space["items_deposited"] = previous_deposit + items_just_deposited
     new_state_space["nearDeposit"] = is_near_deposit
     new_state_space["lastDepositSuccess"] = True
+    new_state_space["previous_distance_deposit"] = 1.0
 
     # Update to RUNTIME
     agent.last_action = action

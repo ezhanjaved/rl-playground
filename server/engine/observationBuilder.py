@@ -3,6 +3,7 @@ import math
 import numpy as np
 
 from server.utilities.distance3D import distance3D
+from server.utilities.footballUtil import ball_to_goal, is_aligned_to_goal
 from server.utilities.nearestTarget import getNearestTargetInfo
 from server.utilities.obstaclePath import obstacleAvoid
 from server.utilities.positionSwap import positionSwap
@@ -189,6 +190,8 @@ def nearestDistance(position, rotation, bucket, mode):
         bullet_pos = positionSwap(
             target_pos
         )  # PyBullet space [-x, y, z] // Quanterion [x,z,y,w]
+        if entity.tag == "ball":
+            print("POS: ", bullet_pos)
         if mode == "both":
             d = distance3D(position, bullet_pos)
         elif mode == "x":
@@ -245,10 +248,13 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
     # --- This section is for Football Ability ---
     team_id = getattr(agentData, "teamId", None)
     goal_bucket_key = None
+    goal_buckey_key_our_own = None
     goal_flag = None
     if team_id:
         goal_bucket_key = "goalPostRed" if team_id == "blue" else "goalPostBlue"
         goal_flag = "red-post" if team_id == "blue" else "blue-post"
+    if team_id:
+        goal_buckey_key_our_own = "goalPostRed" if team_id == "red" else "goalPostBlue"
 
     for obs in obs_space:
         match obs:
@@ -505,7 +511,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
 
             case "in_radius_ball":
                 found, best, radius, _ = getNearestTargetInfo(
-                    position, runTimeSnapShot, "isBall"
+                    position, runTimeSnapShot, "ball"
                 )
                 constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
 
@@ -518,7 +524,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 constructed_obs.append(dist)
 
             case "delta_z_to_goal":
-                dist, _ = cache.get(goal_bucket_key, "delta-z")
+                dist, _ = cache.get(goal_bucket_key, "delta-x")
                 constructed_obs.append(dist)
 
             case "in_radius_goal":
@@ -526,6 +532,32 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     position, runTimeSnapShot, goal_flag
                 )
                 constructed_obs.append(1.0 if (found and best <= radius) else 0.0)
+
+            case "alignment_to_goal":
+                deltaX, _ = cache.get(goal_bucket_key, "delta-x")
+                deltaY, _ = cache.get(goal_bucket_key, "delta-z")
+                is_aligned = is_aligned_to_goal(deltaX, deltaY)
+                constructed_obs.append(1.0 if is_aligned else 0.0)
+
+            case "ball_dist_to_own_goal":
+                deltaXb, _ = cache.get("ball", "delta-x")
+                deltaYb, _ = cache.get("ball", "delta-z")
+                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
+                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
+                distance = ball_to_goal(
+                    deltaXb, deltaYb, deltaXp, deltaYp, "distance-only"
+                )
+                constructed_obs.append(distance)
+
+            case "ball_in_own_goal_danger_zone":
+                deltaXb, _ = cache.get("ball", "delta-x")
+                deltaYb, _ = cache.get("ball", "delta-z")
+                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
+                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
+                is_danger = ball_to_goal(
+                    deltaXb, deltaYb, deltaXp, deltaYp, "danger-check"
+                )
+                constructed_obs.append(1.0 if is_danger else 0.0)
 
             case "last_kick_success":
                 lks = state_space.get("lastKickSuccess")

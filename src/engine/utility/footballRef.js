@@ -166,3 +166,41 @@ export function flushPendingBallReset() {
   resetBallPosition(ballId);
   pendingBallReset.ballId = null;
 }
+
+export function isAlignedToGoal(
+  deltaXToGoal,
+  deltaZToGoal,
+  maxAngleDegrees = 20,
+) {
+  const distance = Math.hypot(deltaXToGoal, deltaZToGoal);
+
+  if (distance < 1e-6) {
+    return true;
+  }
+
+  const alignment = deltaZToGoal / distance;
+
+  const requiredAlignment = Math.cos((maxAngleDegrees * Math.PI) / 180);
+
+  return alignment >= requiredAlignment;
+}
+
+export function BallToGoal(
+  deltaXToBall,
+  deltaZToBall,
+  deltaXToGoal,
+  deltaZToGoal,
+  mode,
+) {
+  const dx = deltaXToGoal - deltaXToBall;
+  const dz = deltaZToGoal - deltaZToBall;
+  const distance = Math.hypot(dx, dz);
+  if (mode === "distance-only") {
+    return distance;
+  }
+
+  if (mode === "danger-check") {
+    if (distance < 0.08) return true;
+    else return false;
+  }
+}

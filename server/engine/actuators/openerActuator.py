@@ -49,6 +49,7 @@ def openActuator(action, agent, entities, eM, client, indexOfAction):
         new_state_space["lastOpenSuccess"] = True
         new_state_space["keys_collected"] -= 1
         new_state_space["gates_open"] = new_state_space["gates_open"] + 1
+        new_state_space["previous_distance_gate"] = 1.0
 
         agent.last_action = action
         agent.state_space = new_state_space

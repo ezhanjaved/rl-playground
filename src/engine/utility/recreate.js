@@ -16,10 +16,28 @@ export function recreateEnv(entities) {
       animationRef: singleObj.animationRef,
       collider: singleObj.collider,
       actuator_type: singleObj.actuator_type,
+      controller: singleObj.controller || null,
+      positionSpawned: singleObj.positionSpawned || [0, 0, 0],
+      state: singleObj.state || {},
+
+      behavior: singleObj.behavior || [],
+      behaviorObs: singleObj.behaviorObs || [],
+      current_behavior: singleObj.current_behavior || null,
+
+      goalId: singleObj.goalId || "",
+      teamId: singleObj.teamId || null,
+
       isDecor: singleObj.isDecor,
       isPickable: singleObj.isPickable,
       isCollectable: singleObj.isCollectable,
       isTarget: singleObj.isTarget,
+      isGate: singleObj.isGate,
+      isBall: singleObj.isBall,
+      isGoalPostRed: singleObj.isGoalPostRed,
+      isGoalPostBlue: singleObj.isGoalPostBlue,
+      isDeposit: singleObj.isDeposit,
+      isDestroyable: singleObj.isDestroyable,
+
       last_action: singleObj?.last_action || null,
       isAssigned: singleObj.isAssigned,
       action_space: singleObj?.action_space || [],

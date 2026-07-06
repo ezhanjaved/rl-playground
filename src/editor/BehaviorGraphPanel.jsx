@@ -20,57 +20,7 @@ export function BehaviorGraphPanel() {
     },
   ];
 
-  const conditionalNodes = [
-    {
-      id: "in-radius-node",
-      payload: {
-        data: { label: "WithInRadius" },
-        type: "InRadiusNode",
-      },
-    },
-    {
-      id: "is-distance-less-node",
-      payload: {
-        data: {
-          label: "IsDistanceLess",
-          mode: null,
-        },
-        type: "IsDistanceLessNode",
-      },
-    },
-    {
-      id: "is-distance-more-node",
-      payload: {
-        data: { label: "IsDistanceMore" },
-        type: "IsDistanceMoreNode",
-      },
-    },
-    {
-      id: "is-delta-x-less-node",
-      payload: {
-        data: { label: "IsDeltaXLess" },
-        type: "IsDeltaXLessNode",
-      },
-    },
-    {
-      id: "is-delta-z-pos-node",
-      payload: {
-        data: { label: "IsDeltaZPos" },
-        type: "IsDeltaZPosNode",
-      },
-    },
-    {
-      id: "last-action-is-node",
-      payload: {
-        data: {
-          label: "LastActionIs",
-          agentCapability: null,
-          entityAction: null,
-          actionStatus: null,
-        },
-        type: "LastActionIsNode",
-      },
-    },
+  const state_obsNodes = [
     {
       id: "state-equals-node",
       payload: {
@@ -121,14 +71,92 @@ export function BehaviorGraphPanel() {
         type: "BoolObsNode",
       },
     },
+  ];
+
+  const navigationNodes = [
+    {
+      id: "in-radius-node",
+      payload: {
+        data: { label: "WithInRadius", mode: null },
+        type: "InRadiusNode",
+      },
+    },
+    {
+      id: "is-distance-less-node",
+      payload: {
+        data: {
+          label: "IsDistanceLess",
+          mode: null,
+        },
+        type: "IsDistanceLessNode",
+      },
+    },
+    {
+      id: "is-distance-more-node",
+      payload: {
+        data: { label: "IsDistanceMore" },
+        type: "IsDistanceMoreNode",
+      },
+    },
+    {
+      id: "is-delta-x-less-node",
+      payload: {
+        data: { label: "IsDeltaXLess" },
+        type: "IsDeltaXLessNode",
+      },
+    },
+    {
+      id: "is-delta-z-pos-node",
+      payload: {
+        data: { label: "IsDeltaZPos" },
+        type: "IsDeltaZPosNode",
+      },
+    },
+    {
+      id: "last-action-is-node",
+      payload: {
+        data: {
+          label: "LastActionIs",
+          agentCapability: null,
+          entityAction: null,
+          actionStatus: null,
+        },
+        type: "LastActionIsNode",
+      },
+    },
     {
       id: "is-obstacle-in-path",
       payload: {
         data: {
           label: "IsObstacleIn",
           direction: null,
+          mode: null,
         },
         type: "IsObstacleInPath",
+      },
+    },
+  ];
+
+  const footballNodes = [
+    {
+      id: "football-event-node",
+      payload: {
+        data: { label: "FootballNode", mode: null },
+        type: "FootballEventNode",
+      },
+    },
+    {
+      id: "is-aligned-node",
+      payload: {
+        data: { label: "IsAligned" },
+        type: "IsPlayerAlignedNode",
+      },
+    },
+    {
+      id: "is-ball-near-post-node",
+      payload: {
+        data: { label: "IsBallNear" },
+        type: "IsBallNearPostNode",
       },
     },
   ];
@@ -158,7 +186,9 @@ export function BehaviorGraphPanel() {
     <>
       <div className="library_main">
         <Section title="Event Nodes" items={eventNodes} />
-        <Section title="Conditional Nodes" items={conditionalNodes} />
+        <Section title="State & OBS Nodes" items={state_obsNodes} />
+        <Section title="Navigation Nodes" items={navigationNodes} />
+        <Section title="Football Nodes" items={footballNodes} />
         <Section title="Effect Nodes" items={effectNodes} />
       </div>
     </>

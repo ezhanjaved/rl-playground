@@ -3,12 +3,13 @@ import { useRunTimeStore } from "../../stores/useRunTimeStore.js";
 import buildObsSpace from "./observationBuilder.js";
 import ControllerRouter from "./controllers/controllerRouter.js";
 import applyAction from "./actuators/applyAction.js";
-import { flushActions } from "./actionQueue.js";
+// import { flushActions } from "./actionQueue.js";
 import { useSceneStore } from "../../stores/useSceneStore.js";
 import { BehaviorBuilder } from "./behaviorBuilder.js";
 import { resetMovement } from "../utility/stopMovement.js";
-
+import { syncBall } from "../utility/syncball.js";
 export default function runTimeloop(entities) {
+  console.log("Called RT");
   const { playing, training } = useRunTimeStore.getState();
   const { updateEntityStat, updateEntity } = useSceneStore.getState();
   const { currentExperimentId, isModelReady, seq, setSeq } =
@@ -16,13 +17,13 @@ export default function runTimeloop(entities) {
 
   if (!playing || training) return;
 
-  const incoming = flushActions();
-  incoming.forEach((action, agentId) => {
-    const entity = entities[agentId];
-    if (entity) {
-      applyAction(action, entity, []);
-    }
-  });
+  // const incoming = flushActions();
+  // incoming.forEach((action, agentId) => {
+  //   const entity = entities[agentId];
+  //   if (entity) {
+  //     applyAction(action, entity, []);
+  //   }
+  // });
 
   Object.values(entities).forEach((entity) => {
     const isDecor =
@@ -50,6 +51,7 @@ export default function runTimeloop(entities) {
       observation_vector,
       entity,
     );
+    console.log("OBS VECTOR (BEHVAIOR): " + behaviorOBSvector);
     const action_space = entity.action_space;
     const sequence = seq[entity.id] ?? 0; //Read sequence number from store
     const newSeq = sequence + 1; //increment it
@@ -66,6 +68,7 @@ export default function runTimeloop(entities) {
     );
 
     if (action !== null) {
+      console.log("Action Gotten: ", action);
       applyAction(action, entity, behaviorOBSvector);
       setSeq(entity.id, newSeq); //set it back in store
       updateEntityStat(entity.id, {
@@ -82,6 +85,7 @@ export default function runTimeloop(entities) {
         ],
       });
     } else {
+      console.log("No Action");
       resetMovement(entity.id);
       updateEntity(entity.id, {
         last_action: "idle",
@@ -90,5 +94,6 @@ export default function runTimeloop(entities) {
         last_action: "idle",
       });
     }
+    syncBall();
   });
 }

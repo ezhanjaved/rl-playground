@@ -41,6 +41,7 @@ def collectorActuator(action, agent, entities, eM, client, indexOfAction):
         new_state_space["total_items_collected"] = updatedNum
         new_state_space["items_collected"] = updatedNum
         new_state_space["lastPickSuccess"] = True
+        new_state_space["previous_distance_collect"] = 1.0
         # Update to RUNTIME
         agent.last_action = action
         agent.state_space = new_state_space

@@ -43,6 +43,7 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
                 p.removeBody(bulletId, physicsClientId=client)
                 new_state_space["holding"] = True
                 new_state_space["lastPickSuccess"] = True
+                new_state_space["previous_distance_pickable"] = 1.0
                 # Update to RUNTIME
                 agent.last_action = action
                 agent.state_space = new_state_space

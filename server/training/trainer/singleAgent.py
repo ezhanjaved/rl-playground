@@ -18,8 +18,6 @@ N_ENVS = 8
 def make_env(scenario, runtime):
 
     def _init():
-        from sb3_contrib.common.wrappers import ActionMasker  # add this
-
         from server.training.simulationBase import SimulationEnv
         from server.training.wrappers.gymWrapper import GymWrapper
 
@@ -28,7 +26,6 @@ def make_env(scenario, runtime):
             SimulationEnv(scenario, runtime_copy),
             runtime_copy,
         )
-        env = ActionMasker(env, lambda e: e.action_masks())  # add this
         return Monitor(env)
 
     return _init
@@ -57,35 +54,61 @@ class SingleAgentTrainer:
         self.n_steps = self.assignment.n_steps
         self.target_kl = self.assignment.target_kl
         self.ent_coeff = self.assignment.ent_coeff
-        print("Entropy: ", self.ent_coeff)
         if self.learning_rate == "Slow":
             self.learning_rate = 1e-4
         elif self.learning_rate == "Medium":
             self.learning_rate = 3e-4
         elif self.learning_rate == "Fast":
             self.learning_rate = 1e-3
-        print("Learning Rate: ", self.learning_rate)
 
     def _apply_config_to_loaded_model(self):
         lr = float(self.learning_rate)
         clip_range = float(self.clip_range)
+        gamma = float(self.gamma)
+        gae_lambda = float(self.gae_lambda)
 
         self.model.learning_rate = lr
         self.model.lr_schedule = FloatSchedule(lr)
         self.model.clip_range = FloatSchedule(clip_range)
 
         self.model.ent_coef = float(self.ent_coeff)
-        self.model.gae_lambda = float(self.gae_lambda)
         self.model.vf_coef = float(self.vf_coef)
         self.model.target_kl = None if self.target_kl is None else float(self.target_kl)
         self.model.n_epochs = int(self.epoch)
+        self.model.batch_size = int(self.batch)
+
+        buffer_changed = (
+            gamma != self.model.gamma
+            or gae_lambda != self.model.gae_lambda
+            or self.n_steps != self.model.n_steps
+        )
+
+        self.model.gamma = gamma
+        self.model.gae_lambda = gae_lambda
+
+        if buffer_changed:
+            buffer_cls = type(
+                self.model.rollout_buffer
+            )  # keeps Maskable(Dict)RolloutBuffer correct
+            self.model.n_steps = self.n_steps
+            self.model.rollout_buffer = buffer_cls(
+                self.n_steps,
+                self.model.observation_space,
+                self.model.action_space,
+                device=self.model.device,
+                gamma=gamma,
+                gae_lambda=gae_lambda,
+                n_envs=self.model.n_envs,
+            )
 
         for param_group in self.model.policy.optimizer.param_groups:
             param_group["lr"] = lr
 
         print(
             f"Config applied — lr: {lr}, clip_range: {clip_range}, "
-            f"ent_coef: {self.model.ent_coef}"
+            f"ent_coef: {self.model.ent_coef}, gamma: {gamma}, "
+            f"gae_lambda: {gae_lambda}, n_steps: {self.model.n_steps}, "
+            f"batch_size: {self.model.batch_size}"
         )
 
     def train(self):
@@ -105,17 +128,9 @@ class SingleAgentTrainer:
         )
         test_env.close()
 
-        vec_env = SubprocVecEnv(
+        raw_vec_env = SubprocVecEnv(
             [make_env(self.scenario, self.runtime) for _ in range(N_ENVS)],
             start_method="spawn",
-        )
-
-        vec_env = VecNormalize(
-            vec_env,
-            norm_obs=False,
-            norm_reward=True,
-            clip_reward=100.0,
-            gamma=self.gamma,
         )
 
         checkpoint_dir = (
@@ -134,12 +149,20 @@ class SingleAgentTrainer:
             print("Final model exists — resuming from final.")
             vecnorm_path = str(final_path).replace(".zip", "_vecnormalize.pkl")
             if os.path.exists(vecnorm_path):
-                vec_env = VecNormalize.load(vecnorm_path, vec_env)
+                vec_env = VecNormalize.load(vecnorm_path, raw_vec_env)
                 print(f"VecNormalize stats restored from {vecnorm_path}")
             else:
                 print(
                     "No VecNormalize stats found for final model, starting normalizer fresh."
                 )
+                vec_env = VecNormalize(
+                    raw_vec_env,
+                    norm_obs=False,
+                    norm_reward=True,
+                    clip_reward=100.0,
+                    gamma=self.gamma,
+                )
+
             self.model = MaskablePPO.load(str(final_path), env=vec_env)
             self._apply_config_to_loaded_model()
             resumed_timesteps = self.already_trained
@@ -148,10 +171,17 @@ class SingleAgentTrainer:
                 print(f"Resuming from checkpoint: {checkpoint_path}")
                 vecnorm_path = str(checkpoint_path).replace(".zip", "_vecnormalize.pkl")
                 if os.path.exists(vecnorm_path):
-                    vec_env = VecNormalize.load(vecnorm_path, vec_env)
+                    vec_env = VecNormalize.load(vecnorm_path, raw_vec_env)
                     print(f"VecNormalize stats restored from {vecnorm_path}")
                 else:
                     print("No VecNormalize stats found, starting normalizer fresh.")
+                    vec_env = VecNormalize(
+                        raw_vec_env,
+                        norm_obs=False,
+                        norm_reward=True,
+                        clip_reward=100.0,
+                        gamma=self.gamma,
+                    )
 
                 self.model = MaskablePPO.load(str(checkpoint_path), env=vec_env)
                 self._apply_config_to_loaded_model()
@@ -163,6 +193,13 @@ class SingleAgentTrainer:
                     resumed_timesteps = self.already_trained
             else:
                 print("No checkpoint or final model found, starting fresh.")
+                vec_env = VecNormalize(
+                    raw_vec_env,
+                    norm_obs=False,
+                    norm_reward=True,
+                    clip_reward=100.0,
+                    gamma=self.gamma,
+                )
                 self.model = MaskablePPO(
                     "MlpPolicy",
                     vec_env,

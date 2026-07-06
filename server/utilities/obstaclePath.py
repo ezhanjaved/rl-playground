@@ -11,7 +11,7 @@ def obstacleAvoid(pos, rot, obstaclePos):
     dx = -(ox - ax)  # X flip for coordinate convention
     dy = oy - ay
 
-    lookahead = 3
+    lookahead = 1.5
     agentRad = 0.5
     obsRad = 0.8
 
