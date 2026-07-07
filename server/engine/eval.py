@@ -5,7 +5,15 @@ def evaluator(aid, preObs, post_obs, graph, config, runTimeSnap):
     entities = runTimeSnap.entities
     currentEpisodeStep = runTimeSnap.step_count
     if not entities or not graph or not config:
-        return 0, False, False, {}
+        return (
+            0,
+            False,
+            False,
+            {
+                "shaping_cum": runTimeSnap.cumulative_shaping_reward.get(aid, 0.0),
+                "terminal_cum": runTimeSnap.cumulative_terminal_reward.get(aid, 0.0),
+            },
+        )
 
     agent = entities[aid]
     visited_nodes = set()
@@ -22,7 +30,10 @@ def evaluator(aid, preObs, post_obs, graph, config, runTimeSnap):
         "terminated": False,
         "truncated": False,
         "_stop": False,
-        "info": {},
+        "info": {
+            "shaping_cum": cum_shaping_rew,
+            "terminal_cum": cum_terminal_rew,
+        },
         "facts": {
             "position": agent.position,
             "rotation": agent.rotation,
@@ -51,7 +62,15 @@ def evaluator(aid, preObs, post_obs, graph, config, runTimeSnap):
             break
 
     if not start:
-        return 0.0, False, False, {}
+        return (
+            0.0,
+            False,
+            False,
+            {
+                "shaping_cum": runTimeSnap.cumulative_shaping_reward.get(aid, 0.0),
+                "terminal_cum": runTimeSnap.cumulative_terminal_reward.get(aid, 0.0),
+            },
+        )
 
     _visit_node(start.id, graph, ctx)
 
