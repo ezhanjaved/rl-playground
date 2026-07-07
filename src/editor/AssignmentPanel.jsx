@@ -6,7 +6,6 @@ import { useSceneStore } from "../stores/useSceneStore";
 import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { trainingLoop } from "../engine/runtime/trainingLoop";
 import { sendServer } from "../export/sendToServer";
-import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 
 const modalOverlayStyle = {
@@ -458,6 +457,10 @@ const PPOSection = ({ setThree }) => {
     setPercentageFixed,
     topographyMode,
     setTopographyMode,
+    randomizerMode,
+    setRandomizerMode,
+    jitterRadius,
+    setJitterRadius,
   } = useRunTimeStore.getState();
 
   useEffect(() => {
@@ -570,6 +573,29 @@ const PPOSection = ({ setThree }) => {
           )}
           {envMode != "Fixed" && (
             <>
+              <label htmlFor="">Randomizer Mode</label>
+              <div
+                style={{ display: "flex", flexDirection: "row", gap: "10px" }}
+              >
+                <label>
+                  <input
+                    checked={randomizerMode === "Full Randomization"}
+                    onChange={(e) => setRandomizerMode(e.target.value)}
+                    type="radio"
+                    value="Full Randomization"
+                  />{" "}
+                  Complete{" "}
+                </label>
+                <label>
+                  <input
+                    checked={randomizerMode === "Jittery Randomization"}
+                    onChange={(e) => setRandomizerMode(e.target.value)}
+                    type="radio"
+                    value="Jittery Randomization"
+                  />{" "}
+                  Jittery{" "}
+                </label>
+              </div>
               <label htmlFor="">Topography Mode</label>
               <div
                 style={{ display: "flex", flexDirection: "row", gap: "10px" }}
@@ -593,6 +619,19 @@ const PPOSection = ({ setThree }) => {
                   False{" "}
                 </label>
               </div>
+            </>
+          )}
+          {randomizerMode != "Full Randomization" && (
+            <>
+              <label htmlFor="">Jitter Radius</label>
+              <div
+                style={{ display: "flex", flexDirection: "row", gap: "10px" }}
+              ></div>
+              <input
+                value={jitterRadius}
+                type="number"
+                onChange={(e) => setJitterRadius(Number(e.target.value))}
+              />
             </>
           )}
           <label htmlFor="">Spawn Mode</label>

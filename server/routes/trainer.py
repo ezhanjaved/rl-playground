@@ -37,6 +37,8 @@ class RequestModel(BaseModel):
     spawnMode: str
     randomSpawnAfterEp: int | None = None
     topographyMode: str | None = None
+    randomizerMode: str | None = None
+    jitterRadius: float | None = 0.0
 
 
 class RunModel(BaseModel):
@@ -80,6 +82,8 @@ async def getData(data: RequestModel):
         randomSpawnAfterEp = data.dict().get(
             "randomSpawnAfterEp"
         )  # None if not provided
+        randomizerMode = data.dict()["randomizerMode"]
+        jitter_radius = data.dict()["jitterRadius"]
         config_path = uploadConfig(path)
         create_model(
             {
@@ -93,6 +97,8 @@ async def getData(data: RequestModel):
                 "spawn_mode": spawnMode,
                 "fixed_episode_per": randomSpawnAfterEp,
                 "topography_fixed": topographyFixed,
+                "randomizer_mode": randomizerMode,
+                "jitter_radius": jitter_radius,
             },
             "models",
         )
@@ -131,6 +137,8 @@ async def getDataDebug(data: RequestModel):
         randomSpawnAfterEp = data.dict().get(
             "randomSpawnAfterEp"
         )  # None if not provided
+        randomizerMode = data.dict()["randomizerMode"]
+        jitter_radius = data.dict()["jitterRadius"]
         config_path = uploadConfig(path)
         create_model(
             {
@@ -144,6 +152,8 @@ async def getDataDebug(data: RequestModel):
                 "spawn_mode": spawnMode,
                 "fixed_episode_per": randomSpawnAfterEp,
                 "topography_fixed": topographyFixed,
+                "randomizer_mode": randomizerMode,
+                "jitter_radius": jitter_radius,
             },
             "models",
         )

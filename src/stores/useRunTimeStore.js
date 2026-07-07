@@ -45,6 +45,12 @@ export const useRunTimeStore = create((set, get) => ({
   maxStepPerEp: 0,
   setMaxStepPerEp: (value) => set({ maxStepPerEp: value }),
 
+  randomizerMode: "Full Randomization",
+  setRandomizerMode: (value) => set({ randomizerMode: value }),
+
+  jitterRadius: 0.0,
+  setJitterRadius: (value) => set({ jitterRadius: value }),
+
   isModelLoading: false,
   isModelReady: false,
 

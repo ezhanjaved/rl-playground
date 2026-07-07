@@ -16,6 +16,8 @@ class SimulationEnv:
         runtime = self.core.runtime
         self.agent_id = runtime.agents_ids[0]
         self.topographyFixed = runtime.topographyFixed
+        self.randomizer_mode = runtime.randomizerMode
+        self.jitter_radius = runtime.jitter_radius
         print("Topo Mode:", self.topographyFixed)
         episode = runtime.episode_count
         threshold = runtime.randomSpawnAfterEp
@@ -28,6 +30,8 @@ class SimulationEnv:
             self.core.runtime.highest_dist,
             effective_mode,
             self.topographyFixed,
+            self.randomizer_mode,
+            self.jitter_radius,
         )
 
         self.world.settle()
