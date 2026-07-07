@@ -82,8 +82,8 @@ class GymWrapper(gym.Env):
         terminated = ter_dict[self.agent_id]
         truncated = tru_dict[self.agent_id]
         info = info_dict[self.agent_id]
-
-        return refined_obs, reward, terminated, truncated, info  # type: ignore
+        done = terminated or truncated
+        return refined_obs, reward, done, info  # type: ignore
 
     def action_masks(self):
         current_behavior = self.engine.core.runtime.entities[
