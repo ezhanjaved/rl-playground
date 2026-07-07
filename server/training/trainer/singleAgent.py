@@ -5,14 +5,14 @@ from sb3_contrib import MaskablePPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import FloatSchedule
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
 
 from server.database.select import fetchExtactModel
 from server.path_config import MODEL_DIR
 from server.storage.uploadModel import downloadLatestCheckpoint
 from server.training.trainer.rewardCallback import RewardLoggerCallback
 
-N_ENVS = 1
+N_ENVS = 8
 
 
 def make_env(scenario, runtime):
@@ -128,8 +128,9 @@ class SingleAgentTrainer:
         )
         test_env.close()
 
-        raw_vec_env = DummyVecEnv(
+        raw_vec_env = SubprocVecEnv(
             [make_env(self.scenario, self.runtime) for _ in range(N_ENVS)],
+            start_method="spawn",
         )
 
         checkpoint_dir = (
