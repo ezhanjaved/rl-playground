@@ -5,6 +5,7 @@ export const useTrainingStore = create((set) => ({
   rewardHistory: [],
   epRewMeanHistory: [],
   epLenMeanHistory: [],
+  shapingTerminalHistory: [],
 
   setModel: (model) => set({ model }),
 
@@ -12,6 +13,7 @@ export const useTrainingStore = create((set) => ({
   setRewardHistory: (arr) => set({ rewardHistory: arr }),
   setEpRewMeanHistory: (arr) => set({ epRewMeanHistory: arr }),
   setEpLenMeanHistory: (arr) => set({ epLenMeanHistory: arr }),
+  setShapingTerminalHistory: (arr) => set({ shapingTerminalHistory: arr }),
 
   pushReward: (entry) =>
     set((s) => ({

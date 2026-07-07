@@ -12,8 +12,12 @@ def evaluator(aid, preObs, post_obs, graph, config, runTimeSnap):
     behavior_obs_space = agent.behaviorObs
     post_obs_vector = post_obs[agent.id]
     entity_buckets = partition_entities(entities)
+    cum_shaping_rew = runTimeSnap.cumulative_shaping_reward[aid]
+    cum_terminal_rew = runTimeSnap.cumulative_terminal_reward[aid]
 
     ctx = {
+        "runtime": runTimeSnap,
+        "aid": aid,
         "reward": 0.0,
         "terminated": False,
         "truncated": False,
@@ -36,6 +40,8 @@ def evaluator(aid, preObs, post_obs, graph, config, runTimeSnap):
         "ent": entities,
         "buckets": entity_buckets,
         "current_episode_step": currentEpisodeStep,
+        "current_cum_shaping_rew": cum_shaping_rew,
+        "current_cum_terminal_rew": cum_terminal_rew,
     }
 
     start = None
@@ -139,9 +145,18 @@ def _visit_node(node_id, graph, ctx):
             if isinstance(node_data.data, dict)
             else getattr(node_data.data, "rewardValue", 0)
         )
+        reward_type = node_data.data.get("typeOfReward") or "Shaping"
+        runtime = ctx["runtime"]
+        aid = ctx["aid"]
 
+        if reward_type == "Shaping":
+            runtime.cumulative_shaping_reward[aid] += reward_value
+        elif reward_type == "Terminal":
+            runtime.cumulative_terminal_reward[aid] += reward_value
+
+        ctx["info"]["shaping_cum"] = runtime.cumulative_shaping_reward[aid]
+        ctx["info"]["terminal_cum"] = runtime.cumulative_terminal_reward[aid]
         ctx["reward"] += reward_value * multiplier
-        # fall through to edge traversal below
 
     elif ntype == "EndEpisodeNode":
         ctx["terminated"] = True

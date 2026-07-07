@@ -265,6 +265,12 @@ export default function TrainingMonitor({ trainingId }) {
   const setEpRewMeanHistory = useTrainingStore((s) => s.setEpRewMeanHistory);
   const epLenMeanHistory = useTrainingStore((s) => s.epLenMeanHistory);
   const setEpLenMeanHistory = useTrainingStore((s) => s.setEpLenMeanHistory);
+  const shapingTerminalHistory = useTrainingStore(
+    (s) => s.shapingTerminalHistory,
+  );
+  const setShapingTerminalHistory = useTrainingStore(
+    (s) => s.setShapingTerminalHistory,
+  );
 
   useEffect(() => {
     supabase
@@ -281,6 +287,8 @@ export default function TrainingMonitor({ trainingId }) {
             setEpRewMeanHistory(data.ep_rew_mean_history);
           if (Array.isArray(data.ep_len_mean_history))
             setEpLenMeanHistory(data.ep_len_mean_history);
+          if (Array.isArray(data.shaping_terminal_history))
+            setShapingTerminalHistory(data.shaping_terminal_history);
         }
       });
 
@@ -302,6 +310,8 @@ export default function TrainingMonitor({ trainingId }) {
             setEpRewMeanHistory(row.ep_rew_mean_history);
           if (Array.isArray(row.ep_len_mean_history))
             setEpLenMeanHistory(row.ep_len_mean_history);
+          if (Array.isArray(row.shaping_terminal_history))
+            setShapingTerminalHistory(row.shaping_terminal_history);
         },
       )
       .subscribe();
@@ -335,6 +345,7 @@ export default function TrainingMonitor({ trainingId }) {
         <EpRewMeanChart history={epRewMeanHistory} />
         <EpLenMeanChart history={epLenMeanHistory} />
       </div>
+      <ShapingTerminalChart history={shapingTerminalHistory} />
       <div className={styles.grid2}>
         <PPOLosses model={model} />
         <RolloutStats
@@ -739,6 +750,107 @@ function EpLenMeanChart({ history }) {
   );
 }
 
+function ShapingTerminalChart({ history }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!history.length || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width,
+      H = canvas.height;
+    const pad = { top: 12, bottom: 20, left: 38, right: 8 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const allVals = history.flatMap((h) => [h.shaping, h.terminal]);
+    const minV = Math.min(...allVals, 0);
+    const maxV = Math.max(...allVals);
+    const range = maxV - minV || 1;
+
+    const toX = (i) => pad.left + (i / Math.max(history.length - 1, 1)) * cW;
+    const toY = (v) => pad.top + cH - ((v - minV) / range) * cH;
+
+    // Grid lines
+    ctx.strokeStyle = "rgba(128,128,128,0.12)";
+    ctx.lineWidth = 0.5;
+    [0, 0.5, 1].forEach((t) => {
+      const y = pad.top + cH - t * cH;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(pad.left + cW, y);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(128,128,128,0.5)";
+      ctx.font = "10px system-ui";
+      const tickVal = minV + t * range;
+      ctx.fillText(
+        Math.abs(tickVal) >= 1000
+          ? (tickVal / 1000).toFixed(1) + "k"
+          : tickVal.toFixed(1),
+        0,
+        y + 3,
+      );
+    });
+
+    const drawLine = (keyFn, color) => {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.lineJoin = "round";
+      history.forEach((h, i) =>
+        i === 0
+          ? ctx.moveTo(toX(i), toY(keyFn(h)))
+          : ctx.lineTo(toX(i), toY(keyFn(h))),
+      );
+      ctx.stroke();
+    };
+
+    drawLine((h) => h.terminal, "#378ADD");
+    drawLine((h) => h.shaping, "#F59E0B");
+  }, [history]);
+
+  const latest = history.length ? history[history.length - 1] : null;
+  const ratio = latest?.ratio;
+  // Flag when cumulative shaping is closing in on terminal reward magnitude —
+  // the signal that VecNormalize's dynamic range may be getting squeezed.
+  const ratioWarning = ratio != null && Math.abs(ratio) >= 0.5;
+
+  return (
+    <div className={styles.panel}>
+      <p className={styles.panelTitle}>Shaping vs terminal reward (cum./ep)</p>
+      <canvas
+        ref={canvasRef}
+        width={620}
+        height={140}
+        className={styles.chart}
+      />
+      <div className={styles.legendRow}>
+        <div className={styles.legendItem}>
+          <div className={styles.legendLine} style={{ background: "#378ADD" }} />
+          <span className={styles.legendLabel}>Terminal (cum.)</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={styles.legendLine} style={{ background: "#F59E0B" }} />
+          <span className={styles.legendLabel}>Shaping (cum.)</span>
+        </div>
+        {ratio != null && (
+          <div className={styles.legendItem}>
+            <span
+              className={styles.legendLabel}
+              style={ratioWarning ? { color: "#EF4444", fontWeight: 600 } : undefined}
+            >
+              Ratio: {ratio.toFixed(2)}
+              {ratioWarning ? " ⚠ shaping approaching terminal magnitude" : ""}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PPOLosses({ model }) {
   const rows = [
     ["Policy loss", model.policy_loss?.toFixed(4)],
@@ -765,6 +877,12 @@ function RolloutStats({ model, epRewMeanHistory, epLenMeanHistory }) {
     ["Episode Reward Mean", lastEpRewMean?.toFixed(4)],
     ["Episode Length Mean", lastEpLenMean?.toFixed(4)],
   ];
+  if (model.final_mean_shaping != null || model.final_mean_terminal != null) {
+    rows.push(
+      ["Final Mean Shaping", model.final_mean_shaping?.toFixed(4)],
+      ["Final Mean Terminal", model.final_mean_terminal?.toFixed(4)],
+    );
+  }
   return <StatPanel title="Rollout stats" rows={rows} />;
 }
 

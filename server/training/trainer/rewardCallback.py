@@ -28,14 +28,19 @@ class RewardLoggerCallback(BaseCallback):
         self._rollout_count = 0
         self._checkpoint_count = 0
         self._all_rewards = []
+        self._all_shaping = []
+        self._all_terminal = []
         self._last_uploaded_checkpoint: str | None = None
 
         self._prev_ep_info_len = 0
         self._last_ep_info_entry = None
 
-        self._reward_history: list[dict] = []       # {ep, reward, smoothed}
+        self._reward_history: list[dict] = []  # {ep, reward, smoothed}
         self._ep_rew_mean_history: list[dict] = []  # {rollout, value}
         self._ep_len_mean_history: list[dict] = []  # {rollout, value}
+        self._shaping_terminal_history: list[
+            dict
+        ] = []  # {rollout, shaping, terminal, ratio}
 
         # In-memory buffer — holds the latest state to flush
         self._pending: dict = {}
@@ -84,6 +89,12 @@ class RewardLoggerCallback(BaseCallback):
         except Exception as e:
             print(f"Checkpoint upload failed (non-fatal): {e}")
 
+    def _record_episode(self, ep_info: dict):
+        self._episode_count += 1
+        self._all_rewards.append(float(ep_info.get("r", 0.0)))
+        self._all_shaping.append(float(ep_info.get("shaping_cum", 0.0)))
+        self._all_terminal.append(float(ep_info.get("terminal_cum", 0.0)))
+
     def _on_step(self) -> bool:
         current_buffer = list(self.model.ep_info_buffer)
         current_len = len(current_buffer)
@@ -91,15 +102,13 @@ class RewardLoggerCallback(BaseCallback):
         if current_len > self._prev_ep_info_len:
             new_entries = current_buffer[self._prev_ep_info_len :]
             for ep_info in new_entries:
-                self._episode_count += 1
-                self._all_rewards.append(float(ep_info.get("r", 0.0)))
+                self._record_episode(ep_info)
             self._prev_ep_info_len = current_len
 
         elif current_len == 100:
             last_entry = current_buffer[-1] if current_buffer else None
             if last_entry and last_entry != self._last_ep_info_entry:
-                self._episode_count += 1
-                self._all_rewards.append(float(last_entry.get("r", 0.0)))
+                self._record_episode(last_entry)
                 self._last_ep_info_entry = last_entry
 
         return True
@@ -124,6 +133,25 @@ class RewardLoggerCallback(BaseCallback):
                     "reward_history": self._reward_history,  # full array every flush
                 }
             )
+
+        # Shaping vs terminal reward tracking — the key diagnostic for
+        # whether cumulative shaping is creeping up on terminal reward
+        # (which would explain VecNormalize dynamic-range issues).
+        if self._all_shaping and self._all_terminal:
+            shaping_mean = round(float(np.mean(self._all_shaping[-10:])), 4)
+            terminal_mean = round(float(np.mean(self._all_terminal[-10:])), 4)
+            ratio = (
+                round(shaping_mean / terminal_mean, 4) if terminal_mean != 0 else None
+            )
+            self._shaping_terminal_history.append(
+                {
+                    "rollout": self._rollout_count,
+                    "shaping": shaping_mean,
+                    "terminal": terminal_mean,
+                    "ratio": ratio,
+                }
+            )
+            self._buffer({"shaping_terminal_history": self._shaping_terminal_history})
 
         buf = self.model.rollout_buffer
         data = {
@@ -171,11 +199,19 @@ class RewardLoggerCallback(BaseCallback):
         final_mean = (
             float(np.mean(self._all_rewards[-10:])) if self._all_rewards else 0.0
         )
+        final_shaping = (
+            float(np.mean(self._all_shaping[-10:])) if self._all_shaping else 0.0
+        )
+        final_terminal = (
+            float(np.mean(self._all_terminal[-10:])) if self._all_terminal else 0.0
+        )
         self._buffer(
             {
                 "status": "complete",
                 "total_episodes": self._episode_count,
                 "final_mean_reward": round(final_mean, 4),
+                "final_mean_shaping": round(final_shaping, 4),
+                "final_mean_terminal": round(final_terminal, 4),
             }
         )
         self._flush()

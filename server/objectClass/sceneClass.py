@@ -33,6 +33,8 @@ class TrainingState:
 
     episode_count: int = 0
     step_count: int = 0
+    cumulative_shaping_reward: dict[str, float] = field(default_factory=dict)
+    cumulative_terminal_reward: dict[str, float] = field(default_factory=dict)
 
     truncated_agents: dict[str, bool] = field(default_factory=dict)
     terminated_agents: dict[str, bool] = field(default_factory=dict)

@@ -26,7 +26,7 @@ def make_env(scenario, runtime):
             SimulationEnv(scenario, runtime_copy),
             runtime_copy,
         )
-        return Monitor(env)
+        return Monitor(env, info_keywords=("shaping_cum", "terminal_cum"))
 
     return _init
 

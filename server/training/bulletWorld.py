@@ -401,7 +401,6 @@ class PyBulletWorld:
 
     def check_post(self, entities):
         if self.ball_id is None:
-            print("Returning because of no ball")
             return
         if self.blue_goal_post is not None:
             self.blue_goal_post.check(self.ball_id, entities, self.entity_mapping)

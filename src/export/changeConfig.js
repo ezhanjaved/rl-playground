@@ -114,7 +114,6 @@ export async function importConfig(model_id) {
     if (result.status === 1) {
       wipeEntities();
       recreateEnv(result.entities);
-      setName(result.entities.name);
 
       const graphObj = result.graphs;
       const graphs = Object.keys(graphObj);

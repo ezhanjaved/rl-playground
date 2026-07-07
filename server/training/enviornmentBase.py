@@ -1,7 +1,5 @@
 import copy
 
-from typing_extensions import runtime
-
 from server.engine.behaviorBuilder import BehaviorBuilderResult, behavior_builder
 from server.engine.eval import evaluator
 from server.engine.observationBuilder import buildObs, partition_entities
@@ -25,6 +23,8 @@ class EnvironmentCore:
             self.runtime.terminated_agents[aid] = False
             self.runtime.rewards_agent[aid] = 0
             self.runtime.episode_reward[aid] = 0
+            self.runtime.cumulative_shaping_reward[aid] = 0
+            self.runtime.cumulative_terminal_reward[aid] = 0
 
     def sync_state_from_world(
         self, world

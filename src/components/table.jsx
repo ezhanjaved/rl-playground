@@ -357,7 +357,7 @@ export function Table({
           }
           updateEntityStat(agent.id, {
             last_action: action,
-            probabilities: [probs],
+            probabilities: probs,
           });
           applyAction(action, agent, []);
           setWaitingForAction(agent.id, false);
