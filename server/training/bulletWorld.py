@@ -36,7 +36,13 @@ class PyBulletWorld:
         p.loadURDF("plane.urdf", physicsClientId=self.client)
 
     def spawn_entities(
-        self, entities_config, highestDistance, spawn_mode, topographyFixed
+        self,
+        entities_config,
+        highestDistance,
+        spawn_mode,
+        topographyFixed,
+        randomizerMode,
+        jitter_radius,
     ):
         # IMPORTANT: must use shallow list — randomize_entities_open_space mutates
         # entity.position in-place on the original objects so that runtime.entities
@@ -71,12 +77,20 @@ class PyBulletWorld:
                     ent for ent in entities_config if ent.tag not in excluded_tags
                 ]
                 self.temp_ent_config = self.randomize_entities(
-                    self.excluded_ent_configs, highestDistance, self.grid
+                    self.excluded_ent_configs,
+                    highestDistance,
+                    self.grid,
+                    randomizerMode,
+                    jitter_radius,
                 )
                 self.merged = self.temp_ent_config + self.non_state_ent_configs
             else:
                 entities_config = self.randomize_entities(
-                    entities_config, highestDistance, self.grid
+                    entities_config,
+                    highestDistance,
+                    self.grid,
+                    randomizerMode,
+                    jitter_radius,
                 )
                 self.merged = entities_config
             entities_config = self.merged
@@ -231,7 +245,14 @@ class PyBulletWorld:
                             grid[col][row] = True
         return grid
 
-    def randomize_entities(self, entConfigCopy, highestDistance, grid):
+    def randomize_entities(
+        self,
+        entConfigCopy,
+        highestDistance,
+        grid,
+        randomizerMode,
+        jitter_radius,
+    ):
 
         TAG_PRIORITY = {
             "agent": 0,
@@ -249,42 +270,55 @@ class PyBulletWorld:
 
         entConfigCopy = sorted(entConfigCopy, key=lambda e: TAG_PRIORITY.get(e.tag, 99))
 
-        agentConfig = next((e for e in entConfigCopy if e.tag == "agent"), None)
-        if agentConfig is None:
-            return entConfigCopy
+        if randomizerMode == "Full Randomization":
+            agentConfig = next((e for e in entConfigCopy if e.tag == "agent"), None)
+            if agentConfig is None:
+                return entConfigCopy
 
-        agentRandomPos = self.random_position_around(
-            agentConfig.position,
-            min_dist=2.0,
-            max_dist=highestDistance,
-            grid=grid,
-        )
-        if agentRandomPos is None:
-            return entConfigCopy
-        agentConfig.position = agentRandomPos
-        agentId = agentConfig.id
-        lastPos = agentRandomPos
+            agentRandomPos = self.random_position_around(
+                agentConfig.position,
+                min_dist=2.0,
+                max_dist=highestDistance,
+                grid=grid,
+            )
+            if agentRandomPos is None:
+                return entConfigCopy
+            agentConfig.position = agentRandomPos
+            agentId = agentConfig.id
+            lastPos = agentRandomPos
 
-        for obj in entConfigCopy:
-            if obj.id == agentId:
-                continue
+            for obj in entConfigCopy:
+                if obj.id == agentId:
+                    continue
 
-            success = False
-            for _ in range(100):
-                objRandomPos = self.random_position_around(
-                    lastPos,
-                    min_dist=2.0,
-                    max_dist=highestDistance * 0.75,
+                success = False
+                for _ in range(100):
+                    objRandomPos = self.random_position_around(
+                        lastPos,
+                        min_dist=2.0,
+                        max_dist=highestDistance * 0.75,
+                        grid=grid,
+                    )
+                    if objRandomPos:
+                        obj.position = objRandomPos
+                        lastPos = objRandomPos
+                        success = True
+                        break
+
+                if not success:
+                    print(f"Failed to randomize {obj.id}")
+        else:
+            for obj in entConfigCopy:
+                new_pos = self.random_position_jitter(
+                    center=obj.position,
+                    jitter_radius=jitter_radius,
                     grid=grid,
                 )
-                if objRandomPos:
-                    obj.position = objRandomPos
-                    lastPos = objRandomPos
-                    success = True
-                    break
 
-            if not success:
-                print(f"Failed to randomize {obj.id}")
+                if new_pos is not None:
+                    obj.position = new_pos
+                else:
+                    print(f"Failed to jitter {obj.id}")
 
         return entConfigCopy
 
@@ -309,6 +343,36 @@ class PyBulletWorld:
                 row = max(0, min(len(grid[0]) - 1, row))
                 if not grid[col][row]:
                     return positionSwap([x, y, cz])
+
+        return None
+
+    def random_position_jitter(self, center, jitter_radius, grid=None):
+        center_bullet = positionSwap(center)
+        cx, cy, cz = center_bullet
+
+        for _ in range(100):
+            angle = random.uniform(0, 2 * math.pi)
+            radius = jitter_radius * math.sqrt(random.random())
+
+            x = cx + radius * math.cos(angle)
+            y = cy + radius * math.sin(angle)
+
+            if x < self.min_x or x > self.max_x:
+                continue
+            if y < self.min_y or y > self.max_y:
+                continue
+
+            if grid is not None:
+                col = int((x - self.min_x) / self.cell_size)
+                row = int((y - self.min_y) / self.cell_size)
+
+                col = max(0, min(len(grid) - 1, col))
+                row = max(0, min(len(grid[0]) - 1, row))
+
+                if grid[col][row]:
+                    continue
+
+            return positionSwap([x, y, cz])
 
         return None
 
