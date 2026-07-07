@@ -95,5 +95,4 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs):
             ):  # I have used 2.0 radius for every actuator in engine
                 mask[action_list.index(action)] = True
 
-    print("Action Mask: ", mask)
     return mask
