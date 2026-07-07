@@ -130,7 +130,6 @@ class SingleAgentTrainer:
 
         raw_vec_env = DummyVecEnv(
             [make_env(self.scenario, self.runtime) for _ in range(N_ENVS)],
-            start_method="spawn",
         )
 
         checkpoint_dir = (
