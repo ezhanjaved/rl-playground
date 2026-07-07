@@ -12,7 +12,7 @@ from server.path_config import MODEL_DIR
 from server.storage.uploadModel import downloadLatestCheckpoint
 from server.training.trainer.rewardCallback import RewardLoggerCallback
 
-N_ENVS = 8
+N_ENVS = 1
 
 
 def make_env(scenario, runtime):
