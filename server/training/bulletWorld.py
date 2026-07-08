@@ -334,7 +334,7 @@ class PyBulletWorld:
 
             dist = distance3D(center_bullet, [x, y, cz])
 
-            if min_dist < dist < 3.0:
+            if min_dist < dist < max_dist:
                 if grid is None:
                     return positionSwap([x, y, cz])
                 col = int((x - self.min_x) / self.cell_size)

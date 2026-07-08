@@ -93,6 +93,13 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs):
                 current_dist_to_goal
                 < 2.0  # This is to ensure that collect, destory, deposit, kick, open actions are only available to agent when it is actually in radius to perform them.
             ):  # I have used 2.0 radius for every actuator in engine
+                mask = mask_movement_action_in_radius(mask)
                 mask[action_list.index(action)] = True
 
+    return mask
+
+
+def mask_movement_action_in_radius(mask):
+    for i in range(4):
+        mask[i] = False  # 0,1,2,3
     return mask
