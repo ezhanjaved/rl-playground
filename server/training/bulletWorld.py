@@ -271,6 +271,7 @@ class PyBulletWorld:
         entConfigCopy = sorted(entConfigCopy, key=lambda e: TAG_PRIORITY.get(e.tag, 99))
 
         if randomizerMode == "Full Randomization":
+            print("FR")
             agentConfig = next((e for e in entConfigCopy if e.tag == "agent"), None)
             if agentConfig is None:
                 return entConfigCopy

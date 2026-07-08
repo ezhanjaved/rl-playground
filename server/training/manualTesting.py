@@ -8,7 +8,7 @@ def manualTesting(scenario, runTimeState, uid):
     env = SimulationEnv(scenario, runTimeState)
 
     num_episodes = 100
-    max_steps_per_ep = 3
+    max_steps_per_ep = 5
     current_step = 0
 
     for episode in range(num_episodes):

@@ -15,6 +15,8 @@ export async function sendServer() {
     percentageFixedEp,
     maxStepPerEp,
     topographyMode,
+    randomizerMode,
+    jitterRadius,
   } = useRunTimeStore.getState();
   const { user } = useAuthStore.getState();
 
@@ -46,6 +48,8 @@ export async function sendServer() {
     spawnMode: envMode,
     randomSpawnAfterEp: random_spawn_after_episode,
     topographyMode,
+    randomizerMode,
+    jitterRadius,
   };
 
   console.log("Body: " + JSON.stringify(data, null, 2));
@@ -54,7 +58,7 @@ export async function sendServer() {
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data`,
       {
         method: "POST",
         headers: {

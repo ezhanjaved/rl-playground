@@ -97,3 +97,26 @@ def debugRunner(id):
 # debugRunner("56de781c-b613-44b1-9757-325e7dbeadfa")
 # debugRunner("0670b4a4-3081-4c69-82b3-a5a2642d2820") collect with fourth version graph
 # debugRunner("f0c93095-5ad3-457f-a43d-28bb0841284c") final debug run - collect - fixed spawn - fourth version - FAT2
+
+
+# debugRunner("d2863ec7-ce15-49f5-92d8-8404f890bf7f")
+# added progress reward in within radius set up
+
+# debugRunner("70c3f4ba-0b55-4e42-b6de-3935653ed5c6")
+
+# debugRunner("2267b3b8-02e8-4a6e-b680-9611c9081d15")
+
+# debugRunner("10a1c5a7-57e7-4011-94c7-a93f77d17b9c")
+
+# debugRunner("f0f5b79b-0b7c-48c2-91f0-eb1d53357c33")  # jitter 0.5 (max = 0.25 min = 0.21 value from client: 0.23)
+# debugRunner("c0d9acba-e6d4-497c-b039-62c4ffc4651f") # jitter 1.0 (max = 0.26  min = 0.19 value from client: 0.23)
+# debugRunner(
+#     "a02d7ee7-c7e6-4582-a2ac-37be8148beeb"
+# )  # jitter 1.5 (max = 0.28 min = 0.16 value from client: 0.23)
+# debugRunner(
+#     "3a3548e8-1297-4f66-98df-609de4b97a50"
+# )  # jitter 2.0 (max = 0.29 min = 0.13 value from client: 0.23)
+
+# debugRunner(
+#     "c4f56408-47d6-4640-ac68-6d3042fbe36a"
+# )  # jitter 2.5 (max = 0.29 min = 0.14 value from client: 0.23)
