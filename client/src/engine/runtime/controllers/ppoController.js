@@ -1,0 +1,18 @@
+import { sendObsToCloud } from "../../../websocket/ccWebsocket";
+import { isPending, markPending } from "./ppoState";
+import { useSceneStore } from "../../../stores/useSceneStore";
+export function PPOController(seq, obsVector, agentId) {
+  const { entities } = useSceneStore.getState();
+  const cap = entities[agentId].capabilities;
+  if (isPending(agentId)) return;
+  let session_token = null;
+  let jwt_token = null;
+  try {
+    session_token = localStorage.getItem("session_token");
+    jwt_token = localStorage.getItem("jwt_token");
+  } catch (e) {
+    console.warn("localStorage unavailable:", e);
+  }
+  markPending(agentId);
+  sendObsToCloud(seq, obsVector, session_token, jwt_token, agentId, cap);
+}

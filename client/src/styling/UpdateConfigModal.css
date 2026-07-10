@@ -1,0 +1,100 @@
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalBox {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modalInput {
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    padding: 5px;
+}
+
+.modalTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.modalText {
+    font-size: 14px;
+    color: #333;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.modalSubText {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+.permissionList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.permissionItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.permissionItem:hover {
+    background: #f7f7f7;
+}
+
+.buttonRow {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cancelBtn {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cancelBtn:hover {
+    background: #f0f0f0;
+}
+
+.confirmBtn {
+    padding: 8px 14px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.confirmBtn:hover {
+    background: #1d4ed8;
+}
+
+.confirmBtn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
