@@ -2,9 +2,8 @@ import { DndContext } from "@dnd-kit/core";
 import "../styling/index.css";
 import { useSceneStore } from "../stores/useSceneStore";
 import { lastPointerWorldPos } from "../scene/EditorCanvas";
-import TrainingENV from "../components/trainingENV";
+import TrainingENV from "../components/TrainingENV";
 import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
 import SidebarV2 from "../components/SidebarV2";
 
 export default function EnvironmentPage() {
