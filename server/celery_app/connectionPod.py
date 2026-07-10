@@ -8,13 +8,24 @@ load_dotenv()
 
 def connectToPod(remote_cmd: str, uid: str | None = None):
     ROOT = os.getenv("SSH_ROOT")
+    ENV = os.getenv("CONTAINER_ENV")
     print(ROOT)
-    KEY_PATH = os.getenv("SSH_KEY_PATH")
+    print(ENV)
 
     if not ROOT:
         raise ValueError("SSH_ROOT not set")
-    if not KEY_PATH:
-        raise ValueError("SSH_KEY_PATH not set")
+
+    if ENV == "LOCAL":
+        KEY_PATH = os.getenv("SSH_KEY_PATH")
+        if not KEY_PATH:
+            raise ValueError("SSH_KEY_PATH not set")
+    else:
+        KEY_PATH = "/etc/secrets/runpod_key"
+
+    if not os.path.exists(KEY_PATH):
+        raise FileNotFoundError(f"SSH key not found: {KEY_PATH}")
+
+    os.chmod(KEY_PATH, 0o600)
 
     ssh_command = [
         "ssh",
