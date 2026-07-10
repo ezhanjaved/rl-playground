@@ -39,6 +39,7 @@ class RequestModel(BaseModel):
     topographyMode: str | None = None
     randomizerMode: str | None = None
     jitterRadius: float | None = 0.0
+    obstacle_mode: bool | None = False
 
 
 class RunModel(BaseModel):
@@ -84,6 +85,7 @@ async def getData(data: RequestModel):
         )  # None if not provided
         randomizerMode = data.dict()["randomizerMode"]
         jitter_radius = data.dict()["jitterRadius"]
+        obstacle_mode = data.dict()["obstacle_mode"]
         config_path = uploadConfig(path)
         create_model(
             {
@@ -99,6 +101,7 @@ async def getData(data: RequestModel):
                 "topography_fixed": topographyFixed,
                 "randomizer_mode": randomizerMode,
                 "jitter_radius": jitter_radius,
+                "obstacle_mode": obstacle_mode,
             },
             "models",
         )
@@ -139,6 +142,7 @@ async def getDataDebug(data: RequestModel):
         )  # None if not provided
         randomizerMode = data.dict()["randomizerMode"]
         jitter_radius = data.dict()["jitterRadius"]
+        obstacle_mode = data.dict()["obstacle_mode"]
         config_path = uploadConfig(path)
         create_model(
             {
@@ -154,6 +158,7 @@ async def getDataDebug(data: RequestModel):
                 "topography_fixed": topographyFixed,
                 "randomizer_mode": randomizerMode,
                 "jitter_radius": jitter_radius,
+                "obstacle_mode":obstacle_mode,
             },
             "models",
         )

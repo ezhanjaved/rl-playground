@@ -159,6 +159,27 @@ export function BehaviorGraphPanel() {
         type: "IsBallNearPostNode",
       },
     },
+    {
+      id: "is-player-near-post",
+      payload: {
+        data: { label: "PlayerNearPost" },
+        type: "IsPlayerNearPost",
+      },
+    },
+    {
+      id: "is-player-progressing-towards-post",
+      payload: {
+        data: { label: "ProgressToPost" },
+        type: "ProgressToPost",
+      },
+    },
+    {
+      id: "is-ball-progressing-towards-post",
+      payload: {
+        data: { label: "BallProgressing" },
+        type: "IsBallProgressing",
+      },
+    },
   ];
 
   const effectNodes = [

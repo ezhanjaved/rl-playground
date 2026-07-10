@@ -162,7 +162,7 @@ def nearestDistance(position, rotation, bucket, mode):
     # For delta modes, we first find the nearest entity by 3D distance,
     # then return its directional signal. This ensures "delta to nearest"
     # semantics rather than "most extreme delta across all entities".
-    if mode in ("delta-x", "delta-z"):
+    if mode in ("delta-x", "delta-z", "delta-x-fb", "delta-z-fb"):
         min_dist = float("inf")
         nearest_bullet_pos = None
         nearest_target_pos = None
@@ -179,7 +179,15 @@ def nearestDistance(position, rotation, bucket, mode):
         if nearest_bullet_pos is None:
             return 1.0, []
         obs = get_target_direction_obs(nearest_bullet_pos, position, rotation)
-        signal = obs["side_signal"] if mode == "delta-x" else obs["depth_signal"]
+        match mode:
+            case "delta-x":
+                signal = obs["side_signal"]
+            case "delta-z":
+                signal = obs["depth_signal"]
+            case "delta-x-fb":
+                signal = max(-1.0, min(1.0, obs["local_side"] / MAX_DIST))
+            case "delta-z-fb":
+                signal = max(-1.0, min(1.0, obs["local_depth"] / MAX_DIST))
         return signal, nearest_target_pos
 
     min_dist = float("inf")
@@ -522,7 +530,7 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 constructed_obs.append(dist)
 
             case "delta_z_to_goal":
-                dist, _ = cache.get(goal_bucket_key, "delta-x")
+                dist, _ = cache.get(goal_bucket_key, "delta-z")
                 constructed_obs.append(dist)
 
             case "in_radius_goal":
@@ -537,25 +545,36 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                 is_aligned = is_aligned_to_goal(deltaX, deltaY)
                 constructed_obs.append(1.0 if is_aligned else 0.0)
 
-            case "ball_dist_to_own_goal":
-                deltaXb, _ = cache.get("ball", "delta-x")
-                deltaYb, _ = cache.get("ball", "delta-z")
-                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
-                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
+
+            case "ball_dist_to_enemy_goal":
+                deltaXb, _ = cache.get("ball", "delta-x-fb")
+                deltaYb, _ = cache.get("ball", "delta-z-fb")
+                deltaXp, _ = cache.get(goal_bucket_key, "delta-x-fb")
+                deltaYp, _ = cache.get(goal_bucket_key, "delta-z-fb")
                 distance = ball_to_goal(
-                    deltaXb, deltaYb, deltaXp, deltaYp, "distance-only"
-                )
+                    deltaXb, deltaYb, deltaXp, deltaYp
+                    )
                 constructed_obs.append(distance)
 
-            case "ball_in_own_goal_danger_zone":
-                deltaXb, _ = cache.get("ball", "delta-x")
-                deltaYb, _ = cache.get("ball", "delta-z")
-                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
-                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
-                is_danger = ball_to_goal(
-                    deltaXb, deltaYb, deltaXp, deltaYp, "danger-check"
-                )
-                constructed_obs.append(1.0 if is_danger else 0.0)
+            # case "ball_dist_to_own_goal":
+            #     deltaXb, _ = cache.get("ball", "delta-x")
+            #     deltaYb, _ = cache.get("ball", "delta-z")
+            #     deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
+            #     deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
+            #     distance = ball_to_goal(
+            #         deltaXb, deltaYb, deltaXp, deltaYp, "distance-only"
+            #     )
+            #     constructed_obs.append(distance)
+
+            # case "ball_in_own_goal_danger_zone":
+            #     deltaXb, _ = cache.get("ball", "delta-x")
+            #     deltaYb, _ = cache.get("ball", "delta-z")
+            #     deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
+            #     deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
+            #     is_danger = ball_to_goal(
+            #         deltaXb, deltaYb, deltaXp, deltaYp, "danger-check"
+            #     )
+            #     constructed_obs.append(1.0 if is_danger else 0.0)
 
             case "last_kick_success":
                 lks = state_space.get("lastKickSuccess")

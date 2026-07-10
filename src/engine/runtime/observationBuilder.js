@@ -111,7 +111,7 @@ const getTargetDirectionObs = (targetObjPos, position, rotation) => {
 export function nearestDistance(position, rotation, predicate, mode, entities) {
   // For delta modes, find the nearest entity by 3D distance first,
   // then return its directional signal. Mirrors Python observationBuilder.py.
-  if (mode === "x-delta" || mode === "z-delta") {
+  if (mode === "x-delta" || mode === "z-delta" || mode === "x-delta-fb" || mode === "z-delta-fb") {
     let minDist = Infinity;
     let nearestPos = null;
     let found = false;
@@ -132,7 +132,23 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
     }
 
     const obs = getTargetDirectionObs(nearestPos, position, rotation);
-    const signal = mode === "x-delta" ? obs.sideSignal : obs.depthSignal;
+    let signal;
+
+    switch (mode) {
+      case "x-delta":
+        signal = obs.sideSignal;
+        break;
+      case "z-delta":
+        signal = obs.depthSignal;
+        break;
+      case "x-delta-fb":
+        signal = Math.max(-1, Math.min(1, obs.localSide / MAX_DIST));
+        break;
+      case "z-delta-fb":
+        signal = Math.max(-1, Math.min(1, obs.localDepth / MAX_DIST));
+        break;
+    }
+
     return { min: Math.fround(signal), minPos: nearestPos };
   }
 
@@ -606,51 +622,67 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      case "ball_dist_to_own_goal": {
-        const { min: delta_x_b } = cached(ballPredicate, "x-delta");
-        const { min: delta_z_b } = cached(ballPredicate, "z-delta");
-        const { min: delta_x_p } = cached(
-          predicatePickedForMyOwnPost,
-          "x-delta",
-        );
-        const { min: delta_z_p } = cached(
-          predicatePickedForMyOwnPost,
-          "z-delta",
-        );
+      case "ball_dist_to_enemy_goal": {
+        const { min: delta_x_b } = cached(ballPredicate, "x-delta-fb");
+        const { min: delta_z_b } = cached(ballPredicate, "z-delta-fb");
+        const { min: delta_x_p } = cached(predicatePickedForPost, "x-delta-fb");
+        const { min: delta_z_p } = cached(predicatePickedForPost, "z-delta-fb");
         const distance = BallToGoal(
           delta_x_b,
           delta_z_b,
           delta_x_p,
-          delta_z_p,
-          "distance-only",
+          delta_z_p
         );
-        console.log("Distance Of Ball to Post: ", distance);
         constructedObs.push(distance);
+        console.log("Distance: ", distance)
         break;
       }
 
-      case "ball_in_own_goal_danger_zone": {
-        const { min: delta_x_b } = cached(ballPredicate, "x-delta");
-        const { min: delta_z_b } = cached(ballPredicate, "z-delta");
-        const { min: delta_x_p } = cached(
-          predicatePickedForMyOwnPost,
-          "x-delta",
-        );
-        const { min: delta_z_p } = cached(
-          predicatePickedForMyOwnPost,
-          "z-delta",
-        );
-        const isInDanger = BallToGoal(
-          delta_x_b,
-          delta_z_b,
-          delta_x_p,
-          delta_z_p,
-          "danger-check",
-        );
-        console.log("Danger?: ", isInDanger);
-        constructedObs.push(isInDanger ? 1 : 0);
-        break;
-      }
+      // case "ball_dist_to_own_goal": {
+      //   const { min: delta_x_b } = cached(ballPredicate, "x-delta");
+      //   const { min: delta_z_b } = cached(ballPredicate, "z-delta");
+      //   const { min: delta_x_p } = cached(
+      //     predicatePickedForMyOwnPost,
+      //     "x-delta",
+      //   );
+      //   const { min: delta_z_p } = cached(
+      //     predicatePickedForMyOwnPost,
+      //     "z-delta",
+      //   );
+      //   const distance = BallToGoal(
+      //     delta_x_b,
+      //     delta_z_b,
+      //     delta_x_p,
+      //     delta_z_p,
+      //     "distance-only",
+      //   );
+      //   console.log("Distance Of Ball to Post: ", distance);
+      //   constructedObs.push(distance);
+      //   break;
+      // }
+
+      // case "ball_in_own_goal_danger_zone": {
+      //   const { min: delta_x_b } = cached(ballPredicate, "x-delta");
+      //   const { min: delta_z_b } = cached(ballPredicate, "z-delta");
+      //   const { min: delta_x_p } = cached(
+      //     predicatePickedForMyOwnPost,
+      //     "x-delta",
+      //   );
+      //   const { min: delta_z_p } = cached(
+      //     predicatePickedForMyOwnPost,
+      //     "z-delta",
+      //   );
+      //   const isInDanger = BallToGoal(
+      //     delta_x_b,
+      //     delta_z_b,
+      //     delta_x_p,
+      //     delta_z_p,
+      //     "danger-check",
+      //   );
+      //   console.log("Danger?: ", isInDanger);
+      //   constructedObs.push(isInDanger ? 1 : 0);
+      //   break;
+      // }
 
       case "last_kick_success": {
         // null = never tried (0.5), true = success (1), false = failed (0)

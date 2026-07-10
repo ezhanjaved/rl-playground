@@ -461,7 +461,7 @@ def _visit_node(node_id, graph, ctx):
                 fires_up = True
 
         if mode == "While Blocked":
-            if in_path_bool_pre is True and in_path_bool_post is True:
+            if in_path_bool_post is True:
                 fires_up = True
 
         if mode == "Upon Approaching":
@@ -562,6 +562,65 @@ def _visit_node(node_id, graph, ctx):
 
         if mode == "Left Danger Zone":
             if is_danger_pre == 1.0 and is_danger_post == 0.0:
+                fires_up = True
+
+        for edge in _find_bool_edges(node_id, graph, fires_up):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+    elif ntype == "ProgressToPost":
+        mode = node_data.data.get("mode") or "Best Record"
+        goal_ctx = _resolve_goal_context(ctx)
+        if goal_ctx is None:
+            return  # no recognized goal flag active; skip node
+
+        distance_less = False
+
+        bucket = ctx["buckets"].get(goal_ctx["bucket_key"], [])
+        if mode == "Best Record":
+            current_distance = _get_obs("dist_to_target_goal", ctx, use_post=True)
+            best_distance = ctx["facts"]["state_space"]["previous_distance_goal"]
+            if current_distance is not None and best_distance is not None:
+                if current_distance < best_distance:
+                    distance_less = True
+
+        elif mode == "Raw Distance":
+            # pre-action and post-action distances from behavior OBS
+            previous_dist = _get_obs("dist_to_target_goal", ctx, use_post=False)
+            current_distance = _get_obs("dist_to_target_goal", ctx, use_post=True)
+            if current_distance is not None and previous_dist is not None:
+                if current_distance < previous_dist:
+                    distance_less = True
+
+        for edge in _find_bool_edges(node_id, graph, distance_less):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+
+    elif ntype == "IsPlayerNearPost":
+        DIST_THRESHOLD_TO_POST = 0.15
+        current_dist_to_goal_post = _get_obs("dist_to_target_goal", ctx, use_post=True)
+        fires_up = False
+
+        if current_dist_to_goal_post < DIST_THRESHOLD_TO_POST:
+                fires_up = True
+
+        for edge in _find_bool_edges(node_id, graph, fires_up):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+    elif ntype == "IsBallProgressing":
+        previous_dist_to_goal_post = _get_obs("ball_dist_to_enemy_goal", ctx, use_post=False)
+        current_dist_to_goal_post = _get_obs("ball_dist_to_enemy_goal", ctx, use_post=True)
+        fires_up = False
+
+        if current_dist_to_goal_post < previous_dist_to_goal_post:
                 fires_up = True
 
         for edge in _find_bool_edges(node_id, graph, fires_up):

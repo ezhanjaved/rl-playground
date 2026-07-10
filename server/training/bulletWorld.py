@@ -28,7 +28,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.DIRECT)
+        self.client = p.connect(p.GUI)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -43,6 +43,7 @@ class PyBulletWorld:
         topographyFixed,
         randomizerMode,
         jitter_radius,
+        obstacleMode
     ):
         # IMPORTANT: must use shallow list — randomize_entities_open_space mutates
         # entity.position in-place on the original objects so that runtime.entities
@@ -82,6 +83,7 @@ class PyBulletWorld:
                     self.grid,
                     randomizerMode,
                     jitter_radius,
+                    obstacleMode
                 )
                 self.merged = self.temp_ent_config + self.non_state_ent_configs
             else:
@@ -91,6 +93,7 @@ class PyBulletWorld:
                     self.grid,
                     randomizerMode,
                     jitter_radius,
+                    obstacleMode
                 )
                 self.merged = entities_config
             entities_config = self.merged
@@ -252,6 +255,7 @@ class PyBulletWorld:
         grid,
         randomizerMode,
         jitter_radius,
+        obstacleMode
     ):
 
         TAG_PRIORITY = {
@@ -287,9 +291,13 @@ class PyBulletWorld:
             agentConfig.position = agentRandomPos
             agentId = agentConfig.id
             lastPos = agentRandomPos
-
+            obstacleObjs = []
+            targetObj = []
             for obj in entConfigCopy:
                 if obj.id == agentId:
+                    continue
+                if obstacleMode and obj.tag == "non_state":
+                    obstacleObjs.append(obj)
                     continue
 
                 success = False
@@ -303,11 +311,24 @@ class PyBulletWorld:
                     if objRandomPos:
                         obj.position = objRandomPos
                         lastPos = objRandomPos
+                        targetObj = objRandomPos
                         success = True
                         break
 
                 if not success:
                     print(f"Failed to randomize {obj.id}")
+
+            if len(obstacleObjs) != 0:
+                for obstacle in obstacleObjs:
+                    result = self.randomize_obstacle_between(agentRandomPos, targetObj, obstacle.collider)
+                    if result is not None:
+                        position, yaw = result
+                        # apply obstacle_yaw to obstacle.quatRotation here
+                        obstacle.position = position
+                        obstacle.quatRotation = yaw
+                    else:
+                        print(f"Failed to place obstacle {obstacle.id}")
+
         else:
             for obj in entConfigCopy:
                 new_pos = self.random_position_jitter(
@@ -323,6 +344,66 @@ class PyBulletWorld:
 
         return entConfigCopy
 
+    def randomize_obstacle_between(
+        self,
+        agent_pos,
+        target_pos,
+        obstacle_collider,
+        grid=None,
+        t_range=(0.3, 0.7),
+        lateral_jitter=0.8,
+        max_attempts=100,
+    ):
+        agent_b = positionSwap(agent_pos)
+        target_b = positionSwap(target_pos)
+        ax, ay, az = agent_b
+        tx, ty, tz = target_b
+
+        dx, dy = tx - ax, ty - ay
+        path_len = math.hypot(dx, dy)
+        if path_len < 1e-3:
+            return None  # agent and target basically coincide, nothing to block
+
+        ux, uy = dx / path_len, dy / path_len   # unit vector along path
+        px, py = -uy, ux                         # perpendicular unit vector
+
+        # half-extent along the path axis, used to keep clearance from endpoints
+        half_w = obstacle_collider.get("w", 1.0) / 2
+
+        for _ in range(max_attempts):
+            t = random.uniform(*t_range)
+            lateral = random.uniform(-lateral_jitter, lateral_jitter)
+
+            ox = ax + ux * path_len * t + px * lateral
+            oy = ay + uy * path_len * t + py * lateral
+
+            ox = max(self.min_x, min(self.max_x, ox))
+            oy = max(self.min_y, min(self.max_y, oy))
+
+            if grid is not None:
+                col = int((ox - self.min_x) / self.cell_size)
+                row = int((oy - self.min_y) / self.cell_size)
+                col = max(0, min(len(grid) - 1, col))
+                row = max(0, min(len(grid[0]) - 1, row))
+                if grid[col][row]:
+                    continue
+
+            # orient obstacle so its face is roughly perpendicular to the path
+            # (blocks straight-line travel rather than lying parallel to it)
+            yaw = math.atan2(uy, ux) + math.pi / 2
+            quat = self.yaw_to_threejs_quat(yaw)
+            return positionSwap([ox, oy, az]), quat
+
+        return None
+
+    def yaw_to_bullet_quat(self, yaw):
+        half = yaw / 2.0
+        return (0.0, 0.0, math.sin(half), math.cos(half))
+
+    def yaw_to_threejs_quat(self, yaw):
+        bullet_quat = self.yaw_to_bullet_quat(yaw)
+        return rotationSwap(bullet_quat)
+
     def random_position_around(self, center, min_dist, max_dist, grid):
         center_bullet = positionSwap(center)
         cx, cy, cz = center_bullet
@@ -335,7 +416,7 @@ class PyBulletWorld:
 
             dist = distance3D(center_bullet, [x, y, cz])
 
-            if min_dist < dist < max_dist:
+            if min_dist < dist < 3.0:
                 if grid is None:
                     return positionSwap([x, y, cz])
                 col = int((x - self.min_x) / self.cell_size)
@@ -344,7 +425,6 @@ class PyBulletWorld:
                 row = max(0, min(len(grid[0]) - 1, row))
                 if not grid[col][row]:
                     return positionSwap([x, y, cz])
-
         return None
 
     def random_position_jitter(self, center, jitter_radius, grid=None):
@@ -477,7 +557,7 @@ class PyBulletWorld:
             return
         self.ball_obj.collision_check(entities, self.entity_mapping)
 
-    def step_simulation(self, steps=1):
+    def step_simulation(self, steps=2):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
             # time.sleep(1 / 60)

@@ -50,6 +50,7 @@ export async function sendServer() {
     topographyMode,
     randomizerMode,
     jitterRadius,
+    obstacle_mode: false, //hardcoded
   };
 
   console.log("Body: " + JSON.stringify(data, null, 2));
@@ -58,7 +59,7 @@ export async function sendServer() {
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data`,
+      `${import.meta.env.VITE_API_BASE_URL}/trainer/export-data-debug`,
       {
         method: "POST",
         headers: {

@@ -51,6 +51,7 @@ class TrainingState:
     topographyFixed: bool | None = None
     randomizerMode: str = "Full Randomization"
     jitter_radius: float = 0.0
+    obstacle_mode : bool | None = False
 
 
 def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
@@ -61,6 +62,7 @@ def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
     topographyFixed: bool = None
     randomizerMode: str = "Full Randomization"
     jitter_radius: float = 0.0
+    obstacle_mode : bool = False
     if record != None:
         highestDist = record.get("highest_dist", 0.0)
         spawnMode = record.get("spawn_mode", "Fixed")
@@ -68,6 +70,7 @@ def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
         topographyFixed = record.get("topography_fixed")
         randomizerMode = record.get("randomizer_mode")
         jitter_radius = record.get("jitter_radius")
+        obstacle_mode = record.get("obstacle_mode")
     return TrainingState(
         entities=deepcopy(scenario.entities),
         assignment_by_agent=deepcopy(scenario.assignments),
@@ -79,4 +82,5 @@ def make_runtime_state(scenario, agents_ids, graphPerAgent, tId):
         topographyFixed=topographyFixed,
         randomizerMode=randomizerMode,
         jitter_radius=jitter_radius,
+        obstacle_mode=obstacle_mode,
     )

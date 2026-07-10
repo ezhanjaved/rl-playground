@@ -1460,3 +1460,199 @@ export function IsBallInDanger({ data, id }) {
     </div>
   );
 }
+
+export function ProgressToPost({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if player is progressing towards post
+        </span>
+
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "Best Record"}
+        >
+          <option value="Best Record">Best Record</option>
+          <option value="Raw Distance">Raw Distance</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+export function PlayerNearPost({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if player is near enemy goal!
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function IsBallProgressing({ data, id }) {
+  const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeId = id;
+
+  return (
+    <div
+      onDoubleClick={() => deleteNode(activeGraphId, nodeId)}
+      className="conditional-node"
+    >
+      <span className="node-heading">{data?.label}</span>
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "#000",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        style={{
+          top: "40%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "red",
+        }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        style={{
+          top: "60%",
+          width: "10px",
+          height: "10px",
+          border: "none",
+          background: "green",
+        }}
+      />
+
+      <div className="conditional-data-form">
+        <span>
+          <strong>Usage:</strong> checks if ball is moving towards goal!
+        </span>
+      </div>
+    </div>
+  );
+}

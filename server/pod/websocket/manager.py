@@ -26,7 +26,7 @@ class ConnectionManager:
         actions, _ = actionMasking(capability)
 
         mask = [False] * len(actions)
-        maskedArray = actionMaskingArray(mask, actions, current_behavior, obs)
+        maskedArray = actionMaskingArray(mask, actions, current_behavior, obs, capability)
 
         action_predicted, _ = model.predict(
             obs, action_masks=maskedArray, deterministic=True

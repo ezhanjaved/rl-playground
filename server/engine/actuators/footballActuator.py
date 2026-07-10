@@ -55,8 +55,8 @@ def footballActuator(action, agentData, entities, eM, client, indexOfAction):
 
     ballPos, _ = p.getBasePositionAndOrientation(ball_bullet_id, physicsClientId=client)
     dist = distance3D(agentPos, ballPos)
-    kickRadius = 2.0
-    kickStrength = 15.0
+    kickRadius = 1.0
+    kickStrength = 20.0
 
     if kickRadius < dist:
         new_state_space_agent["lastKickSuccess"] = False

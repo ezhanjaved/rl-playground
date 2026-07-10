@@ -6,7 +6,7 @@ from server.utilities.positionSwap import positionSwap
 
 def getNearestTargetInfo(agentPos, entities, type):
     best = float("inf")
-    targetRadius = 2.0
+    targetRadius = 1.0 if type == "ball" else 2.0
     distance = float("inf")
     entityId = None
     for entity in entities.values():
@@ -21,7 +21,7 @@ def getNearestTargetInfo(agentPos, entities, type):
             targetRadius = (
                 getattr(entity, "radius", None)
                 or getattr(getattr(entity, "settings", None), "radius", None)
-                or 2.0
+                or targetRadius
             )
 
     if not math.isfinite(best):

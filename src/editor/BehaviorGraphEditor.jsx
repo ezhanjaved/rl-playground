@@ -27,6 +27,9 @@ import {
   FootballEventNode,
   IsPlayerFacingPostNode,
   IsBallInDanger,
+  PlayerNearPost,
+  ProgressToPost,
+  IsBallProgressing
 } from "./nodes/conditionalNodes.jsx";
 import {
   EndEpisodeNode,
@@ -62,7 +65,10 @@ export function BehaviorGraphEditor() {
     FootballEventNode: FootballEventNode,
     IsPlayerAlignedNode: IsPlayerFacingPostNode,
     IsBallNearPostNode: IsBallInDanger,
+    ProgressToPost: ProgressToPost,
+    IsPlayerNearPost: PlayerNearPost,
     TruncateEpisodeNode: TruncateEpisodeNode,
+    IsBallProgressing: IsBallProgressing,
   };
 
   const onNodesChange = useCallback(

@@ -19,17 +19,10 @@ def ball_to_goal(
     delta_z_to_ball,
     delta_x_to_goal,
     delta_z_to_goal,
-    mode,
 ):
     dx = delta_x_to_goal - delta_x_to_ball
     dz = delta_z_to_goal - delta_z_to_ball
 
-    distance = math.hypot(dx, dz)
+    distance = math.sqrt(dx*dx + dz*dz)
 
-    if mode == "distance-only":
-        return distance
-
-    if mode == "danger-check":
-        return distance < 0.08
-
-    return None
+    return distance

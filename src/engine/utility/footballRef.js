@@ -190,17 +190,9 @@ export function BallToGoal(
   deltaZToBall,
   deltaXToGoal,
   deltaZToGoal,
-  mode,
 ) {
   const dx = deltaXToGoal - deltaXToBall;
   const dz = deltaZToGoal - deltaZToBall;
-  const distance = Math.hypot(dx, dz);
-  if (mode === "distance-only") {
-    return distance;
-  }
-
-  if (mode === "danger-check") {
-    if (distance < 0.08) return true;
-    else return false;
-  }
+  const distance = Math.sqrt(dx*dx + dz*dz);
+  return distance
 }

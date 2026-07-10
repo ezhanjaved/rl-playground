@@ -146,11 +146,12 @@ export const CAPABILITY_SCHEMAS = {
       "delta_z_to_goal",
       "in_radius_goal",
       "alignment_to_goal",
+      "ball_dist_to_enemy_goal",
 
       "last_kick_success",
 
-      "ball_dist_to_own_goal",
-      "ball_in_own_goal_danger_zone",
+      // "ball_dist_to_own_goal",
+      // "ball_in_own_goal_danger_zone",
 
       "my_goals_scored",
       "my_own_goals_scored",

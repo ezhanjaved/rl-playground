@@ -120,3 +120,22 @@ def debugRunner(id):
 # debugRunner(
 #     "c4f56408-47d6-4640-ac68-6d3042fbe36a"
 # )  # jitter 2.5 (max = 0.29 min = 0.14 value from client: 0.23)
+
+# debugRunner("f873cd94-1d14-4729-a557-742d035ff515")
+
+# on entry: -1.905/-1.995 - new(-2.05)
+# inside -0.05
+# on exit 1.995 - new (2.005/1.995)
+# debugRunner("18425a9d-0838-449f-8084-ed6953369957")
+
+# debugRunner("81324e93-d5b9-4f4e-b463-1cf14d989cdb")
+
+# debugRunner("af44aeb5-5b02-44b9-a212-b36488d8a759")
+
+# debugRunner("a069f5c1-1dfa-4bef-89e9-f58b5678cb48")
+
+# debugRunner("ddff44e0-9f42-4a13-a1c1-fc7cc32934fb")
+
+# debugRunner("f27d3197-65e8-4268-9e08-8a2ab36d0e82")
+
+# debugRunner("077dd875-7bd5-498a-bb3d-0c19115c46ad")

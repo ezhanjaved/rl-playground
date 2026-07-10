@@ -2,7 +2,7 @@ import distance3D from "./3dDistance";
 export default function getNearestTargetInfo(agentPos, entities, type) {
   //type can allow us to use this function for diff obj types
   let best = Infinity;
-  let targetRadius = 2.0;
+  let targetRadius = type === "isBall" ? 1.0 : 2.0;
   let entityId = null;
   let entityName = null;
 
@@ -14,7 +14,7 @@ export default function getNearestTargetInfo(agentPos, entities, type) {
       entityId = e.id;
       entityName = e.name;
       best = distance;
-      targetRadius = e.radius ?? e.settings?.radius ?? 2.0;
+      targetRadius = e.radius ?? e.settings?.radius ?? targetRadius;
     }
   }
 

@@ -58,7 +58,7 @@ export default function footballAdapter(action, agentData, actionSpace) {
 
   const dist = distance3D(agentPos, ballPos);
   const kickRadius = agent.settings?.kickRadius ?? 1.2;
-  const kickStrength = agent.settings?.kickStrength ?? 15.0;
+  const kickStrength = agent.settings?.kickStrength ?? 18.0;
 
   if (dist > kickRadius) {
     newStateSpace.lastKickSuccess = false;

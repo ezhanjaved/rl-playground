@@ -94,7 +94,7 @@ class GymWrapper(gym.Env):
         mask = [False] * len(self.action_list)
 
         maskedArray = actionMaskingArray(
-            mask, self.action_list, current_behavior, current_obs
+            mask, self.action_list, current_behavior, current_obs, self.agent_capabilities
         )
 
         return maskedArray

@@ -4,6 +4,7 @@ from server.utilities.positionSwap import positionSwap
 
 
 def footballRef(goal_id, ball_id, entities, mapping, client):
+    print("Ref Called")
     scoringTeam = None
     concedingTeam = None
     lastTouchedBy = None
@@ -20,6 +21,8 @@ def footballRef(goal_id, ball_id, entities, mapping, client):
     ball_state["goalLocked"] = True
     ball.state = ball_state
 
+    print("Ball STATE: ", ball.state)
+
     if goal_id == "red":
         scoringTeam = "blue"
         concedingTeam = "red"
@@ -32,9 +35,11 @@ def footballRef(goal_id, ball_id, entities, mapping, client):
     isOwnGoal = lastTouchedTeam == concedingTeam
 
     for agentId, agentData in entities.items():
-        if agentData.tag != "agent" or not agentData.teamId:
+        print("Searching For Player in Entities: ", agentData.tag)
+        if agentData.tag != "agent":
             continue
 
+        print("Agent Team: ", agentData.teamId)
         agentStateSpace = dict(agentData.state_space)
 
         if agentData.teamId == scoringTeam:
@@ -65,6 +70,7 @@ def footballRef(goal_id, ball_id, entities, mapping, client):
 
         agentStateSpace["previous_distance_ball"] = None
         agentStateSpace["previous_distance_ball"] = None
+        agentData.state_space = agentStateSpace
 
     resetBallToKickOff(ball_id, ball, client)
 

@@ -18,6 +18,7 @@ class SimulationEnv:
         self.topographyFixed = runtime.topographyFixed
         self.randomizer_mode = runtime.randomizerMode
         self.jitter_radius = runtime.jitter_radius
+        self.obstacle_mode = runtime.obstacle_mode
         print("Topo Mode:", self.topographyFixed)
         episode = runtime.episode_count
         threshold = runtime.randomSpawnAfterEp
@@ -32,6 +33,7 @@ class SimulationEnv:
             self.topographyFixed,
             self.randomizer_mode,
             self.jitter_radius,
+            self.obstacle_mode
         )
 
         self.world.settle()
@@ -43,14 +45,14 @@ class SimulationEnv:
         obs_before = self.core.get_observation()
 
         current_behavior = self.core.runtime.entities[self.agent_id].current_behavior
-        # capabilities = self.core.runtime.entities[self.agent_id].capabilities
-        # actionList, _ = actionMasking(capabilities)
-        # mask = [False] * len(actionList)
-        # # state_space = self.core.runtime.entities[self.agent_id].state_space
-        # returned_mask = actionMaskingArray(
-        #     mask, actionList, current_behavior, obs_before[self.agent_id]
-        # )
-        # print("Mask: ", returned_mask)
+        capabilities = self.core.runtime.entities[self.agent_id].capabilities
+        actionList, _ = actionMasking(capabilities)
+        mask = [False] * len(actionList)
+        # state_space = self.core.runtime.entities[self.agent_id].state_space
+        returned_mask = actionMaskingArray(
+            mask, actionList, current_behavior, obs_before[self.agent_id], capabilities
+        )
+        print("Mask: ", returned_mask)
         print("CB: ", current_behavior)
 
         self.world.apply_actions(actions, self.core.runtime.entities)
@@ -61,7 +63,6 @@ class SimulationEnv:
         self.core.update_previous_distances(
             obs_before, obs_after, actions, self.core.runtime
         )
-
         reward, terminated, truncated, info = self.core.compute_reward(
             obs_before, obs_after
         )
