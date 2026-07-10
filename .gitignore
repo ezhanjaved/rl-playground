@@ -28,7 +28,6 @@ __pycache__/
 *.sw?
 *.__pycache__?
 
-public/
 server/venv/
 server/data/
 server/templates
