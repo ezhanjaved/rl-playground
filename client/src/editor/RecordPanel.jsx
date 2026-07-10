@@ -13,6 +13,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 
 const Section = ({ title, icon, items, loading }) => {
   const [open, setOpen] = useState(true);
+  const container = import.meta.env.VITE_CONTAINER
   const navigate = useNavigate();
   return (
     <div className="section">
@@ -99,7 +100,7 @@ const Section = ({ title, icon, items, loading }) => {
                 </div>
                 <div
                   onClick={() =>
-                    navigate(`http://localhost:5173/visualize/${item.id}`)
+                    navigate(`${container === "LOCAL" ? "http://localhost:5173": "https://rl-playground-beta.vercel.app"}/visualize/${item.id}`)
                   }
                   className="record-item-content"
                 >
