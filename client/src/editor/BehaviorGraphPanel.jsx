@@ -1,0 +1,271 @@
+// React Flow graph UI
+import "../styling/App.css";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
+import { IoMoonOutline, IoChevronDown, IoChevronUp } from "react-icons/io5";
+
+export function BehaviorGraphPanel() {
+  const eventNodes = [
+    {
+      id: "on-episode-start-node",
+      payload: {
+        data: { label: "OnEpisodeStart" },
+        type: "OnEpisodeStartNode",
+      },
+    },
+    {
+      id: "on-step-node",
+      payload: { data: { label: "OnStep" }, type: "OnStepNode" },
+    },
+  ];
+
+  const state_obsNodes = [
+    {
+      id: "state-equals-node",
+      payload: {
+        data: {
+          label: "StateEquals",
+          entityCapability: null,
+          entityState: null,
+          StateStatus: null,
+        },
+        type: "StateEqualsToNode",
+      },
+    },
+    {
+      id: "compare-state-node",
+      payload: {
+        data: {
+          label: "CompareState",
+          entityCapability: null,
+          entityState: null,
+          StateValue: null,
+          Operator: null,
+        },
+        type: "CompareStateNode",
+      },
+    },
+    {
+      id: "num-obs-value-node",
+      payload: {
+        data: {
+          label: "NumObsNode",
+          obsKey: null,
+          mode: null,
+          Operator: null,
+          ObsValue: null,
+        },
+        type: "NumericObsNode",
+      },
+    },
+    {
+      id: "bool-obs-value-node",
+      payload: {
+        data: {
+          label: "BoolObsNode",
+          obsKey: null,
+          mode: null,
+          status: null,
+        },
+        type: "BoolObsNode",
+      },
+    },
+  ];
+
+  const navigationNodes = [
+    {
+      id: "in-radius-node",
+      payload: {
+        data: { label: "WithInRadius", mode: null },
+        type: "InRadiusNode",
+      },
+    },
+    {
+      id: "is-distance-less-node",
+      payload: {
+        data: {
+          label: "IsDistanceLess",
+          mode: null,
+        },
+        type: "IsDistanceLessNode",
+      },
+    },
+    {
+      id: "is-distance-more-node",
+      payload: {
+        data: { label: "IsDistanceMore" },
+        type: "IsDistanceMoreNode",
+      },
+    },
+    {
+      id: "is-delta-x-less-node",
+      payload: {
+        data: { label: "IsDeltaXLess" },
+        type: "IsDeltaXLessNode",
+      },
+    },
+    {
+      id: "is-delta-z-pos-node",
+      payload: {
+        data: { label: "IsDeltaZPos" },
+        type: "IsDeltaZPosNode",
+      },
+    },
+    {
+      id: "last-action-is-node",
+      payload: {
+        data: {
+          label: "LastActionIs",
+          agentCapability: null,
+          entityAction: null,
+          actionStatus: null,
+        },
+        type: "LastActionIsNode",
+      },
+    },
+    {
+      id: "is-obstacle-in-path",
+      payload: {
+        data: {
+          label: "IsObstacleIn",
+          direction: null,
+          mode: null,
+        },
+        type: "IsObstacleInPath",
+      },
+    },
+  ];
+
+  const footballNodes = [
+    {
+      id: "football-event-node",
+      payload: {
+        data: { label: "FootballNode", mode: null },
+        type: "FootballEventNode",
+      },
+    },
+    {
+      id: "is-aligned-node",
+      payload: {
+        data: { label: "IsAligned" },
+        type: "IsPlayerAlignedNode",
+      },
+    },
+    {
+      id: "is-ball-near-post-node",
+      payload: {
+        data: { label: "IsBallNear" },
+        type: "IsBallNearPostNode",
+      },
+    },
+    {
+      id: "is-player-near-post",
+      payload: {
+        data: { label: "PlayerNearPost" },
+        type: "IsPlayerNearPost",
+      },
+    },
+    {
+      id: "is-player-progressing-towards-post",
+      payload: {
+        data: { label: "ProgressToPost" },
+        type: "ProgressToPost",
+      },
+    },
+    {
+      id: "is-ball-progressing-towards-post",
+      payload: {
+        data: { label: "BallProgressing" },
+        type: "IsBallProgressing",
+      },
+    },
+  ];
+
+  const effectNodes = [
+    {
+      id: "end-episode-node",
+      payload: { data: { label: "EndEpisode" }, type: "EndEpisodeNode" },
+    },
+    {
+      id: "add-reward-node",
+      payload: {
+        data: { label: "AddReward", typeOfReward: null, rewardValue: null },
+        type: "AddRewardNode",
+      },
+    },
+    {
+      id: "truncate-episode-node",
+      payload: {
+        data: { label: "TruncateEp", maxSteps: 100 },
+        type: "TruncateEpisodeNode",
+      },
+    },
+  ];
+
+  return (
+    <>
+      <div className="library_main">
+        <Section title="Event Nodes" items={eventNodes} />
+        <Section title="State & OBS Nodes" items={state_obsNodes} />
+        <Section title="Navigation Nodes" items={navigationNodes} />
+        <Section title="Football Nodes" items={footballNodes} />
+        <Section title="Effect Nodes" items={effectNodes} />
+      </div>
+    </>
+  );
+}
+
+const Section = ({ title, items }) => {
+  const [open, setOpen] = useState(true);
+
+  function DraggableItem({ id, payload }) {
+    const { listeners, setNodeRef, attributes, transform } = useDraggable({
+      id,
+      data: payload,
+    });
+    const style = {
+      transform: CSS.Translate.toString(transform),
+      cursor: "grab",
+    };
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="lib-single-element-bg"
+      >
+        <div className="event-node">
+          <span>{payload?.data?.label}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="section">
+      <button
+        className="sectionHeader"
+        style={{ background: open ? "#e6e6e6" : "#ffffff" }}
+        onClick={() => setOpen(!open)}
+      >
+        <IoMoonOutline />
+        <div className="sectionTitle">
+          <span>{title}</span>
+          <span className="arrowIcon">
+            {open ? <IoChevronUp /> : <IoChevronDown />}
+          </span>
+        </div>
+      </button>
+
+      {open && (
+        <div className="gridWrapper">
+          {items.map((item) => (
+            <DraggableItem key={item.id} id={item.id} payload={item.payload} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

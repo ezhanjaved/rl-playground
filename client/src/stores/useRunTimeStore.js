@@ -1,0 +1,233 @@
+//We will maintain state of simulation here (Play/pause, step, tick, controller mode, episode state)
+import { create } from "zustand";
+import { useSceneStore } from "./useSceneStore";
+export const useRunTimeStore = create((set, get) => ({
+  playing: false,
+  togglePlaying: () => set({ playing: !get().playing }),
+
+  training: false,
+  toggleTraining: () => set({ training: !get().training }),
+  setTraining: (value) => set({ training: value }),
+
+  experiments: {}, //This will hold training data - right?
+  currentExperimentId: null,
+
+  controllerMode: "Random",
+  setControllerMode: (mode) => set({ controllerMode: mode }),
+
+  modalStage: "idle",
+  setModalStage: (stage) => set({ modalStage: stage }),
+
+  modelID: null,
+  setModelId: (uid) => set({ modalID: uid }),
+
+  showLoadingModal: false,
+  setShowLoadingModal: (val) => set({ showLoadingModal: val }),
+
+  modelName: "",
+  setModelName: (value) => set({ modelName: value }),
+
+  envType: "SARL",
+  setEnvType: (value) => set({ envType: value }),
+
+  envMode: "Fixed",
+  setEnvMode: (value) => set({ envMode: value }),
+
+  topographyMode: "False",
+  setTopographyMode: (value) => set({ topographyMode: value }),
+
+  percentageFixedEp: 0,
+  setPercentageFixed: (value) => set({ percentageFixedEp: value }),
+
+  timesteps: 0,
+  setTimestep: (value) => set({ timesteps: value }),
+
+  maxStepPerEp: 0,
+  setMaxStepPerEp: (value) => set({ maxStepPerEp: value }),
+
+  randomizerMode: "Full Randomization",
+  setRandomizerMode: (value) => set({ randomizerMode: value }),
+
+  jitterRadius: 0.0,
+  setJitterRadius: (value) => set({ jitterRadius: value }),
+
+  isModelLoading: false,
+  isModelReady: false,
+
+  setModeltoLoading: (value) => set({ isModelLoading: value }),
+  setModeltoReady: (value) => set({ isModelReady: value }),
+
+  inferenceMode: "lockstep",
+  setInferenceMode: (value) => set({ inferenceMode: value }),
+
+  seq: {},
+  setSeq: (id, value) =>
+    set((state) => ({
+      seq: {
+        ...state.seq,
+        [id]: value,
+      },
+    })),
+
+  waitingForAction: {},
+  setWaitingForAction: (id, value) =>
+    set((state) => ({
+      waitingForAction: {
+        ...state.waitingForAction,
+        [id]: value,
+      },
+    })),
+
+  clearExperiment: (id) =>
+    set((state) => {
+      const currentExp = { ...state.experiments };
+      delete currentExp[id];
+      console.log("Exp is cleared!");
+      return { experiments: currentExp };
+    }),
+
+  selectedAgent: null,
+  setAgent: (id) => set({ selectedAgent: id }),
+
+  updateExperiementStatus: (expId, statusSignal) =>
+    set((state) => {
+      const exp = state.experiments?.[expId];
+      if (!exp) return state;
+
+      if (exp.status === statusSignal) return state;
+
+      return {
+        experiments: {
+          ...state.experiments,
+          [expId]: {
+            ...exp,
+            status: statusSignal,
+          },
+        },
+      };
+    }),
+
+  syncEpisodeResult: (
+    expId,
+    agentId,
+    updatedQTable,
+    episodeIndex,
+    episodeInfo,
+    rewardEpisode,
+    epsilon,
+  ) =>
+    set((state) => {
+      const exp = state.experiments?.[expId];
+      if (!exp) return state;
+
+      const agent = exp.agents?.[agentId];
+      if (!agent) return state;
+
+      const prevRewards = agent.telemetry?.episodeRewards ?? [];
+      const prevEpisodesInfo = agent.telemetry?.episodesInfo ?? {};
+
+      return {
+        experiments: {
+          ...state.experiments,
+          [expId]: {
+            ...exp,
+            agents: {
+              ...exp.agents,
+              [agentId]: {
+                ...agent,
+
+                learningState: {
+                  ...agent.learningState,
+                  qTable: updatedQTable,
+                  epsilon: epsilon,
+                },
+
+                episodeState: {
+                  ...agent.episodeState,
+                  episodeIndex,
+                },
+
+                telemetry: {
+                  ...agent.telemetry,
+                  episodeRewards: [...prevRewards, rewardEpisode],
+                  episodesInfo: {
+                    ...prevEpisodesInfo,
+                    [episodeIndex]: episodeInfo,
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+    }),
+
+  addExperiment: () => {
+    const id = `experiment_${crypto.randomUUID()}`;
+    const timeCreated = Date.now();
+    const status = "Not Yet Started";
+
+    const { assignments, entities } = useSceneStore.getState();
+    const agents = {};
+    const envEntities = {};
+    for (const [id, e] of Object.entries(entities)) {
+      const resettable =
+        e.tag !== "agent" && (e.isPickable || e.isCollectable || e.isTarget);
+      if (!resettable) continue;
+      envEntities[id] = {
+        tag: e.tag,
+        name: e.name,
+        capabilities: e.capabilities,
+        position: structuredClone(e.position),
+        rotation: structuredClone(e.rotation),
+        assetRef: e.assetRef,
+        animationRef: e.animationRef,
+        collider: e.collider,
+        actuator_type: e.actuator_type,
+        isDecor: e.isDecor,
+        isPickable: e.isPickable,
+        isCollectable: e.isCollectable,
+        isTarget: e.isTarget,
+        targetStat: e.targetVisual,
+      };
+    }
+    for (const agentId of Object.keys(assignments || {})) {
+      const a = assignments[agentId];
+      if (!a?.assignedConfig || !a?.assignedGraphId) continue;
+
+      agents[agentId] = {
+        graphId: a.assignedGraphId,
+        config: structuredClone(a.assignedConfig),
+        fixedPosition: structuredClone(entities?.[agentId]?.position),
+
+        learningState: {
+          algorithm: a.assignedConfig.algorithm,
+          qTable: {},
+          epsilon: 1.0,
+        },
+
+        episodeState: {
+          episodeIndex: 0,
+          stepIndex: 0,
+          rewardSum: 0,
+          done: false,
+        },
+
+        telemetry: {
+          episodeRewards: [],
+          episodesInfo: {},
+        },
+      };
+    }
+
+    set((state) => ({
+      currentExperimentId: id,
+      experiments: {
+        ...(state.experiments || {}),
+        [id]: { id, timeCreated, status, agents, envEntities },
+      },
+    }));
+
+    return id;
+  },
+}));
