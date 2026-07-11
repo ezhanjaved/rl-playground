@@ -48,7 +48,7 @@ export function useBackendWebSocket(onModelReady) {
     }
 
     const socket = new WebSocket(
-      "wss://ureterointestinal-leilani-unspiritualised.ngrok-free.dev/ws",
+      `wss://${import.meta.env.VITE_API_BASE_URL}/ws`,
     );
     socketRef.current = socket;
 
