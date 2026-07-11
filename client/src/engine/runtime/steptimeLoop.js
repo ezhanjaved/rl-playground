@@ -7,6 +7,7 @@ import ControllerRouter from "./controllers/controllerRouter.js";
 import applyAction from "./actuators/applyAction.js";
 import { BehaviorBuilder } from "./behaviorBuilder.js";
 import { resetMovement } from "../utility/stopMovement.js";
+import { filterObs } from "../utility/filterArray";
 
 export default function stepTimeLoop(entities) {
   const {
@@ -97,9 +98,10 @@ export default function stepTimeLoop(entities) {
         seq: nextSeq,
         observation_vector: observation_vector,
       });
+      const behaviorOBSvectorFiltered = filterObs(behaviorOBSvector);
       sendObsToCloud(
         nextSeq,
-        behaviorOBSvector,
+        behaviorOBSvectorFiltered,
         session_token,
         jwt_token,
         entity.id,

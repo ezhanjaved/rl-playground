@@ -80,6 +80,8 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
         if action in action_list:
             mask[action_list.index(action)] = True
 
+    mask[3] = False #making idle False
+
     current_dist_to_goal = current_obs[
         0
     ]  # it would be normalized - every obs is made with behavior in mind and first thing in all is current_dist_to_goal
