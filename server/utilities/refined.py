@@ -86,7 +86,11 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
         0
     ]  # it would be normalized - every obs is made with behavior in mind and first thing in all is current_dist_to_goal
     current_dist_to_goal = current_dist_to_goal * 40.0
-
+    current_delta_x = current_obs[1]
+    if current_delta_x > 0:
+        mask[1] = False
+    else:
+        mask[2]= False
     is_path_blocked = 0.0
     if "Navigator" in cap:
         is_path_blocked = current_obs[-1]
