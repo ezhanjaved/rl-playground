@@ -245,7 +245,6 @@ export default function EntitiesPanel() {
           "Finder",
           "Navigator",
         ],
-        controller: "manual",
         behavior: [
           { type: "Collect", requiredCount: 2, status: false },
           { type: "Deposit", requiredCount: 1, status: false },
