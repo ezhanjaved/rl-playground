@@ -14,18 +14,26 @@ export function highestDistance() {
     }
   });
 
-  agentIds.forEach((id) => {
-    const agentId = id;
+  agentIds.forEach((agentId) => {
     const agentPos = entities[agentId].position;
-    entitiesArray.forEach((val) => {
-      if (entities[val].tag != "agent") {
-        const objPos = entities[val].position;
-        const dist = distance3D(agentPos, objPos);
-        if (dist > highestDist) {
-          highestDist = dist;
-        }
+
+    let maxBallDist = -Infinity;
+    let maxOtherDist = -Infinity;
+    let hasBall = false;
+
+    entitiesArray.forEach((id) => {
+      if (entities[id].tag === "agent") return;
+
+      const dist = distance3D(agentPos, entities[id].position);
+
+      if (entities[id].tag === "ball") {
+        hasBall = true;
+        maxBallDist = Math.max(maxBallDist, dist);
+      } else {
+        maxOtherDist = Math.max(maxOtherDist, dist);
       }
     });
+    highestDist = hasBall ? maxBallDist : maxOtherDist;
   });
   setHighestDistance(highestDist);
 }
