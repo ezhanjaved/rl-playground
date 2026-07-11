@@ -48,7 +48,7 @@ export function useBackendWebSocket(onModelReady) {
     }
 
     const socket = new WebSocket(
-      `wss://${import.meta.env.VITE_API_BASE_URL}/ws`,
+      `${import.meta.env.VITE_WEBSOCKET_URL}`,
     );
     socketRef.current = socket;
 
