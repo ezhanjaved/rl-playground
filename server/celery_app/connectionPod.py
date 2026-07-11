@@ -25,8 +25,6 @@ def connectToPod(remote_cmd: str, uid: str | None = None):
     if not os.path.exists(KEY_PATH):
         raise FileNotFoundError(f"SSH key not found: {KEY_PATH}")
 
-    os.chmod(KEY_PATH, 0o600)
-
     ssh_command = [
         "ssh",
         "-tt",
