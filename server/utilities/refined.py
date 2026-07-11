@@ -80,7 +80,7 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
         if action in action_list:
             mask[action_list.index(action)] = True
 
-    mask[3] = False #making idle False
+    mask[3] = False # making idle False
 
     current_dist_to_goal = current_obs[
         0
@@ -88,9 +88,10 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
     current_dist_to_goal = current_dist_to_goal * 40.0
     current_delta_x = current_obs[1]
     if current_delta_x > 0:
-        mask[1] = False
+        mask[2] = False
     else:
-        mask[2]= False
+        mask[1]= False
+
     is_path_blocked = 0.0
     if "Navigator" in cap:
         is_path_blocked = current_obs[-1]
