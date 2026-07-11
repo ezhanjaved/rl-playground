@@ -43,9 +43,9 @@ export default function collectorAdapter(action, agent, actionSpace) {
       console.log("Collecting!");
       const numberOfPickedItems = agent?.state_space?.items_collected;
       const updatedNumber = numberOfPickedItems + 1;
-      const updatedTotalNumber = updatedNumber;
+      // const updatedTotalNumber = updatedNumber
       newStateSpace.items_collected = updatedNumber;
-      newStateSpace.total_items_collected = updatedTotalNumber;
+      newStateSpace.total_items_collected += 1;
 
       newStateSpace.lastPickSuccess = true;
       newStateSpace.lastItemCollected = targetObj.tag;

@@ -119,6 +119,19 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
     for (const entity of Object.values(entities)) {
       if (!entity || !predicate(entity)) continue;
       const targetObjPos = entity?.position ?? [0, 0, 0];
+      //add a check that skips already opened gate/destroyed pumpkin
+      const state = entity?.state || {};
+
+      if (entity.tag === "gate") {
+        const isOpened = state.isOpen;
+        if (isOpened) continue;
+      }
+
+      if (entity.tag == "destroyable") {
+        const isDestroyed = state.isDestroyed;
+        if (isDestroyed) continue;
+      }
+
       const d = distance3D(position, targetObjPos);
       if (Number.isFinite(d) && d < minDist) {
         minDist = d;
@@ -159,6 +172,17 @@ export function nearestDistance(position, rotation, predicate, mode, entities) {
   for (const entity of Object.values(entities)) {
     if (!entity) continue;
     if (!predicate(entity)) continue;
+    const state = entity.state || {};
+
+    if (entity.tag === "gate") {
+      const isOpened = state.isOpen;
+      if (isOpened) continue;
+    }
+
+    if (entity.tag == "destroyable") {
+      const isDestroyed = state.isDestroyed;
+      if (isDestroyed) continue;
+    }
 
     const targetObjPos = entity?.position ?? [0, 0, 0];
     let d;

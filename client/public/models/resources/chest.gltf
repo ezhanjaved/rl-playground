@@ -15,7 +15,7 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "chest_gold_lid",
+            "name" : "chest_lid",
             "translation" : [
                 0,
                 0.5,
@@ -27,7 +27,7 @@
                 0
             ],
             "mesh" : 1,
-            "name" : "chest_gold"
+            "name" : "chest"
         }
     ],
     "materials" : [
@@ -44,7 +44,7 @@
     ],
     "meshes" : [
         {
-            "name" : "chest_gold_lid",
+            "name" : "chest_lid",
             "primitives" : [
                 {
                     "attributes" : {
@@ -58,7 +58,7 @@
             ]
         },
         {
-            "name" : "chest_gold",
+            "name" : "chest",
             "primitives" : [
                 {
                     "attributes" : {
@@ -123,10 +123,10 @@
         {
             "bufferView" : 4,
             "componentType" : 5126,
-            "count" : 1571,
+            "count" : 475,
             "max" : [
                 0.800000011920929,
-                1.0406723022460938,
+                0.5999998450279236,
                 0.6458025574684143
             ],
             "min" : [
@@ -139,19 +139,19 @@
         {
             "bufferView" : 5,
             "componentType" : 5126,
-            "count" : 1571,
+            "count" : 475,
             "type" : "VEC2"
         },
         {
             "bufferView" : 6,
             "componentType" : 5126,
-            "count" : 1571,
+            "count" : 475,
             "type" : "VEC3"
         },
         {
             "bufferView" : 7,
             "componentType" : 5123,
-            "count" : 3318,
+            "count" : 798,
             "type" : "SCALAR"
         }
     ],
@@ -182,26 +182,26 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 18852,
+            "byteLength" : 5700,
             "byteOffset" : 23700,
             "target" : 34962
         },
         {
             "buffer" : 0,
-            "byteLength" : 12568,
-            "byteOffset" : 42552,
+            "byteLength" : 3800,
+            "byteOffset" : 29400,
             "target" : 34962
         },
         {
             "buffer" : 0,
-            "byteLength" : 18852,
-            "byteOffset" : 55120,
+            "byteLength" : 5700,
+            "byteOffset" : 33200,
             "target" : 34962
         },
         {
             "buffer" : 0,
-            "byteLength" : 6636,
-            "byteOffset" : 73972,
+            "byteLength" : 1596,
+            "byteOffset" : 38900,
             "target" : 34963
         }
     ],
@@ -213,8 +213,8 @@
     ],
     "buffers" : [
         {
-            "byteLength" : 80608,
-            "uri" : "chest_gold.bin"
+            "byteLength" : 40496,
+            "uri" : "chest.bin"
         }
     ]
 }

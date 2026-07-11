@@ -101,7 +101,7 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
         if action in action_list:
             # drop is only action that cannot be restriced based on distance
             if action == "drop":
-                mask[action_list.index(action)] = True
+                mask[action_list.index(action)] = False
             elif (
                 current_dist_to_goal
                 < 2.0 and current_behavior != "Football"  # This is to ensure that collect, destory, deposit, open actions are only available to agent when it is actually in radius to perform them.

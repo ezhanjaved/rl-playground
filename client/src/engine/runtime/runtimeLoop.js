@@ -8,6 +8,8 @@ import { useSceneStore } from "../../stores/useSceneStore.js";
 import { BehaviorBuilder } from "./behaviorBuilder.js";
 import { resetMovement } from "../utility/stopMovement.js";
 import { syncBall } from "../utility/syncball.js";
+import { filterObs } from "../utility/filterArray";
+
 export default function runTimeloop(entities) {
   console.log("Called RT");
   const { playing, training } = useRunTimeStore.getState();
@@ -16,14 +18,6 @@ export default function runTimeloop(entities) {
     useRunTimeStore.getState();
 
   if (!playing || training) return;
-
-  // const incoming = flushActions();
-  // incoming.forEach((action, agentId) => {
-  //   const entity = entities[agentId];
-  //   if (entity) {
-  //     applyAction(action, entity, []);
-  //   }
-  // });
 
   Object.values(entities).forEach((entity) => {
     const isDecor =
@@ -51,6 +45,8 @@ export default function runTimeloop(entities) {
       observation_vector,
       entity,
     );
+    // const result = filterObs(behaviorOBSspace);
+    // console.log("Filtered OBS: ", result)
     console.log("OBS VECTOR (BEHVAIOR): " + behaviorOBSvector);
     const action_space = entity.action_space;
     const sequence = seq[entity.id] ?? 0; //Read sequence number from store

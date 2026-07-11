@@ -25,7 +25,7 @@ import agent6 from "../assets/agent6.png";
 import agent7 from "../assets/agent7.png";
 import agent8 from "../assets/agent8.png";
 import target1 from "../assets/target_1.png";
-import target2 from "../assets/target_2.png";
+import target3 from "../assets/target_3.png";
 import Wall from "../assets/Wall.png";
 import Rubble from "../assets/Rubble.png";
 import ArchGate from "../assets/Arch_Gate.png";
@@ -161,8 +161,9 @@ export default function EntitiesPanel() {
         },
         capabilities: ["Moveable", "Finder", "Holder"],
         behavior: [
+             { type: "Find", requiredCount: 1, status: false },
           { type: "Holding", requiredCount: 1, status: false },
-          { type: "Find", requiredCount: 1, status: false },
+
         ],
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -568,24 +569,24 @@ export default function EntitiesPanel() {
   const targetItems = [
     {
       id: "lib_target_obj_1",
-      image: target1,
+      image: target3,
       payload: {
         name: "Chest",
         tag: "target",
         isTarget: "true",
-        assetRef: "resources/chest_gold.gltf",
+        assetRef: "resources/pillar_decorated.gltf",
         collider: { shape: "sphere", h: 2.5, r: 0.5 },
         targetStat: { radius: 2 },
       },
     },
     {
       id: "lib_target_obj_2",
-      image: target2,
+      image: target1,
       payload: {
         name: "Floor",
         tag: "deposit",
         isDeposit: "true",
-        assetRef: "resources/floor_wood_large_dark.gltf",
+        assetRef: "resources/chest.gltf",
         collider: { shape: "sphere", h: 2.5, r: 0.5 },
         targetStat: { radius: 0 },
       },
