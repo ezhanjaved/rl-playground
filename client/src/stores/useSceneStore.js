@@ -188,6 +188,8 @@ const buildEntitiyFromPartial = (partial, id) => {
     collider: partial.collider || null,
     actuator_type: partial.actuator_type || "walker",
     controller: partial.controller || "random",
+    cumulativeShapingReward: null,
+    cumulativeTerminalReward: null,
     state: partial.state || {}, //added this will have to sync it on Object Class in python
     positionSpawned: partial.position || [0, 0, 0],
 

@@ -4,7 +4,8 @@ const NOT_FOUND = 1.0;
 
 export default function discretizeBehavior(obsVector, behaviorOBSspace = []) {
   let stateKey = "";
-
+  console.log("Desc OBS Vector: ", obsVector)
+  console.log("Desc OBS Space: ", behaviorOBSspace);
   const buildKey = (key, string, value) => {
     return key + `${string}:${value}|`;
   };
@@ -52,18 +53,22 @@ export default function discretizeBehavior(obsVector, behaviorOBSspace = []) {
         break;
 
       // --- Progress fields ---
-      case "items_collected":
-      case "total_items_collected":
-      case "items_deposited":
-      case "keys_collected":
-      case "gates_open":
-      case "items_destroyed":
+      case "items_collected": //Collect
+      case "total_items_collected": //Collect
+      case "keys_collected": //Collect
+      case "items_deposited": //Deposit
+      case "gates_open": //Open
+      case "items_destroyed": //Destroyable
+      case "my_goals_scored": //Football
+      case "team_goals_scored": //Football
+      case "team_goals_conceded": //Football
+      case "my_own_goals_scored": //Football
         stateKey = buildKey(stateKey, space, itemsBin(value));
         break;
 
-      case "holding":
-      case "hasKey":
-      case "targetReached":
+      case "holding": //holding
+      case "hasKey": //Opening
+      case "targetReached": //Target
         stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
         break;
 
@@ -74,7 +79,16 @@ export default function discretizeBehavior(obsVector, behaviorOBSspace = []) {
       case "goal_is_gate":
       case "goal_is_destroyable":
       case "goal_is_target":
+      case "goal_is_football":
         stateKey = buildKey(stateKey, space, value === 1 ? "YES" : "NO");
+        break;
+
+      case "last_goal_type":
+        stateKey = buildKey(
+          stateKey,
+          space,
+          value === null ? "NONE" : value === 1 ? "YES" : "NO",
+        );
         break;
 
       // --- Navigator ---

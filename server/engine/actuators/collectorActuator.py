@@ -38,7 +38,7 @@ def collectorActuator(action, agent, entities, eM, client, indexOfAction):
             new_state_space["keys_collected"] = updatedKey
 
         new_state_space["lastItemCollected"] = targetObj.tag
-        new_state_space["total_items_collected"] = updatedNum
+        new_state_space["total_items_collected"] = new_state_space["total_items_collected"] + 1
         new_state_space["items_collected"] = updatedNum
         new_state_space["lastPickSuccess"] = True
         new_state_space["previous_distance_collect"] = 1.0

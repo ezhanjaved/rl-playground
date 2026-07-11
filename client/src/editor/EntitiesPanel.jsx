@@ -161,8 +161,9 @@ export default function EntitiesPanel() {
         },
         capabilities: ["Moveable", "Finder", "Holder"],
         behavior: [
+             { type: "Find", requiredCount: 1, status: false },
           { type: "Holding", requiredCount: 1, status: false },
-          { type: "Find", requiredCount: 1, status: false },
+
         ],
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
