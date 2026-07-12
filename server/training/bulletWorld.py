@@ -557,7 +557,7 @@ class PyBulletWorld:
             return
         self.ball_obj.collision_check(entities, self.entity_mapping)
 
-    def step_simulation(self, steps=2):
+    def step_simulation(self, steps=1):
         for _ in range(steps):
             p.stepSimulation(physicsClientId=self.client)
             # time.sleep(1 / 60)
