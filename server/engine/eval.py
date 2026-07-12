@@ -272,7 +272,7 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "IsDeltaXLessNode":
-        DELTA_X_CHECK = 0.05
+        DELTA_X_CHECK = 0.15
 
         delta_x = False
         val = _get_obs("delta_x_to_current_goal", ctx)
@@ -290,7 +290,21 @@ def _visit_node(node_id, graph, ctx):
 
         delta_z = False
         val = _get_obs("delta_z_to_current_goal", ctx)
-        if val is not None and val > DELTA_Z_CHECK:
+        if val is not None and val >= DELTA_Z_CHECK:
+            delta_z = True
+
+        for edge in _find_bool_edges(node_id, graph, delta_z):
+            _visit_node(edge.target, graph, ctx)
+            if ctx["_stop"]:
+                return
+        return
+
+    elif ntype == "IsTargetRightAhead":
+        DELTA_Z_CHECK = 0.90
+
+        delta_z = False
+        val = _get_obs("delta_z_to_current_goal", ctx)
+        if val is not None and val >= DELTA_Z_CHECK:
             delta_z = True
 
         for edge in _find_bool_edges(node_id, graph, delta_z):
