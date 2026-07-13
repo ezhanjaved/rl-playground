@@ -129,24 +129,22 @@ def get_target_direction_obs(
     position,
     rotation,
 ):
-
-    world_dx = -(
+    world_dx = (
         target_obj_pos[0] - position[0]
-    )  # Negated DX because of Rapier convention - at the time of spawn DX is negated so we have to negate again to make it normalized
-    world_dz = target_obj_pos[1] - position[1]
+    )
 
+    world_dz = (target_obj_pos[1] - position[1])
     theta = rotation[2] if len(rotation) > 2 else 0.0
     cos_t = math.cos(theta)
     sin_t = math.sin(theta)
 
     # Agent-local target position
-    local_side = cos_t * world_dx - sin_t * world_dz
-    local_depth = sin_t * world_dx + cos_t * world_dz
-
+    local_side =  sin_t * world_dz - cos_t * world_dx
+    local_depth = cos_t * world_dz + sin_t * world_dx
     angle_to_target = math.atan2(local_side, local_depth)
-
     side_signal = math.sin(angle_to_target)
     depth_signal = math.cos(angle_to_target)
+
     return {
         "side_signal": side_signal,  # + left, - right
         "depth_signal": depth_signal,  # + forward, - behind

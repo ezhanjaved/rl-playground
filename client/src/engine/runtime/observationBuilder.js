@@ -641,7 +641,6 @@ export default function buildObsSpace(agent) {
         const { min: delta_x } = cached(predicatePickedForPost, "x-delta");
         const { min: delta_z } = cached(predicatePickedForPost, "z-delta");
         const aligned = isAlignedToGoal(delta_x, delta_z);
-        console.log("Aligned: ", aligned);
         constructedObs.push(aligned ? 1 : 0);
         break;
       }
@@ -658,7 +657,6 @@ export default function buildObsSpace(agent) {
           delta_z_p
         );
         constructedObs.push(distance);
-        console.log("Distance: ", distance)
         break;
       }
 

@@ -7,7 +7,8 @@ import ControllerRouter from "./controllers/controllerRouter.js";
 import applyAction from "./actuators/applyAction.js";
 import { BehaviorBuilder } from "./behaviorBuilder.js";
 import { resetMovement } from "../utility/stopMovement.js";
-import { filterObs } from "../utility/filterArray";
+import { makeAgentBelieveItIsCoin } from "../utility/filterArray";
+import { syncBall } from "../utility/syncball.js";
 
 export default function stepTimeLoop(entities) {
   const {
@@ -98,7 +99,7 @@ export default function stepTimeLoop(entities) {
         seq: nextSeq,
         observation_vector: observation_vector,
       });
-      const behaviorOBSvectorFiltered = filterObs(behaviorOBSvector);
+      const behaviorOBSvectorFiltered = makeAgentBelieveItIsCoin(behaviorOBSvector);
       sendObsToCloud(
         nextSeq,
         behaviorOBSvectorFiltered,
@@ -109,5 +110,6 @@ export default function stepTimeLoop(entities) {
         currentBehavior,
       );
     }
+    syncBall();
   });
 }

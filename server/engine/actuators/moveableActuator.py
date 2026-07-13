@@ -8,12 +8,11 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
     if not body_exist(bullet_id, client):
         return
 
-    turnSpeed = 0.1 * 60.0  # To compensate for Rapier instant rot
+    turnSpeed = 0.1 * 30 # To compensate for Rapier instant rot
     _, quat = p.getBasePositionAndOrientation(bullet_id, physicsClientId=client)
     rot = p.getEulerFromQuaternion(quat, physicsClientId=client)
     yaw = getYaw(rot)
     Rx, Ry = getForwardVectorFromYaw(yaw)
-
     vx, vy = 0.0, 0.0
     wz = 0.0
 
@@ -22,9 +21,9 @@ def moveableActuator(action, pos, rot, speed, id, eM, client):
             vx = Rx * float(speed)
             vy = Ry * float(speed)
         case "move_left":
-            wz = turnSpeed
-        case "move_right":
             wz = -turnSpeed
+        case "move_right":
+            wz = turnSpeed
         case "idle":
             vx = 0
             vy = 0

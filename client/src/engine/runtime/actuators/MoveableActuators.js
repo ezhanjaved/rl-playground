@@ -30,7 +30,6 @@ export default function moveAdapter(action, position, rotation, agentId) {
 
   const yaw = getYawFromRapierBody(body);
   const { x: Rx, z: Rz } = getForwardVectorFromYaw(yaw);
-
   let vx = 0.0;
   let vz = 0.0;
   let wy = 0.0;
