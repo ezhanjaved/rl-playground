@@ -91,14 +91,6 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
     if "Navigator" in cap:
         is_path_blocked = current_obs[-1]
 
-    current_dist_to_goal_post = float("inf")
-    alignment_to_goal_post = 0.0
-    if current_behavior == "Football":
-        current_dist_to_goal_post = current_obs[11]
-        current_dist_to_goal_post = current_dist_to_goal_post * 40.0
-        alignment_to_goal_post = current_obs[-2]
-        print("Current Dist To Goal Post: ", current_dist_to_goal_post)
-
     for action in BEHAVIOR_ACTIONS.get(current_behavior, []):
         if action in action_list:
             # drop is only action that cannot be restriced based on distance
@@ -108,9 +100,6 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
                 current_dist_to_goal
                 < 2.0 and current_behavior != "Football"  # This is to ensure that collect, destory, deposit, open actions are only available to agent when it is actually in radius to perform them.
             ):  # I have used 2.0 radius for every actuator in engine
-                mask = mask_movement_action_in_radius(mask)
-                mask[action_list.index(action)] = True
-            elif current_dist_to_goal < 1.0 and current_behavior == "Football" and current_dist_to_goal_post < 6.0 and alignment_to_goal_post == 1.0:
                 mask = mask_movement_action_in_radius(mask)
                 mask[action_list.index(action)] = True
             elif is_path_blocked == 1.0: # runs only when obstacles are present
