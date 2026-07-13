@@ -4,7 +4,7 @@ export const CAPABILITY_SCHEMAS = {
     actions: ["move_up", "move_left", "move_right", "idle"],
     observations: [],
     state: {},
-    settings: { speed: 2 },
+    settings: { speed: 4 },
   },
 
   TemporalMemory: {
