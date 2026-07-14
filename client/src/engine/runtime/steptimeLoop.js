@@ -99,10 +99,9 @@ export default function stepTimeLoop(entities) {
         seq: nextSeq,
         observation_vector: observation_vector,
       });
-      const behaviorOBSvectorFiltered = makeAgentBelieveItIsCoin(behaviorOBSvector);
       sendObsToCloud(
         nextSeq,
-        behaviorOBSvectorFiltered,
+        behaviorOBSvector,
         session_token,
         jwt_token,
         entity.id,

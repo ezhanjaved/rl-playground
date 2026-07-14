@@ -53,7 +53,6 @@ class SimulationEnv:
             mask, actionList, current_behavior, obs_before[self.agent_id], capabilities
         )
         print("Mask: ", returned_mask)
-        print("CB: ", current_behavior)
 
         self.world.apply_actions(actions, self.core.runtime.entities)
         self.world.step_simulation()

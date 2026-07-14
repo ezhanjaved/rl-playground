@@ -22,8 +22,8 @@ FOOTBALL_FIELDS = [
     "in_radius_goal",
     "alignment_to_goal",
     "ball_dist_to_enemy_goal",
-    # "ball_dist_to_own_goal",
-    # "ball_in_own_goal_danger_zone",
+    "ball_dist_to_own_goal",
+    "ball_in_own_goal_danger_zone",
 ]
 
 PROGRESS_FIELDS = [

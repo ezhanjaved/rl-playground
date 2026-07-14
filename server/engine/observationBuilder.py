@@ -554,25 +554,26 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
                     )
                 constructed_obs.append(distance)
 
-            # case "ball_dist_to_own_goal":
-            #     deltaXb, _ = cache.get("ball", "delta-x")
-            #     deltaYb, _ = cache.get("ball", "delta-z")
-            #     deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
-            #     deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
-            #     distance = ball_to_goal(
-            #         deltaXb, deltaYb, deltaXp, deltaYp, "distance-only"
-            #     )
-            #     constructed_obs.append(distance)
+            case "ball_dist_to_own_goal":
+                deltaXb, _ = cache.get("ball", "delta-x-fb")
+                deltaYb, _ = cache.get("ball", "delta-z-fb")
+                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x-fb")
+                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z-fb")
+                distance = ball_to_goal(
+                    deltaXb, deltaYb, deltaXp, deltaYp
+                )
+                constructed_obs.append(distance)
 
-            # case "ball_in_own_goal_danger_zone":
-            #     deltaXb, _ = cache.get("ball", "delta-x")
-            #     deltaYb, _ = cache.get("ball", "delta-z")
-            #     deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x")
-            #     deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z")
-            #     is_danger = ball_to_goal(
-            #         deltaXb, deltaYb, deltaXp, deltaYp, "danger-check"
-            #     )
-            #     constructed_obs.append(1.0 if is_danger else 0.0)
+            case "ball_in_own_goal_danger_zone":
+                deltaXb, _ = cache.get("ball", "delta-x-fb")
+                deltaYb, _ = cache.get("ball", "delta-z-fb")
+                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x-fb")
+                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z-fb")
+                distance = ball_to_goal(
+                    deltaXb, deltaYb, deltaXp, deltaYp
+                )
+                is_danger = distance < 0.08
+                constructed_obs.append(1.0 if is_danger else 0.0)
 
             case "last_kick_success":
                 lks = state_space.get("lastKickSuccess")

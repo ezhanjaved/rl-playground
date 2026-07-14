@@ -22,6 +22,7 @@ const animationMap = {
   Knight: { ...baseAnimations },
   Barbarian: { ...baseAnimations },
   "Rogue Human": { ...baseAnimations },
+  "Giant-Footballer": {...baseAnimations},
 };
 
 export default animationMap;

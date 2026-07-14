@@ -660,51 +660,48 @@ export default function buildObsSpace(agent) {
         break;
       }
 
-      // case "ball_dist_to_own_goal": {
-      //   const { min: delta_x_b } = cached(ballPredicate, "x-delta");
-      //   const { min: delta_z_b } = cached(ballPredicate, "z-delta");
-      //   const { min: delta_x_p } = cached(
-      //     predicatePickedForMyOwnPost,
-      //     "x-delta",
-      //   );
-      //   const { min: delta_z_p } = cached(
-      //     predicatePickedForMyOwnPost,
-      //     "z-delta",
-      //   );
-      //   const distance = BallToGoal(
-      //     delta_x_b,
-      //     delta_z_b,
-      //     delta_x_p,
-      //     delta_z_p,
-      //     "distance-only",
-      //   );
-      //   console.log("Distance Of Ball to Post: ", distance);
-      //   constructedObs.push(distance);
-      //   break;
-      // }
+      case "ball_dist_to_own_goal": {
+        const { min: delta_x_b } = cached(ballPredicate, "x-delta-fb");
+        const { min: delta_z_b } = cached(ballPredicate, "z-delta-fb");
+        const { min: delta_x_p } = cached(
+          predicatePickedForMyOwnPost,
+          "x-delta-fb",
+        );
+        const { min: delta_z_p } = cached(
+          predicatePickedForMyOwnPost,
+          "z-delta-fb",
+        );
+        const distance = BallToGoal(
+          delta_x_b,
+          delta_z_b,
+          delta_x_p,
+          delta_z_p,
+        );
+        constructedObs.push(distance);
+        break;
+      }
 
-      // case "ball_in_own_goal_danger_zone": {
-      //   const { min: delta_x_b } = cached(ballPredicate, "x-delta");
-      //   const { min: delta_z_b } = cached(ballPredicate, "z-delta");
-      //   const { min: delta_x_p } = cached(
-      //     predicatePickedForMyOwnPost,
-      //     "x-delta",
-      //   );
-      //   const { min: delta_z_p } = cached(
-      //     predicatePickedForMyOwnPost,
-      //     "z-delta",
-      //   );
-      //   const isInDanger = BallToGoal(
-      //     delta_x_b,
-      //     delta_z_b,
-      //     delta_x_p,
-      //     delta_z_p,
-      //     "danger-check",
-      //   );
-      //   console.log("Danger?: ", isInDanger);
-      //   constructedObs.push(isInDanger ? 1 : 0);
-      //   break;
-      // }
+      case "ball_in_own_goal_danger_zone": {
+        const { min: delta_x_b } = cached(ballPredicate, "x-delta-fb");
+        const { min: delta_z_b } = cached(ballPredicate, "z-delta-fb");
+        const { min: delta_x_p } = cached(
+          predicatePickedForMyOwnPost,
+          "x-delta-fb",
+        );
+        const { min: delta_z_p } = cached(
+          predicatePickedForMyOwnPost,
+          "z-delta-fb",
+        );
+        const distance = BallToGoal(
+          delta_x_b,
+          delta_z_b,
+          delta_x_p,
+          delta_z_p,
+        );
+        const isInDanger = distance < 0.08
+        constructedObs.push(isInDanger ? 1 : 0);
+        break;
+      }
 
       case "last_kick_success": {
         // null = never tried (0.5), true = success (1), false = failed (0)
