@@ -12,7 +12,7 @@ Users can create interactive 3D environments through a drag-and-drop editor, def
 
 ## Demo
 
-[![Watch the RL3 Demo](docs/demo-thumbnail.png)](YOUR_YOUTUBE_VIDEO_URL)
+[![Watch the RL3 Demo](.docs/youtube-thumbnail.png)]
 
 **Live Application:** [Open RL3](https://rl-playground-beta.vercel.app/)
 
@@ -449,16 +449,17 @@ RL3 explores several ideas:
 
 ## Screenshots
 
-Add project screenshots inside the `docs` directory and display them here:
+### Environment Editor
 
-```md
-![Environment Editor](docs/editor-env.png)
+![Environment Editor](./docs/editor-env.png)
 
-![Reward Graph Editor](docs/logs-training.png)
+### Reward Graph Editor
 
-![Training Dashboard](docs/training-graph.png)
+![Reward Graph Editor](./docs/logs-training.png)
 
-```
+### Training Dashboard
+
+![Training Dashboard](./docs/training-graph.png)
 
 ---
 
