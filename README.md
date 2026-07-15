@@ -12,7 +12,7 @@ Users can create interactive 3D environments through a drag-and-drop editor, def
 
 ## Demo
 
-![Watch the RL3 Demo](.docs/youtube-thumbnail.png)
+![Watch the RL3 Demo](./docs/youtube-thumbnail.png)
 
 **Live Application:** [Open RL3](https://rl-playground-beta.vercel.app/)
 
