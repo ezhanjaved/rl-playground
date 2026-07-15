@@ -12,7 +12,7 @@ Users can create interactive 3D environments through a drag-and-drop editor, def
 
 ## Demo
 
-[![Watch the RL3 Demo](.docs/youtube-thumbnail.png)]
+![Watch the RL3 Demo](.docs/youtube-thumbnail.png)
 
 **Live Application:** [Open RL3](https://rl-playground-beta.vercel.app/)
 
@@ -455,11 +455,11 @@ RL3 explores several ideas:
 
 ### Reward Graph Editor
 
-![Reward Graph Editor](./docs/logs-training.png)
+![Reward Graph Editor](./docs/training-graph.png)
 
 ### Training Dashboard
 
-![Training Dashboard](./docs/training-graph.png)
+![Training Dashboard](./docs/logs-training.png)
 
 ---
 
