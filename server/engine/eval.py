@@ -273,11 +273,32 @@ def _visit_node(node_id, graph, ctx):
 
     elif ntype == "IsDeltaXLessNode":
         DELTA_X_CHECK = 0.15
+        mode = node_data.data.get("mode") or "While Aligned"
 
         delta_x = False
-        val = _get_obs("delta_x_to_current_goal", ctx)
-        if val is not None and abs(val) <= DELTA_X_CHECK:
-            delta_x = True
+
+        pre_val : float = _get_obs("delta_x_to_current_goal", ctx)
+        post_val : float = _get_obs("delta_x_to_current_goal", ctx, use_post=True)
+
+        if mode == "While Aligned":
+            if abs(pre_val) <= DELTA_X_CHECK and abs(post_val) <= DELTA_X_CHECK:
+                delta_x = True
+
+        if mode == "Upon Alignment":
+            if abs(pre_val) > DELTA_X_CHECK and abs(post_val) <= DELTA_X_CHECK:
+                delta_x = True
+
+        if mode == "Leaving Alignment":
+            if abs(pre_val) <= DELTA_X_CHECK and abs(post_val) > DELTA_X_CHECK:
+                delta_x = True
+
+        if mode == "Alignment Improving":
+            if abs(pre_val) > abs(post_val):
+                delta_x = True
+
+        if mode == "Alignment Worsening":
+            if abs(pre_val) < abs(post_val):
+                delta_x = True
 
         for edge in _find_bool_edges(node_id, graph, delta_x):
             _visit_node(edge.target, graph, ctx)
@@ -286,12 +307,32 @@ def _visit_node(node_id, graph, ctx):
         return
 
     elif ntype == "IsDeltaZPosNode":
-        DELTA_Z_CHECK = 0.05
+        DELTA_Z_CHECK = 0.0
+        mode = node_data.data.get("mode") or "While Aligned"
 
         delta_z = False
-        val = _get_obs("delta_z_to_current_goal", ctx)
-        if val is not None and val >= DELTA_Z_CHECK:
-            delta_z = True
+        pre_val : float = _get_obs("delta_z_to_current_goal", ctx)
+        post_val : float = _get_obs("delta_z_to_current_goal", ctx, use_post=True)
+
+        if mode == "While Aligned":
+            if (pre_val) >= DELTA_Z_CHECK and (post_val) >= DELTA_Z_CHECK:
+                delta_z = True
+
+        if mode == "Upon Alignment":
+            if (pre_val) < DELTA_Z_CHECK and (post_val) >= DELTA_Z_CHECK:
+                delta_z = True
+
+        if mode == "Leaving Alignment":
+            if (pre_val) >= DELTA_Z_CHECK and (post_val) < DELTA_Z_CHECK:
+                delta_z = True
+
+        if mode == "Alignment Improving":
+            if (pre_val) < (post_val):
+                delta_z = True
+
+        if mode == "Alignment Worsening":
+            if (pre_val) > (post_val):
+                delta_z = True
 
         for edge in _find_bool_edges(node_id, graph, delta_z):
             _visit_node(edge.target, graph, ctx)

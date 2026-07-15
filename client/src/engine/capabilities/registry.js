@@ -150,8 +150,8 @@ export const CAPABILITY_SCHEMAS = {
 
       "last_kick_success",
 
-      // "ball_dist_to_own_goal",
-      // "ball_in_own_goal_danger_zone",
+      "ball_dist_to_own_goal",
+      "ball_in_own_goal_danger_zone",
 
       "my_goals_scored",
       "my_own_goals_scored",

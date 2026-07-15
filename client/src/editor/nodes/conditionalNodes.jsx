@@ -688,8 +688,18 @@ export function IsDistanceMoreNode({ data, id }) {
 
 export function IsDeltaXLessNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
 
   return (
     <div
@@ -739,6 +749,20 @@ export function IsDeltaXLessNode({ data, id }) {
         <span>
           <strong>Usage:</strong> checks if agent is aligned with target{" "}
         </span>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "While Aligned"}
+        >
+          <option value="While Aligned">While Aligned</option>
+          <option value="Upon Alignment">Upon Alignment</option>
+          <option value="Leaving Alignment">Leaving Alignment</option>
+          <option value="Alignment Improving">Alignment Improving</option>
+          <option value="Alignment Worsening">Alignment Worsening</option>
+        </select>
       </div>
     </div>
   );
@@ -746,8 +770,18 @@ export function IsDeltaXLessNode({ data, id }) {
 
 export function IsDeltaZPosNode({ data, id }) {
   const activeGraphId = useGraphStore((s) => s.activeGraphId);
+  const updateNode = useGraphStore((s) => s.updateNode);
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeId = id;
+
+  function UpdateMode(event) {
+    updateNode(activeGraphId, nodeId, {
+      data: {
+        ...data,
+        mode: event.target.value,
+      },
+    });
+  }
 
   return (
     <div
@@ -797,6 +831,20 @@ export function IsDeltaZPosNode({ data, id }) {
         <span>
           <strong>Usage:</strong> checks if target is ahead of agent
         </span>
+        <br></br>
+        <span>Mode</span>
+        <select
+          name="in-radius-entity-one"
+          id="in-radius-entity-one"
+          onChange={UpdateMode}
+          value={data.mode ?? "While Aligned"}
+        >
+          <option value="While Aligned">While Aligned</option>
+          <option value="Upon Alignment">Upon Alignment</option>
+          <option value="Leaving Alignment">Leaving Alignment</option>
+          <option value="Alignment Improving">Alignment Improving</option>
+          <option value="Alignment Worsening">Alignment Worsening</option>
+        </select>
       </div>
     </div>
   );

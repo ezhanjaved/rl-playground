@@ -80,8 +80,6 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
         if action in action_list:
             mask[action_list.index(action)] = True
 
-    mask[3] = False # making idle False
-
     current_dist_to_goal = current_obs[
         0
     ]  # it would be normalized - every obs is made with behavior in mind and first thing in all is current_dist_to_goal
@@ -98,13 +96,13 @@ def actionMaskingArray(mask, action_list, current_behavior, current_obs, cap):
                 mask[action_list.index(action)] = False
             elif (
                 current_dist_to_goal
-                < 2.0 and current_behavior != "Football"  # This is to ensure that collect, destory, deposit, open actions are only available to agent when it is actually in radius to perform them.
+                < 2.0 and current_behavior != "Football"
+                # This is to ensure that collect, destory, deposit, open actions are only available to agent when it is actually in radius to perform them.
             ):  # I have used 2.0 radius for every actuator in engine
                 mask = mask_movement_action_in_radius(mask)
                 mask[action_list.index(action)] = True
-            elif is_path_blocked == 1.0: # runs only when obstacles are present
-                mask[0] = False # mask move_up
-                mask[3] = False # mask idle
+            elif (current_dist_to_goal < 1.0 and current_behavior == "Football"):
+                mask[action_list.index(action)] = True
 
     return mask
 
