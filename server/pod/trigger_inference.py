@@ -13,8 +13,8 @@ def get_models_id(session_id):
         return
 
     models_list_dict = fetchModelsIdForInference(session_id)
-    models_list = list(models_list_dict.values())
-    return models_list
+    print("Model List Dict: ", models_list_dict)
+    return models_list_dict
 
 
 if __name__ == "__main__":
