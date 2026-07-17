@@ -8,6 +8,15 @@ from server.pod.websocket.manager import app
 from server.utilities.callWebhook import call_webhook_for_inference
 from server.database.select import fetchModelsIdForInference
 
+def get_models_id(session_id):
+    if session_id is None:
+        return
+
+    models_list_dict = fetchModelsIdForInference(session_id)
+    models_list = list(models_list_dict.values())
+    return models_list
+
+
 if __name__ == "__main__":
     session_uid = sys.argv[1]
     uids = get_models_id(session_uid) # ["model_1", "model_2"]
@@ -30,11 +39,3 @@ if __name__ == "__main__":
         call_webhook_for_inference(session_uid)
 
     uvicorn.run(app, host="0.0.0.0", port=8001)
-
-def get_models_id(session_id):
-    if session_id is None:
-        return
-
-    models_list_dict = fetchModelsIdForInference(session_id)
-    models_list = list(models_list_dict.values())
-    return models_list
