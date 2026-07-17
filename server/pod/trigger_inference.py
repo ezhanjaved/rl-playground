@@ -6,21 +6,35 @@ import server.pod.websocket.manager as manager
 from server.pod.inference import inferencePod
 from server.pod.websocket.manager import app
 from server.utilities.callWebhook import call_webhook_for_inference
+from server.database.select import fetchModelsIdForInference
 
 if __name__ == "__main__":
-    uid = sys.argv[1]
-    print(f"[1] Starting inference for uid: {uid}", flush=True)
-    model = inferencePod(uid)
-    print(f"[2] inferencePod returned: {model}", flush=True)
-    if model is None:
+    session_uid = sys.argv[1]
+    uids = get_models_id(session_uid) # ["model_1", "model_2"]
+    models = {}
+    print(f"[1] Starting inference for uid: {session_uid}", flush=True)
+    for id in uids:
+        model = inferencePod(id)
+        models[id] = model
+    print(f"[2] inferencePod returned: {models}", flush=True)
+    if models is None:
         print("[ERROR] Model is None — inference failed silently", flush=True)
         sys.exit(1)
 
-    manager.model = model
-    print("Global Model has been uploaded: ", manager.model, flush=True)
+    manager.models = models
+    manager.session_id = session_uid
+    print("Global Model has been uploaded: ", manager.models, flush=True)
 
     @app.on_event("startup")
     async def notify_client_ready():
-        call_webhook_for_inference(uid)
+        call_webhook_for_inference(session_uid)
 
     uvicorn.run(app, host="0.0.0.0", port=8001)
+
+def get_models_id(session_id):
+    if session_id is None:
+        return
+
+    models_list_dict = fetchModelsIdForInference(session_id)
+    models_list = list(models_list_dict.values())
+    return models_list

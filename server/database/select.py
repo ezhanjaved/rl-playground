@@ -9,6 +9,14 @@ def fetchModels(uid, table, id):
         print("Error:", response)
         return None
 
+def fetchModelsIdForInference(session_id):
+    response = supabase.table("simulation").select("model_lists").eq("session_id", session_id).execute()
+    if response.data:
+        return response.data
+    else:
+        print("Error:", response)
+        return None
+
 
 def fetchExtactModel(model_id):
     response = (

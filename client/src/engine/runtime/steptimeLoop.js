@@ -95,6 +95,8 @@ export default function stepTimeLoop(entities) {
 
       const session_token = localStorage.getItem("session_token");
       const jwt_token = localStorage.getItem("jwt_token");
+      const model_id = entity?.trainedPolicyId;
+
       updateEntityStat(entity.id, {
         seq: nextSeq,
         observation_vector: observation_vector,
@@ -107,6 +109,7 @@ export default function stepTimeLoop(entities) {
         entity.id,
         entity.capabilities,
         currentBehavior,
+        model_id
       );
     }
     syncBall();

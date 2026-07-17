@@ -153,6 +153,7 @@ const buildEntityStat = (partial) => {
     state_space: stateSpace,
     observation_vector: [],
     controller: partial.controller || "random",
+    trainedPolicyId: "",
 
     behavior: partial.behavior || [],
     current_behavior: partial.current_behavior || null,
@@ -192,6 +193,7 @@ const buildEntitiyFromPartial = (partial, id) => {
     cumulativeTerminalReward: null,
     state: partial.state || {}, //added this will have to sync it on Object Class in python
     positionSpawned: partial.position || [0, 0, 0],
+    trainedPolicyId: "",
 
     behavior: behavior || [],
     behaviorObs: behaviorObsSpace || [],

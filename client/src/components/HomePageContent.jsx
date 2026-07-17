@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useRunTimeStore } from "../stores/useRunTimeStore";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -187,6 +188,7 @@ function ModelCard({ model, isFriend = false, friendName = null, onUpdate }) {
 export default function HomePageContent() {
   const { user } = useAuthStore.getState();
 
+  const setTotalModelsList = useRunTimeStore((state) => state.setTotalModelsList);
   const [myModels, setMyModels] = useState([]);
   const [friendModels, setFriendModels] = useState([]);
   const [friendsList, setFriendsList] = useState({});
@@ -223,6 +225,9 @@ export default function HomePageContent() {
         );
         const data = await res.json();
         setMyModels(data.models ?? []);
+        for (const Model of data.models) {
+          setTotalModelsList(Model.id, Model.name);
+        }
       } catch {
         setMyModels([]);
       } finally {
@@ -269,6 +274,9 @@ export default function HomePageContent() {
           .eq("modelMode", "PUBLIC");
 
         setFriendModels(models ?? []);
+        for (const fModel of models) {
+          setTotalModelsList(fModel.id, fModel.name);
+        }
       } catch {
         setFriendModels([]);
       } finally {

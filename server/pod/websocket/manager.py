@@ -7,8 +7,8 @@ from fastapi import FastAPI, WebSocket
 from server.pod.jwt_token.generateJWT import verify_token
 from server.utilities.refined import actionMasking, actionMaskingArray, actionTranslator
 
-model = None
-
+models: dict | None = None
+session_id: str | None = None
 
 class ConnectionManager:
     def __init__(self):
@@ -21,12 +21,14 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def predict_action(self, obs: list, capability: list, current_behavior: str):
+    async def predict_action(self, obs: list, capability: list, current_behavior: str, model_id: str):
         obs = np.array(obs, dtype=np.float32)
         actions, _ = actionMasking(capability)
 
         mask = [False] * len(actions)
         maskedArray = actionMaskingArray(mask, actions, current_behavior, obs, capability)
+
+        model = models[model_id]
 
         action_predicted, _ = model.predict(
             obs, action_masks=maskedArray, deterministic=True
@@ -81,7 +83,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
-    if model is None:
+    if models is None:
         await websocket.close(code=1013, reason="model not ready")
         manager.disconnect(websocket)
         return
@@ -90,15 +92,17 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             token = data["jwt_token"]
+            session_uid = data["session_token"]
             agent_id = data["agentId"]
             capability = data["cap"]
             current_behavior = data["behavior"]
             seq = data["seq"]
+            model_id = data["model_id"]
             status = verify_token(token)
-            if status:
+            if status and session_uid == session_id:
                 print(f"Received: {data}", flush=True)
                 obs = data["obs"]
-                result = await manager.predict_action(obs, capability, current_behavior)
+                result = await manager.predict_action(obs, capability, current_behavior, model_id)
                 action = result["action"]
                 print(f"Sent: {action}", flush=True)
 

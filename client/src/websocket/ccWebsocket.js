@@ -38,6 +38,7 @@ export function sendObsToCloud(
   agentId,
   cap,
   behavior,
+  model_id
 ) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     console.warn("Socket not ready — observation dropped");
@@ -52,6 +53,7 @@ export function sendObsToCloud(
       agentId,
       cap,
       behavior,
+      model_id
     }),
   );
 }
