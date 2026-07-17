@@ -21,6 +21,8 @@ class PyBulletWorld:
         self.ball_obj = None
         self.red_goal_post = None
         self.blue_goal_post = None
+        self.yellow_goal_post = None
+        self.green_goal_post = None
 
     def load(self):
         if self.client is not None:
@@ -65,7 +67,7 @@ class PyBulletWorld:
             self.temp_ent_config = None
             if topographyFixed:
                 self.cell_size = 0.2
-                excluded_tags = ("non_state", "red-post", "blue-post")
+                excluded_tags = ("non_state", "red-post", "blue-post", "yellow-post", "green-post")
                 self.non_state_ent_configs = [
                     ent for ent in entities_config if ent.tag in excluded_tags
                 ]
@@ -264,6 +266,8 @@ class PyBulletWorld:
             "ball": 1,
             "red-post": 2,
             "blue-post": 2,
+            "yellow-post": 2,
+            "green-post": 2,
             "Pickable Object": 3,
             "Collectible Object": 4,
             "deposit": 5,
@@ -530,6 +534,26 @@ class PyBulletWorld:
                 rotationEntity,
                 colliderEntity,
                 "blue",
+                self.client,
+                footballRef,
+            )
+            bullet_id = self.blue_goal_post.get_goal_sensor()
+        elif entity.tag == "yellow-post":
+            self.blue_goal_post = GoalSensor(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                "yellow",
+                self.client,
+                footballRef,
+            )
+            bullet_id = self.blue_goal_post.get_goal_sensor()
+        elif entity.tag == "green-post":
+            self.blue_goal_post = GoalSensor(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                "green",
                 self.client,
                 footballRef,
             )
