@@ -3,8 +3,6 @@ import traceback
 from server.database.update import update_status
 from server.pod.basis import basis
 from server.storage.downloadModel import downloadModel
-from server.utilities.callWebhook import call_webhook_for_inference
-
 
 def inferencePod(uid):
     try:

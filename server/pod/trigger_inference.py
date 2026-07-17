@@ -19,10 +19,13 @@ def get_models_id(session_id):
 
 if __name__ == "__main__":
     session_uid = sys.argv[1]
+    print("Session ID: ", session_uid)
     uids = get_models_id(session_uid) # ["model_1", "model_2"]
+    print("UIDs: ", uids)
     models = {}
     print(f"[1] Starting inference for uid: {session_uid}", flush=True)
     for id in uids:
+        print("Training ID: ", id)
         model = inferencePod(id)
         models[id] = model
     print(f"[2] inferencePod returned: {models}", flush=True)
