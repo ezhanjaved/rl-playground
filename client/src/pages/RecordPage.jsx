@@ -5,6 +5,7 @@ import { BrainCircuit, Loader2, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/useAuthStore";
 import InferenceRunner from "../components/InferenceRunner";
+import { useRunTimeStore } from "../stores/useRunTimeStore";
 
 const formatDate = (iso) => {
   if (!iso) return "—";
@@ -52,6 +53,7 @@ const RecordPage = () => {
   const user = useAuthStore((state) => state.user);
   const [modelsData, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const setTotalModelsList = useRunTimeStore((state) => state.setTotalModelsList);
 
   const fetchModels = async () => {
     if (!user?.id) return;
@@ -68,6 +70,9 @@ const RecordPage = () => {
       });
       const result = await response.json();
       setData(result.models ?? []);
+      for (const Model of result.models) {
+        setTotalModelsList(Model.training_id, Model.name);
+      }
     } catch (err) {
       console.log("Server Error:", err);
       setData([]);

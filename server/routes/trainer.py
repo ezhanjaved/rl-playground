@@ -187,7 +187,6 @@ async def run_the_model(data: RunModel):
                 "simulation",
             )
 
-            print("SESSION ID: ", session_id)
             entities, graphs = {}, {}
             if recreation_mode == "simple":
                 entities = fetchEnt(models_list[0])

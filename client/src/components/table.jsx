@@ -431,7 +431,6 @@ export function Table({
                       </th>
                     );
                   })}
-                  {actions && <th className="rl-th rl-action-cell">Action</th>}
                   {actions && <th className="rl-th rl-action-cell">Retrain</th>}
                   {actions && <th className="rl-th rl-action-cell">Delete</th>}
                 </tr>
