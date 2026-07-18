@@ -13,7 +13,6 @@ PREVIOUS_DISTANCE_BY_BEHAVIOR = {
 def previousDistanceCorrection(entities, obs_b, obs_a, current_action, agent):
     agent_id = agent.id
     fresh_agent = entities[agent_id]
-    print("Pre Action OBS: ", obs_b)
     obs_space = fresh_agent.behaviorObs  # should read behavior obs space
     current_behavior = fresh_agent.current_behavior  # should read current behavior
 
