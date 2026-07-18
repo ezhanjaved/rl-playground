@@ -335,6 +335,7 @@ export default function EntitiesPanel() {
         },
         capabilities: ["Moveable", "Footballer"],
         teamId: "yellow",
+        controller: "manual",
         behavior: [{ type: "Football", requiredCount: 3, status: false }],
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -599,7 +600,7 @@ export default function EntitiesPanel() {
       payload: {
         name: "goal_post_green",
         tag: "green-post",
-        isGoalPostBlue: "true",
+        isGoalPostGreen: "true",
         goalId: "green",
         assetRef: "resources/arch_green.gltf",
         collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
@@ -611,7 +612,7 @@ export default function EntitiesPanel() {
       payload: {
         name: "goal_post_yellow",
         tag: "yellow-post",
-        isGoalPostBlue: "true",
+        isGoalPostYellow: "true",
         goalId: "yellow",
         assetRef: "resources/arch_yellow.gltf",
         collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },

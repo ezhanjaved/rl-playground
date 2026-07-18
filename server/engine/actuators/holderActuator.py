@@ -102,8 +102,11 @@ def holderActuator(action, agentData, entities, eM, client, indexOfAction):
             isBall=droppedObj["isBall"],
             isGoalPostBlue=droppedObj["isGoalPostBlue"],
             isGoalPostRed=droppedObj["isGoalPostRed"],
+            isGoalPostGreen=droppedObj["isGoalPostGreen"],
+            isGoalPostYellow=droppedObj["isGoalPostYellow"],
             goalId=droppedObj["goalId"],
             teamId=droppedObj["teamId"],
+            oppTeamId=droppedObj["oppTeamId"],
             positionSpawned=droppedObj["positionSpawned"],
         )
         new_state_space["holding"] = False

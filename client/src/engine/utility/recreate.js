@@ -26,6 +26,7 @@ export function recreateEnv(entities) {
 
       goalId: singleObj.goalId || "",
       teamId: singleObj.teamId || null,
+      oppTeamId: singleObj.oppTeamId || null,
 
       isDecor: singleObj.isDecor,
       isPickable: singleObj.isPickable,
@@ -35,6 +36,8 @@ export function recreateEnv(entities) {
       isBall: singleObj.isBall,
       isGoalPostRed: singleObj.isGoalPostRed,
       isGoalPostBlue: singleObj.isGoalPostBlue,
+      isGoalPostYellow: singleObj.isGoalPostYellow || false,
+      isGoalPostGreen: singleObj.isGoalPostGreen || false,
       isDeposit: singleObj.isDeposit,
       isDestroyable: singleObj.isDestroyable,
 

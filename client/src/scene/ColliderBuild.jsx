@@ -23,7 +23,7 @@ export default function ColliderBuilder({ entity, children }) {
 
   const goalId = entity.goalId;
   const { shape, h, r, w, d } = entity.collider;
-  const isGoalPost = entity?.isGoalPostRed || entity?.isGoalPostBlue;
+  const isGoalPost = entity?.isGoalPostRed || entity?.isGoalPostBlue || entity?.isGoalPostGreen || entity?.isGoalPostYellow;
   const halfHeight = h / 2 - (r ?? 0);
 
   const renderCollider = () => {

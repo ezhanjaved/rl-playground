@@ -66,6 +66,8 @@ function AgentInspectorWindow({ open, onClose }) {
   if (!open) return null;
 
   const activeAgentData = entitiesStats[activeAgentId];
+  const capabilities = activeAgentData.capabilities; //capabilities is array ["ability1", "ability2"]
+  const isFootballPlayer = capabilities.includes("Footballer")
 
   return createPortal(
     <div
@@ -249,6 +251,36 @@ function AgentInspectorWindow({ open, onClose }) {
                     {activeAgentData.last_action}
                   </span>
                   </div>
+
+
+                  {isFootballPlayer &&
+                    (<div className="agent-inspector-info-row">
+                    <span className="agent-inspector-info-label">
+                      Opposition Team
+                    </span>
+                    <span className="agent-inspector-info-value">
+                      {activeAgentData.oppTeamId}
+                    </span>
+                    </div>)}
+
+                  {isFootballPlayer &&
+                    (<div className="agent-inspector-info-row">
+                    <span className="agent-inspector-info-label">
+                      Pick Opposition Team
+                    </span>
+                    <select
+                      onChange={(e) => {
+                        const selectedValue = e.target.value;
+                        updateEntity(activeAgentId, { oppTeamId: selectedValue });
+                        updateEntityStat(activeAgentId, { oppTeamId: selectedValue });
+                      }}
+                    >
+                      <option key={"blue"} value={"blue"}>Blue</option>
+                      <option key={"green"} value={"green"}>Green</option>
+                      <option key={"yellow"} value={"yellow"}>Yellow</option>
+                      <option key={"red"} value={"red"}>Red</option>
+                    </select>
+                  </div>)}
 
                   <div className="agent-inspector-info-row">
                     <span className="agent-inspector-info-label">

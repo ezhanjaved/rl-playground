@@ -19,6 +19,7 @@ class PyBulletWorld:
         self.entity_mapping = {}
         self.ball_id = None
         self.ball_obj = None
+
         self.red_goal_post = None
         self.blue_goal_post = None
         self.yellow_goal_post = None
@@ -420,7 +421,7 @@ class PyBulletWorld:
 
             dist = distance3D(center_bullet, [x, y, cz])
 
-            if min_dist < dist < max_dist:
+            if min_dist < dist < 3.0:
                 if grid is None:
                     return positionSwap([x, y, cz])
                 col = int((x - self.min_x) / self.cell_size)
@@ -539,7 +540,7 @@ class PyBulletWorld:
             )
             bullet_id = self.blue_goal_post.get_goal_sensor()
         elif entity.tag == "yellow-post":
-            self.blue_goal_post = GoalSensor(
+            self.yellow_goal_post = GoalSensor(
                 positionEntity,
                 rotationEntity,
                 colliderEntity,
@@ -547,9 +548,9 @@ class PyBulletWorld:
                 self.client,
                 footballRef,
             )
-            bullet_id = self.blue_goal_post.get_goal_sensor()
+            bullet_id = self.yellow_goal_post.get_goal_sensor()
         elif entity.tag == "green-post":
-            self.blue_goal_post = GoalSensor(
+            self.green_goal_post = GoalSensor(
                 positionEntity,
                 rotationEntity,
                 colliderEntity,
@@ -557,7 +558,7 @@ class PyBulletWorld:
                 self.client,
                 footballRef,
             )
-            bullet_id = self.blue_goal_post.get_goal_sensor()
+            bullet_id = self.green_goal_post.get_goal_sensor()
         elif entity.tag == "generic" or entity.tag == "":
             pass
         else:
@@ -575,6 +576,10 @@ class PyBulletWorld:
             self.blue_goal_post.check(self.ball_id, entities, self.entity_mapping)
         if self.red_goal_post is not None:
             self.red_goal_post.check(self.ball_id, entities, self.entity_mapping)
+        if self.green_goal_post is not None:
+            self.green_goal_post.check(self.ball_id, entities, self.entity_mapping)
+        if self.yellow_goal_post is not None:
+            self.yellow_goal_post.check(self.ball_id, entities, self.entity_mapping)
 
     def collision_check_ball_agent(self, entities):
         if self.ball_id is None:

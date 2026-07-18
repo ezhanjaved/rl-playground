@@ -159,6 +159,7 @@ const buildEntityStat = (partial) => {
     current_behavior: partial.current_behavior || null,
     behaviorObs: behaviorObsSpace || [],
     behaviorObsVector: [],
+    oppTeamId: null,
 
     last_action: partial.last_action || "idle",
     probabilities: [],
@@ -201,14 +202,19 @@ const buildEntitiyFromPartial = (partial, id) => {
 
     goalId: partial.goalId || "",
     teamId: partial.teamId || null,
+    oppTeamId: partial.oppTeamId || null,
 
     targetVisual: partial.targetStat || null,
 
     isDecor: partial.isDecor || false,
     isGate: partial.isGate || false,
     isBall: partial.isBall || false,
+
     isGoalPostRed: partial.isGoalPostRed || false,
     isGoalPostBlue: partial.isGoalPostBlue || false,
+    isGoalPostYellow: partial.isGoalPostYellow || false,
+    isGoalPostGreen: partial.isGoalPostGreen || false,
+
     isDeposit: partial.isDeposit || false,
     isPickable: partial.isPickable || false,
     isDestroyable: partial.isDestroyable || false,

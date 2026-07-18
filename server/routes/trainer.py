@@ -45,6 +45,7 @@ class RequestModel(BaseModel):
 class RunModel(BaseModel):
     user_uid: str | None = None
     model_lists: dict | None = {}
+    model_uid: str | None = None
     mode: str | None = None
     recreationMode: str | None = None
 
