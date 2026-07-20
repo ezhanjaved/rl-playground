@@ -335,7 +335,6 @@ export default function EntitiesPanel() {
         },
         capabilities: ["Moveable", "Footballer"],
         teamId: "yellow",
-        controller: "manual",
         behavior: [{ type: "Football", requiredCount: 3, status: false }],
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },

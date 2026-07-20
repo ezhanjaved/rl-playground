@@ -23,7 +23,7 @@ export let rotationDragState = {
   baseRotY: 0,
 };
 
-export default function CanvasPad() {
+export default function CanvasPad({ isFullscreen }) {
   const controlRef = React.useRef();
   orbitControlsRef = controlRef;
 
@@ -181,10 +181,9 @@ export default function CanvasPad() {
         <Canvas
           camera={{ position: [0, 5, 10], fov: 75 }}
           style={{
-            width: "100%",
-            height: "570px",
-            borderRadius: "8px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+            height: isFullscreen ? "100vh" : "570px",
+            borderRadius: isFullscreen ? "0" : "8px",
+            boxShadow: isFullscreen ? "none" : "0 4px 8px rgba(0, 0, 0, 0.1)",
           }}
         >
           <color attach="background" args={[colorCanvas]} />
@@ -205,7 +204,7 @@ export default function CanvasPad() {
           />
           <Grid args={[100, 100]} sectionColor={colorGrid} />
           <axesHelper args={[10]} />
-          <Perf position="bottom-right" />
+          {/* <Perf position="bottom-right" />*/}
         </Canvas>
       </div>
     </>

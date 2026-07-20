@@ -66,8 +66,8 @@ function AgentInspectorWindow({ open, onClose }) {
   if (!open) return null;
 
   const activeAgentData = entitiesStats[activeAgentId];
-  const capabilities = activeAgentData.capabilities; //capabilities is array ["ability1", "ability2"]
-  const isFootballPlayer = capabilities.includes("Footballer")
+  const capabilities = activeAgentData?.capabilities || []; //capabilities is array ["ability1", "ability2"]
+  const isFootballPlayer = capabilities?.includes("Footballer") || false
 
   return createPortal(
     <div
