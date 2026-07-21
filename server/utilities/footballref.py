@@ -24,15 +24,22 @@ def footballRef(goal_id, ball_id, entities, mapping, client):
     print("Ball STATE: ", ball.state)
 
     if goal_id == "red":
-        scoringTeam = "blue"
         concedingTeam = "red"
     elif goal_id == "blue":
-        scoringTeam = "red"
         concedingTeam = "blue"
+    elif goal_id == "yellow":
+        concedingTeam = "yellow"
+    elif goal_id == "green":
+        concedingTeam = "green"
 
     lastTouchedBy = ball_state["lastTouchedBy"]
     lastTouchedTeam = ball_state["lastTouchedTeam"]
     isOwnGoal = lastTouchedTeam == concedingTeam
+
+    if isOwnGoal:
+        scoringTeam = entities[lastTouchedBy].oppTeamId
+    else:
+        scoringTeam = entities[lastTouchedBy].teamId
 
     for agentId, agentData in entities.items():
         print("Searching For Player in Entities: ", agentData.tag)

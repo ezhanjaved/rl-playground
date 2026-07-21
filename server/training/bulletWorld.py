@@ -19,8 +19,11 @@ class PyBulletWorld:
         self.entity_mapping = {}
         self.ball_id = None
         self.ball_obj = None
+
         self.red_goal_post = None
         self.blue_goal_post = None
+        self.yellow_goal_post = None
+        self.green_goal_post = None
 
     def load(self):
         if self.client is not None:
@@ -65,7 +68,7 @@ class PyBulletWorld:
             self.temp_ent_config = None
             if topographyFixed:
                 self.cell_size = 0.2
-                excluded_tags = ("non_state", "red-post", "blue-post")
+                excluded_tags = ("non_state", "red-post", "blue-post", "yellow-post", "green-post")
                 self.non_state_ent_configs = [
                     ent for ent in entities_config if ent.tag in excluded_tags
                 ]
@@ -264,6 +267,8 @@ class PyBulletWorld:
             "ball": 1,
             "red-post": 2,
             "blue-post": 2,
+            "yellow-post": 2,
+            "green-post": 2,
             "Pickable Object": 3,
             "Collectible Object": 4,
             "deposit": 5,
@@ -416,7 +421,7 @@ class PyBulletWorld:
 
             dist = distance3D(center_bullet, [x, y, cz])
 
-            if min_dist < dist < max_dist:
+            if min_dist < dist < 3.0:
                 if grid is None:
                     return positionSwap([x, y, cz])
                 col = int((x - self.min_x) / self.cell_size)
@@ -534,6 +539,26 @@ class PyBulletWorld:
                 footballRef,
             )
             bullet_id = self.blue_goal_post.get_goal_sensor()
+        elif entity.tag == "yellow-post":
+            self.yellow_goal_post = GoalSensor(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                "yellow",
+                self.client,
+                footballRef,
+            )
+            bullet_id = self.yellow_goal_post.get_goal_sensor()
+        elif entity.tag == "green-post":
+            self.green_goal_post = GoalSensor(
+                positionEntity,
+                rotationEntity,
+                colliderEntity,
+                "green",
+                self.client,
+                footballRef,
+            )
+            bullet_id = self.green_goal_post.get_goal_sensor()
         elif entity.tag == "generic" or entity.tag == "":
             pass
         else:
@@ -551,6 +576,10 @@ class PyBulletWorld:
             self.blue_goal_post.check(self.ball_id, entities, self.entity_mapping)
         if self.red_goal_post is not None:
             self.red_goal_post.check(self.ball_id, entities, self.entity_mapping)
+        if self.green_goal_post is not None:
+            self.green_goal_post.check(self.ball_id, entities, self.entity_mapping)
+        if self.yellow_goal_post is not None:
+            self.yellow_goal_post.check(self.ball_id, entities, self.entity_mapping)
 
     def collision_check_ball_agent(self, entities):
         if self.ball_id is None:

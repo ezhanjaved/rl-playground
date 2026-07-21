@@ -29,10 +29,12 @@ export function footballRef(event) {
 
   if (postName === "goal_sensor_blue") {
     goalOwnerTeam = "blue";
-    scoringTeam = "red";
   } else if (postName === "goal_sensor_red") {
     goalOwnerTeam = "red";
-    scoringTeam = "blue";
+  } else if (postName === "goal_sensor_green") {
+    goalOwnerTeam = "green"
+  } else if (postName === "goal_sensor_yellow") {
+    goalOwnerTeam = "yellow"
   } else {
     return;
   }
@@ -47,6 +49,7 @@ export function footballRef(event) {
   const lastTouchedBy = ballState.lastTouchedBy;
   const lastTouchedTeam = ballState.lastTouchedTeam;
   const isOwnGoal = lastTouchedTeam === goalOwnerTeam;
+  scoringTeam = isOwnGoal ? entities[lastTouchedBy]?.oppTeamId : entities[lastTouchedBy]?.teamId
 
   pendingBallReset.ballId = ballId;
   pendingBallReset.scoringTeam = scoringTeam;

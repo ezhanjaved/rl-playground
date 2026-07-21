@@ -57,6 +57,10 @@ const Header = () => {
       name: "sky",
       gradient: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
     },
+    {
+      name: "red",
+      gradient: "linear-gradient(135deg, #ef4444, #f87171)",
+    },
   ];
 
   const graphs = useGraphStore((state) => state.graphs);

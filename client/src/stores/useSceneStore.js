@@ -153,11 +153,13 @@ const buildEntityStat = (partial) => {
     state_space: stateSpace,
     observation_vector: [],
     controller: partial.controller || "random",
+    trainedPolicyId: "",
 
     behavior: partial.behavior || [],
     current_behavior: partial.current_behavior || null,
     behaviorObs: behaviorObsSpace || [],
     behaviorObsVector: [],
+    oppTeamId: null,
 
     last_action: partial.last_action || "idle",
     probabilities: [],
@@ -192,6 +194,7 @@ const buildEntitiyFromPartial = (partial, id) => {
     cumulativeTerminalReward: null,
     state: partial.state || {}, //added this will have to sync it on Object Class in python
     positionSpawned: partial.position || [0, 0, 0],
+    trainedPolicyId: "",
 
     behavior: behavior || [],
     behaviorObs: behaviorObsSpace || [],
@@ -199,14 +202,19 @@ const buildEntitiyFromPartial = (partial, id) => {
 
     goalId: partial.goalId || "",
     teamId: partial.teamId || null,
+    oppTeamId: partial.oppTeamId || null,
 
     targetVisual: partial.targetStat || null,
 
     isDecor: partial.isDecor || false,
     isGate: partial.isGate || false,
     isBall: partial.isBall || false,
+
     isGoalPostRed: partial.isGoalPostRed || false,
     isGoalPostBlue: partial.isGoalPostBlue || false,
+    isGoalPostYellow: partial.isGoalPostYellow || false,
+    isGoalPostGreen: partial.isGoalPostGreen || false,
+
     isDeposit: partial.isDeposit || false,
     isPickable: partial.isPickable || false,
     isDestroyable: partial.isDestroyable || false,

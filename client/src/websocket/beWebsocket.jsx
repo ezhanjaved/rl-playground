@@ -3,14 +3,16 @@ import { useRunTimeStore } from "../stores/useRunTimeStore";
 import { recreateEnv, wipeEntities } from "../engine/utility/recreate";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useGraphStore } from "../stores/useGraphStore";
+
 export function useBackendWebSocket(onModelReady) {
   const socketRef = useRef(null);
   const intentionalClose = useRef(false);
-  const { setModalStage, setModeltoLoading, setModelId } =
+  const { setModalStage, setModeltoLoading, setModelId, models_lists, recreationMode } =
     useRunTimeStore.getState();
   const { addGraphWithId } = useGraphStore.getState();
   const { user } = useAuthStore.getState();
-  const connectSocket = async (item) => {
+
+  const connectSocket = async () => {
     if (socketRef.current) return;
     try {
       const res = await fetch(
@@ -19,7 +21,8 @@ export function useBackendWebSocket(onModelReady) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model_uid: item.training_id,
+            recreationMode: recreationMode,
+            model_lists: models_lists,
             user_uid: user?.id,
           }),
         },
@@ -35,7 +38,7 @@ export function useBackendWebSocket(onModelReady) {
       localStorage.setItem("session_token", session_id);
       localStorage.setItem("jwt_token", token_id);
       setModalStage("env_fetched_from_backend");
-      setModelId(item?.training_id);
+      setModelId(session_id);
       wipeEntities(); //wiping the current env
       recreateEnv(entities); //recreating the env from entities dict we got from python
       for (const graph_id of Allgraphs) {
@@ -76,7 +79,7 @@ export function useBackendWebSocket(onModelReady) {
       console.log("❌ Disconnected from backend WS");
       socketRef.current = null;
       if (!intentionalClose.current) {
-        setTimeout(() => connectSocket(item), 2000);
+        setTimeout(() => connectSocket(), 2000);
       }
       intentionalClose.current = false;
     };

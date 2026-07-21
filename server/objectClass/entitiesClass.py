@@ -55,11 +55,14 @@ class Entities:
 
     goalId: str
     teamId: str
+    oppTeamId: str
     positionSpawned: list[float]
 
     isBall: bool
     isGoalPostRed: bool
     isGoalPostBlue: bool
+    isGoalPostYellow: bool
+    isGoalPostGreen: bool
     isDecor: bool
     isPickable: bool
     isCollectable: bool

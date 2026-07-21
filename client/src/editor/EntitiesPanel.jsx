@@ -142,7 +142,6 @@ export default function EntitiesPanel() {
         },
         capabilities: ["Moveable", "Footballer"],
         teamId: "blue",
-        controller: "manual",
         behavior: [{ type: "Football", requiredCount: 3, status: false }],
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
@@ -274,37 +273,6 @@ export default function EntitiesPanel() {
     },
     {
       id: "lib_agent_7",
-      label: "Barbarian",
-      image: agent7,
-      payload: {
-        tag: "agent",
-        name: "Barbarian",
-        assetRef: "agents/heroes/Barbarian.glb",
-        animationRef: {
-          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
-          1: "agents/heroes/Rig_Medium_General.glb",
-        },
-        capabilities: [
-          "Moveable",
-          "Collector",
-          "Depositor",
-          "Destroyer",
-          "Opener",
-          "Finder",
-          "Navigator",
-        ],
-        behavior: [
-          { type: "Collect", requiredCount: 3, status: false },
-          { type: "Deposit", requiredCount: 1, status: false },
-          { type: "Open", requiredCount: 1, status: false },
-          { type: "Destroy", requiredCount: 1, status: false },
-          { type: "Find", requiredCount: 1, status: false },
-        ],
-        collider: { shape: "capsule", h: 2, r: 0.3 },
-      },
-    },
-    {
-      id: "lib_agent_8",
       label: "Rogue Human",
       image: agent8,
       payload: {
@@ -332,6 +300,78 @@ export default function EntitiesPanel() {
           { type: "Deposit", requiredCount: 1, status: false },
           { type: "Find", requiredCount: 1, status: false },
         ],
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_8",
+      label: "Barbarian",
+      image: agent7,
+      payload: {
+        tag: "agent",
+        name: "Barbarian",
+        assetRef: "agents/heroes/Barbarian_red.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Footballer"],
+        teamId: "red",
+        behavior: [{ type: "Football", requiredCount: 3, status: false }],
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_9",
+      label: "Barbarian",
+      image: agent7,
+      payload: {
+        tag: "agent",
+        name: "Barbarian",
+        assetRef: "agents/heroes/Barbarian_yellow.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Footballer"],
+        teamId: "yellow",
+        behavior: [{ type: "Football", requiredCount: 3, status: false }],
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_10",
+      label: "Barbarian",
+      image: agent7,
+      payload: {
+        tag: "agent",
+        name: "Barbarian",
+        assetRef: "agents/heroes/Barbarian_blue.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Footballer"],
+        teamId: "blue",
+        behavior: [{ type: "Football", requiredCount: 3, status: false }],
+        collider: { shape: "capsule", h: 2, r: 0.3 },
+      },
+    },
+    {
+      id: "lib_agent_11",
+      label: "Barbarian",
+      image: agent7,
+      payload: {
+        tag: "agent",
+        name: "Barbarian",
+        assetRef: "agents/heroes/Barbarian_green.glb",
+        animationRef: {
+          0: "agents/heroes/Rig_Medium_MovementBasic.glb",
+          1: "agents/heroes/Rig_Medium_General.glb",
+        },
+        capabilities: ["Moveable", "Footballer"],
+        teamId: "green",
+        behavior: [{ type: "Football", requiredCount: 3, status: false }],
         collider: { shape: "capsule", h: 2, r: 0.3 },
       },
     },
@@ -402,30 +442,6 @@ export default function EntitiesPanel() {
           lastTouchedTeam: null,
           goalLocked: false,
         },
-      },
-    },
-    {
-      id: "lib_state_obj_4",
-      image: GoalRed,
-      payload: {
-        name: "goal_post_red",
-        tag: "red-post",
-        isGoalPostRed: "true",
-        goalId: "red",
-        assetRef: "resources/arch_red.gltf",
-        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
-      },
-    },
-    {
-      id: "lib_state_obj_5",
-      image: GoalBlue,
-      payload: {
-        name: "goal_post_blue",
-        tag: "blue-post",
-        isGoalPostBlue: "true",
-        goalId: "blue",
-        assetRef: "resources/arch_blue.gltf",
-        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
       },
     },
   ];
@@ -511,14 +527,94 @@ export default function EntitiesPanel() {
         collider: { shape: "box", w: 4.0, h: 1.5, d: 1.0 },
       },
     },
+  ];
+
+  const footballItems = [{
+    id: "football_obj_1",
+    image: BlueBarrier,
+    payload: {
+      name: "Blue Barrier",
+      tag: "non_state",
+      assetRef: "resources/barrier_4x1x1_blue.gltf",
+      collider: { shape: "box", w: 4.0, h: 1.0, d: 1.0 },
+    },
+  },
+  {
+    id: "football_obj_2",
+    image: BlueBarrier,
+    payload: {
+      name: "Red Barrier",
+      tag: "non_state",
+      assetRef: "resources/barrier_4x1x1_red.gltf",
+      collider: { shape: "box", w: 4.0, h: 1.0, d: 1.0 },
+    },
+  },
+  {
+    id: "football_obj_3",
+    image: BlueBarrier,
+    payload: {
+      name: "Green Barrier",
+      tag: "non_state",
+      assetRef: "resources/barrier_4x1x1_green.gltf",
+      collider: { shape: "box", w: 4.0, h: 1.0, d: 1.0 },
+    },
+  },
+  {
+    id: "football_obj_4",
+    image: BlueBarrier,
+    payload: {
+      name: "Yellow Barrier",
+      tag: "non_state",
+      assetRef: "resources/barrier_4x1x1_yellow.gltf",
+      collider: { shape: "box", w: 4.0, h: 1.0, d: 1.0 },
+    },
+    },
     {
-      id: "lib_non_state_obj_9",
-      image: BlueBarrier,
+      id: "football_obj_5",
+      image: GoalRed,
       payload: {
-        name: "Blue Barrier",
-        tag: "non_state",
-        assetRef: "resources/barrier_4x1x1_blue.gltf",
-        collider: { shape: "box", w: 4.0, h: 1.0, d: 1.0 },
+        name: "goal_post_red",
+        tag: "red-post",
+        isGoalPostRed: "true",
+        goalId: "red",
+        assetRef: "resources/arch_red.gltf",
+        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
+      },
+    },
+    {
+      id: "football_obj_6",
+      image: GoalBlue,
+      payload: {
+        name: "goal_post_blue",
+        tag: "blue-post",
+        isGoalPostBlue: "true",
+        goalId: "blue",
+        assetRef: "resources/arch_blue.gltf",
+        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
+      },
+    },
+    {
+      id: "football_obj_7",
+      image: GoalBlue,
+      payload: {
+        name: "goal_post_green",
+        tag: "green-post",
+        isGoalPostGreen: "true",
+        goalId: "green",
+        assetRef: "resources/arch_green.gltf",
+        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
+      },
+    },
+    {
+      id: "football_obj_8",
+      image: GoalBlue,
+      payload: {
+        name: "goal_post_yellow",
+        tag: "yellow-post",
+        isGoalPostYellow: "true",
+        goalId: "yellow",
+        assetRef: "resources/arch_yellow.gltf",
+        collider: { shape: "box", w: 2.2, h: 0.05, d: 1.0 },
       },
     },
   ];
@@ -613,7 +709,7 @@ export default function EntitiesPanel() {
         name: "Chest",
         tag: "target",
         isTarget: "true",
-        assetRef: "resources/pillar_decorated.gltf",
+        assetRef: "resources/chest-gold.gltf",
         collider: { shape: "sphere", h: 2.5, r: 0.5 },
         targetStat: { radius: 2 },
       },
@@ -640,6 +736,7 @@ export default function EntitiesPanel() {
         <Section title="Dyanmic Obstacles" items={StateObjects} />
         <Section title="Pickable Items" items={pickableItems} />
         <Section title="Destroyable Items" items={destroyableObjects} />
+        <Section title="Football Items" items={footballItems} />
         <Section title="Target Items" items={targetItems} />
       </div>
       <Tooltip

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import "../styling/table.css";
 import { deleteModel } from "../export/deleteModel";
 import {
@@ -13,13 +13,6 @@ import {
 import { StatusBadge } from "./StatusBadge";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { useBackendWebSocket } from "../websocket/beWebsocket";
-import { useRunTimeStore } from "../stores/useRunTimeStore";
-import { connectCloudSocket } from "../websocket/ccWebsocket";
-import { clearPending } from "../engine/runtime/controllers/ppoState";
-import { queueAction } from "../engine/runtime/actionQueue";
-import applyAction from "../engine/runtime/actuators/applyAction";
-import { useSceneStore } from "../stores/useSceneStore";
 
 function RetrainModal({ item, onClose, onConfirm }) {
   const [steps, setSteps] = useState("");
@@ -333,48 +326,6 @@ export function Table({
     (col) => col.key.toLowerCase() !== "final_reward",
   );
 
-  const {
-    setShowLoadingModal,
-    setModalStage,
-    setModeltoLoading,
-    setModeltoReady,
-  } = useRunTimeStore.getState();
-
-  const handleModelReady = useCallback(
-    (podUrl) => {
-      setModeltoReady(true);
-      setModeltoLoading(false);
-      connectCloudSocket(podUrl, (action, id, probs) => {
-        const { inferenceMode, setWaitingForAction } =
-          useRunTimeStore.getState();
-        const { entities, updateEntityStat } = useSceneStore.getState();
-
-        if (inferenceMode === "lockstep") {
-          const agent = entities?.[id];
-          if (!agent) {
-            setWaitingForAction(agent.id, false);
-            return;
-          }
-          updateEntityStat(agent.id, {
-            last_action: action,
-            probabilities: probs,
-          });
-          applyAction(action, agent, []);
-          setWaitingForAction(agent.id, false);
-          return;
-        }
-
-        if (inferenceMode === "on-cloud") {
-          queueAction(action, id);
-          clearPending(id);
-        }
-      });
-    },
-    [setModeltoReady],
-  );
-
-  const { connectSocket } = useBackendWebSocket(handleModelReady);
-
   const getKey = (item) =>
     typeof keyField === "function" ? keyField(item) : String(item[keyField]);
 
@@ -480,7 +431,6 @@ export function Table({
                       </th>
                     );
                   })}
-                  {actions && <th className="rl-th rl-action-cell">Action</th>}
                   {actions && <th className="rl-th rl-action-cell">Retrain</th>}
                   {actions && <th className="rl-th rl-action-cell">Delete</th>}
                 </tr>
@@ -584,32 +534,6 @@ export function Table({
                             </td>
                           );
                         })}
-
-                        {actions && (
-                          <td className="rl-td rl-action-cell">
-                            <div className="rl-action-wrapper">
-                              <button
-                                className={`action-btn-eye ${!trainable ? "disabled" : ""}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (trainable) {
-                                    connectSocket(item);
-                                    setShowLoadingModal(true);
-                                    setModalStage("connecting_to_backend");
-                                  }
-                                }}
-                                title={
-                                  !trainable
-                                    ? "Model is still training"
-                                    : "View Visualization"
-                                }
-                                disabled={!trainable}
-                              >
-                                <Eye size={18} />
-                              </button>
-                            </div>
-                          </td>
-                        )}
 
                         {actions && (
                           <td className="rl-td rl-action-cell">

@@ -44,15 +44,14 @@ class SimulationEnv:
     def step(self, actions):
         obs_before = self.core.get_observation()
 
-        current_behavior = self.core.runtime.entities[self.agent_id].current_behavior
-        capabilities = self.core.runtime.entities[self.agent_id].capabilities
-        actionList, _ = actionMasking(capabilities)
-        mask = [False] * len(actionList)
-        # state_space = self.core.runtime.entities[self.agent_id].state_space
-        returned_mask = actionMaskingArray(
-            mask, actionList, current_behavior, obs_before[self.agent_id], capabilities
-        )
-        print("Mask: ", returned_mask)
+        # current_behavior = self.core.runtime.entities[self.agent_id].current_behavior
+        # capabilities = self.core.runtime.entities[self.agent_id].capabilities
+        # actionList, _ = actionMasking(capabilities)
+        # mask = [False] * len(actionList)
+        # # state_space = self.core.runtime.entities[self.agent_id].state_space
+        # returned_mask = actionMaskingArray(
+        #     mask, actionList, current_behavior, obs_before[self.agent_id], capabilities
+        # )
 
         self.world.apply_actions(actions, self.core.runtime.entities)
         self.world.step_simulation()

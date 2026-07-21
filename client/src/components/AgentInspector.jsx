@@ -43,6 +43,9 @@ function AgentInspectorWindow({ open, onClose }) {
 
   const entitiesStats = useSceneStore((state) => state.entitiesStats);
   const controllerMode = useRunTimeStore((state) => state.controllerMode);
+  const models_lists = useRunTimeStore((state) => state.models_lists);
+  const updateEntity = useSceneStore((state) => state.updateEntity);
+  const updateEntityStat = useSceneStore((state) => state.updateEntityStat);
 
   const [agentsList, setList] = useState([]);
   const [activeAgentId, setAgentId] = useState("");
@@ -63,6 +66,8 @@ function AgentInspectorWindow({ open, onClose }) {
   if (!open) return null;
 
   const activeAgentData = entitiesStats[activeAgentId];
+  const capabilities = activeAgentData?.capabilities || []; //capabilities is array ["ability1", "ability2"]
+  const isFootballPlayer = capabilities?.includes("Footballer") || false
 
   return createPortal(
     <div
@@ -245,7 +250,66 @@ function AgentInspectorWindow({ open, onClose }) {
                   <span className="agent-inspector-info-value">
                     {activeAgentData.last_action}
                   </span>
+                  </div>
+
+
+                  {isFootballPlayer &&
+                    (<div className="agent-inspector-info-row">
+                    <span className="agent-inspector-info-label">
+                      Opposition Team
+                    </span>
+                    <span className="agent-inspector-info-value">
+                      {activeAgentData.oppTeamId}
+                    </span>
+                    </div>)}
+
+                  {isFootballPlayer &&
+                    (<div className="agent-inspector-info-row">
+                    <span className="agent-inspector-info-label">
+                      Pick Opposition Team
+                    </span>
+                    <select
+                      onChange={(e) => {
+                        const selectedValue = e.target.value;
+                        updateEntity(activeAgentId, { oppTeamId: selectedValue });
+                        updateEntityStat(activeAgentId, { oppTeamId: selectedValue });
+                      }}
+                    >
+                      <option key={"blue"} value={"blue"}>Blue</option>
+                      <option key={"green"} value={"green"}>Green</option>
+                      <option key={"yellow"} value={"yellow"}>Yellow</option>
+                      <option key={"red"} value={"red"}>Red</option>
+                    </select>
+                  </div>)}
+
+                  <div className="agent-inspector-info-row">
+                    <span className="agent-inspector-info-label">
+                      Current Trained Policy Id
+                    </span>
+                    <span className="agent-inspector-info-value">
+                      {activeAgentData.trainedPolicyId}
+                    </span>
+                  </div>
+
+                <div className="agent-inspector-info-row">
+                    <span className="agent-inspector-info-label">
+                      Policies Available
+                    </span>
+                    <select
+                      onChange={(e) => {
+                        const selectedValue = e.target.value;
+                        updateEntity(activeAgentId, { trainedPolicyId: selectedValue });
+                        updateEntityStat(activeAgentId, { trainedPolicyId: selectedValue });
+                      }}
+                    >
+                      {Object.entries(models_lists).map(([value, label]) => (
+                        <option key={value} value={label}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
                 </div>
+
               </div>
             </section>
 

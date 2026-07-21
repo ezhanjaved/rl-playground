@@ -12,6 +12,7 @@ export const useCanvasSetting = create((set, get) => ({
     purple: ["#DCC7FF", "#A69BC455"],
     yellow: ["#FFF7A5", "#C4BF7B55"],
     sky: ["#7DD3FC", "#38BDF855"],
+    red: ["#FF8A8A", "#B8666655"],
   },
 
   toggleDebug: () => set({ debugMode: !get().debugMode }),

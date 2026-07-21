@@ -60,6 +60,22 @@ export const useRunTimeStore = create((set, get) => ({
   inferenceMode: "lockstep",
   setInferenceMode: (value) => set({ inferenceMode: value }),
 
+  recreationMode: "simple",
+  setRecreationMode: (value) => set({ recreationMode: value }),
+
+  all_models: {},
+  setTotalModelsList: (id, value) => set((state) => ({
+    all_models: {
+      ...state.all_models,
+      [id]: value
+    }
+  })),
+
+  models_lists: {},
+  setModelsList: (value) => set({
+    models_lists: value,
+  }),
+
   seq: {},
   setSeq: (id, value) =>
     set((state) => ({

@@ -44,8 +44,10 @@ class RequestModel(BaseModel):
 
 class RunModel(BaseModel):
     user_uid: str | None = None
-    model_uid: str
+    model_lists: dict | None = {}
+    model_uid: str | None = None
     mode: str | None = None
+    recreationMode: str | None = None
 
 
 class ConfigModel(RequestModel):
@@ -173,19 +175,29 @@ async def getDataDebug(data: RequestModel):
 async def run_the_model(data: RunModel):
     try:
         dictObj = data.dict()
-        model_id = dictObj["model_uid"]
         user_id = dictObj["user_uid"]
-        status = validateOwner(model_id, user_id)
+        models_list_dict = dictObj["model_lists"]
+        models_list = list(models_list_dict.values())
+        recreation_mode = dictObj["recreationMode"]
+        status = True
         if status:
             session_id = str(uuid.uuid4())
             token = create_access_token(dictObj)
             create_model(
-                {"session_id": session_id, "user_id": user_id, "model_id": model_id},
+                {"session_id": session_id, "user_id": user_id, "model_lists": models_list_dict},
                 "simulation",
             )
-            entities = fetchEnt(model_id)
-            graphs = fetchGraph(model_id)
-            rl_inference.delay(model_id)
+
+            entities, graphs = {}, {}
+            if recreation_mode == "simple":
+                entities = fetchEnt(models_list[0])
+                graphs = fetchGraph(models_list[0])
+            else:
+                for model_id in models_list:
+                    entities.update(fetchEnt(model_id))
+                    graphs.update(fetchGraph(model_id))
+
+            rl_inference.delay(session_id)
             return {
                 "message": "Ownership test passed",
                 "status": 1,

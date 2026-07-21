@@ -41,6 +41,16 @@ const RedGoalPostPredicate = (e) =>
   e.isGoalPostRed === "true" ||
   e.isGoalPostRed === 1;
 
+const GreenGoalPostPredicate = (e) =>
+  e.isGoalPostGreen === true ||
+  e.isGoalPostGreen === "true" ||
+  e.isGoalPostGreen === 1;
+
+const YellowGoalPostPredicate = (e) =>
+  e.isGoalPostYellow === true ||
+  e.isGoalPostYellow === "true" ||
+  e.isGoalPostYellow === 1;
+
 const ballPredicate = (e) =>
   e.isBall === true || e.isBall === "true" || e.isBall === 1;
 
@@ -237,17 +247,51 @@ export default function buildObsSpace(agent) {
 
   //This section is for Football Ability
   const teamId = agent?.teamId || null;
+  const oppTeamId = agent?.oppTeamId || null;
   let predicatePickedForPost = null;
   let predicatePickedForMyOwnPost = null;
   let flag = null;
-  if (teamId) {
-    predicatePickedForPost =
-      teamId === "blue" ? RedGoalPostPredicate : BlueGoalPostPredicate;
-    flag = teamId === "blue" ? "isGoalPostRed" : "isGoalPostBlue";
+
+  switch (teamId) {
+    case "blue": {
+      predicatePickedForMyOwnPost = BlueGoalPostPredicate
+      break;
+    }
+    case "red": {
+      predicatePickedForMyOwnPost = RedGoalPostPredicate
+      break;
+    }
+    case "yellow": {
+      predicatePickedForMyOwnPost = YellowGoalPostPredicate
+      break;
+    }
+    case "green": {
+      predicatePickedForMyOwnPost = GreenGoalPostPredicate
+      break;
+    }
   }
-  if (teamId) {
-    predicatePickedForMyOwnPost =
-      teamId === "red" ? RedGoalPostPredicate : BlueGoalPostPredicate;
+
+  switch (oppTeamId) {
+    case "blue": {
+      predicatePickedForPost = BlueGoalPostPredicate
+      flag = "isGoalPostBlue"
+      break;
+    }
+    case "red": {
+      predicatePickedForPost = RedGoalPostPredicate
+      flag = "isGoalPostRed"
+      break;
+    }
+    case "yellow": {
+      predicatePickedForPost = YellowGoalPostPredicate
+      flag = "isGoalPostYellow"
+      break;
+    }
+    case "green": {
+      predicatePickedForPost = GreenGoalPostPredicate
+      flag = "isGoalPostGreen"
+      break;
+    }
   }
 
   const constructedObs = [];

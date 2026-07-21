@@ -42,10 +42,14 @@ def gate_predicate(e):
 def blue_goal_post_predicate(e):
     return getattr(e, "isGoalPostBlue", False) in (True, "true", 1)
 
-
 def red_goal_post_predicate(e):
     return getattr(e, "isGoalPostRed", False) in (True, "true", 1)
 
+def green_goal_post_predicate(e):
+    return getattr(e, "isGoalPostGreen", False) in (True, "true", 1)
+
+def yellow_goal_post_predicate(e):
+    return getattr(e, "isGoalPostYellow", False) in (True, "true", 1)
 
 def ball_predicate(e):
     return getattr(e, "isBall", False) in (True, "true", 1)
@@ -62,6 +66,8 @@ def partition_entities(entities):
         "gate": [],
         "goalPostBlue": [],
         "goalPostRed": [],
+        "goalPostYellow": [],
+        "goalPostGreen": [],
         "ball": [],
     }
     for entity in entities.values():
@@ -85,6 +91,10 @@ def partition_entities(entities):
             buckets["goalPostBlue"].append(entity)
         if red_goal_post_predicate(entity):
             buckets["goalPostRed"].append(entity)
+        if green_goal_post_predicate(entity):
+            buckets["goalPostGreen"].append(entity)
+        if yellow_goal_post_predicate(entity):
+            buckets["goalPostYellow"].append(entity)
         if ball_predicate(entity):
             buckets["ball"].append(entity)
     return buckets
@@ -251,14 +261,41 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
 
     # --- This section is for Football Ability ---
     team_id = getattr(agentData, "teamId", None)
+    opp_team_id = getattr(agentData, "oppTeamId", None)
+
     goal_bucket_key = None
-    goal_buckey_key_our_own = None
+    goal_bucket_key_our_own = None
     goal_flag = None
-    if team_id:
-        goal_bucket_key = "goalPostRed" if team_id == "blue" else "goalPostBlue"
-        goal_flag = "red-post" if team_id == "blue" else "blue-post"
-    if team_id:
-        goal_buckey_key_our_own = "goalPostRed" if team_id == "red" else "goalPostBlue"
+
+    match opp_team_id:
+        case "blue":
+            goal_bucket_key = "goalPostBlue"
+            goal_flag = "blue-post"
+        case "red":
+            goal_bucket_key = "goalPostRed"
+            goal_flag = "red-post"
+        case "yellow":
+            goal_bucket_key = "goalPostYellow"
+            goal_flag = "yellow-post"
+        case "green":
+            goal_bucket_key = "goalPostGreen"
+            goal_flag = "green-post"
+
+    match team_id:
+         case "blue":
+             goal_bucket_key_our_own = "goalPostBlue"
+         case "red":
+             goal_bucket_key_our_own = "goalPostRed"
+         case "yellow":
+             goal_bucket_key_our_own = "goalPostYellow"
+         case "green":
+             goal_bucket_key_our_own = "goalPostGreen"
+
+    # if team_id:
+    #     goal_bucket_key = "goalPostRed" if team_id == "blue" else "goalPostBlue"
+    #     goal_flag = "red-post" if team_id == "blue" else "blue-post"
+    # if team_id:
+    #     goal_buckey_key_our_own = "goalPostRed" if team_id == "red" else "goalPostBlue"
 
     for obs in obs_space:
         match obs:
@@ -557,8 +594,8 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "ball_dist_to_own_goal":
                 deltaXb, _ = cache.get("ball", "delta-x-fb")
                 deltaYb, _ = cache.get("ball", "delta-z-fb")
-                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x-fb")
-                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z-fb")
+                deltaXp, _ = cache.get(goal_bucket_key_our_own, "delta-x-fb")
+                deltaYp, _ = cache.get(goal_bucket_key_our_own, "delta-z-fb")
                 distance = ball_to_goal(
                     deltaXb, deltaYb, deltaXp, deltaYp
                 )
@@ -567,8 +604,8 @@ def buildObs(agent_id, agentData, runTimeSnapShot, entity_buckets=None):
             case "ball_in_own_goal_danger_zone":
                 deltaXb, _ = cache.get("ball", "delta-x-fb")
                 deltaYb, _ = cache.get("ball", "delta-z-fb")
-                deltaXp, _ = cache.get(goal_buckey_key_our_own, "delta-x-fb")
-                deltaYp, _ = cache.get(goal_buckey_key_our_own, "delta-z-fb")
+                deltaXp, _ = cache.get(goal_bucket_key_our_own, "delta-x-fb")
+                deltaYp, _ = cache.get(goal_bucket_key_our_own, "delta-z-fb")
                 distance = ball_to_goal(
                     deltaXb, deltaYb, deltaXp, deltaYp
                 )
