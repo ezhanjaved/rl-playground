@@ -31,7 +31,7 @@ class PyBulletWorld:
                 p.disconnect(self.client)
             except Exception:
                 pass
-        self.client = p.connect(p.DIRECT)
+        self.client = p.connect(p.GUI)
         self.entity_mapping = {}
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81, physicsClientId=self.client)
@@ -127,6 +127,31 @@ class PyBulletWorld:
 
         return wx, wy, half_w, half_d, r, yaw, shape
 
+    def get_entity_effective_half_extents(self, entity):
+        if entity.tag == "generic":
+            return 0.0, 0.0
+        collider = entity.collider
+        shape = collider.get("shape", "capsule")
+
+        if shape == "capsule":
+            r = collider.get("r", 0.3)
+            return r, r
+
+        if shape == "box":
+            preSwapRot = entity.quatRotation
+            postSwapRot = rotationSwap(preSwapRot)
+            _, _, rz, rw = postSwapRot
+            yaw = 2 * math.atan2(rz, rw)
+
+            half_w = collider["w"] / 2
+            half_d = collider["d"] / 2
+
+            half_x = abs(half_w * math.cos(yaw)) + abs(half_d * math.sin(yaw))
+            half_y = abs(half_w * math.sin(yaw)) + abs(half_d * math.cos(yaw))
+            return half_x, half_y
+
+        return 0.0, 0.0
+
     def visualize_grid(self, grid, show_free=False, persist=False):
         if not persist:
             if hasattr(self, "_grid_debug_ids") and self._grid_debug_ids:
@@ -213,10 +238,12 @@ class PyBulletWorld:
         if max_x != float("-inf") and max_y != float("-inf"):
             self.max_x = max_x
             self.max_y = max_y
+            print("Max X: ", max_x, " Max Y: ", max_y)
 
         if min_x != float("inf") and min_y != float("inf"):
             self.min_x = min_x
             self.min_y = min_y
+            print("Min X: ", min_x, " Min Y: ", min_y)
         return
 
     # grid[col][row]
@@ -250,6 +277,31 @@ class PyBulletWorld:
                         if distance_to_capsule_center < r:
                             grid[col][row] = True
         return grid
+
+    def dilate_grid(self, grid, radius_cells):
+        if radius_cells <= 0:
+            return [row[:] for row in grid]
+        cols = len(grid)
+        rows = len(grid[0]) if cols > 0 else 0
+        dilated = [[False for _ in range(rows)] for _ in range(cols)]
+        for col in range(cols):
+            for row in range(rows):
+                for dc in range(-radius_cells, radius_cells + 1):
+                    for dr in range(-radius_cells, radius_cells + 1):
+                        nc, nr = col + dc, row + dr
+                        if 0 <= nc < cols and 0 <= nr < rows:
+                            if grid[nc][nr] and dc * dc + dr * dr <= radius_cells * radius_cells:
+                                dilated[col][row] = True
+                                break
+                    if dilated[col][row]:
+                        break
+        return dilated
+
+    def _dilated_grid_for(self, grid, effective_radius):
+        if grid is None or effective_radius <= 0:
+            return grid
+        radius_cells = max(1, int(math.ceil(effective_radius / self.cell_size)))
+        return self.dilate_grid(grid, radius_cells)
 
     def randomize_entities(
         self,
@@ -285,11 +337,16 @@ class PyBulletWorld:
             if agentConfig is None:
                 return entConfigCopy
 
+            agent_mx, agent_my = self.get_entity_effective_half_extents(agentConfig)
+            agent_grid = self._dilated_grid_for(grid, max(agent_mx, agent_my))
+
             agentRandomPos = self.random_position_around(
                 agentConfig.position,
                 min_dist=2.0,
                 max_dist=highestDistance,
-                grid=grid,
+                grid=agent_grid,
+                margin_x=agent_mx,
+                margin_y=agent_my,
             )
             if agentRandomPos is None:
                 return entConfigCopy
@@ -305,13 +362,18 @@ class PyBulletWorld:
                     obstacleObjs.append(obj)
                     continue
 
+                obj_mx, obj_my = self.get_entity_effective_half_extents(obj)
+                obj_grid = self._dilated_grid_for(grid, max(obj_mx, obj_my))
+
                 success = False
                 for _ in range(100):
                     objRandomPos = self.random_position_around(
                         lastPos,
                         min_dist=2.0,
                         max_dist=highestDistance * 0.75,
-                        grid=grid,
+                        grid=obj_grid,
+                        margin_x=obj_mx,
+                        margin_y=obj_my,
                     )
                     if objRandomPos:
                         obj.position = objRandomPos
@@ -336,10 +398,15 @@ class PyBulletWorld:
 
         else:
             for obj in entConfigCopy:
+                obj_mx, obj_my = self.get_entity_effective_half_extents(obj)
+                obj_grid = self._dilated_grid_for(grid, max(obj_mx, obj_my))
+
                 new_pos = self.random_position_jitter(
                     center=obj.position,
                     jitter_radius=jitter_radius,
-                    grid=grid,
+                    grid=obj_grid,
+                    margin_x=obj_mx,
+                    margin_y=obj_my,
                 )
 
                 if new_pos is not None:
@@ -409,19 +476,19 @@ class PyBulletWorld:
         bullet_quat = self.yaw_to_bullet_quat(yaw)
         return rotationSwap(bullet_quat)
 
-    def random_position_around(self, center, min_dist, max_dist, grid):
+    def random_position_around(self, center, min_dist, max_dist, grid, margin_x=0, margin_y=0):
         center_bullet = positionSwap(center)
         cx, cy, cz = center_bullet
         for _ in range(100):
             x = random.uniform(cx - max_dist, cx + max_dist)
             y = random.uniform(cy - max_dist, cy + max_dist)
 
-            x = max(self.min_x, min(self.max_x, x))
-            y = max(self.min_y, min(self.max_y, y))
+            x = max(self.min_x + margin_x, min(self.max_x - margin_x, x))
+            y = max(self.min_y + margin_y, min(self.max_y - margin_y, y))
 
             dist = distance3D(center_bullet, [x, y, cz])
 
-            if min_dist < dist < 3.0:
+            if min_dist < dist < max_dist:
                 if grid is None:
                     return positionSwap([x, y, cz])
                 col = int((x - self.min_x) / self.cell_size)
@@ -432,7 +499,7 @@ class PyBulletWorld:
                     return positionSwap([x, y, cz])
         return None
 
-    def random_position_jitter(self, center, jitter_radius, grid=None):
+    def random_position_jitter(self, center, jitter_radius, grid=None, margin_x=0, margin_y=0):
         center_bullet = positionSwap(center)
         cx, cy, cz = center_bullet
 
@@ -443,9 +510,9 @@ class PyBulletWorld:
             x = cx + radius * math.cos(angle)
             y = cy + radius * math.sin(angle)
 
-            if x < self.min_x or x > self.max_x:
+            if x < self.min_x + margin_x or x > self.max_x - margin_x:
                 continue
-            if y < self.min_y or y > self.max_y:
+            if y < self.min_y + margin_y or y > self.max_y - margin_y:
                 continue
 
             if grid is not None:
