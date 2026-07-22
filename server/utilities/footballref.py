@@ -2,6 +2,11 @@ import pybullet as p
 
 from server.utilities.positionSwap import positionSwap
 
+def find_agent(entities):
+    for agent_id, agent_data in entities.items():
+        if agent_data.tag == "agent":
+            return agent_id, agent_data.teamId
+    return None, None
 
 def footballRef(goal_id, ball_id, entities, mapping, client):
     print("Ref Called")
@@ -35,6 +40,11 @@ def footballRef(goal_id, ball_id, entities, mapping, client):
     lastTouchedBy = ball_state["lastTouchedBy"]
     lastTouchedTeam = ball_state["lastTouchedTeam"]
     isOwnGoal = lastTouchedTeam == concedingTeam
+
+    if lastTouchedBy is None:
+        id, team = find_agent(entities)
+        lastTouchedBy = id
+        lastTouchedTeam = team
 
     if isOwnGoal:
         scoringTeam = entities[lastTouchedBy].oppTeamId
