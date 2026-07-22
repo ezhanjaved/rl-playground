@@ -102,19 +102,19 @@ const Header = () => {
   }
 
   useEffect(() => {
-    if (visibility === 1 && envList.length > 0) {
+    if (visibility === 1 && envList?.length > 0) {
       setPath(envList[0].path);
     }
   }, [envList]);
 
   useEffect(() => {
-    if (visibility === 2 && graphList.length > 0) {
+    if (visibility === 2 && graphList?.length > 0) {
       setPath(graphList[0].path);
     }
   }, [graphList]);
 
   useEffect(() => {
-    if (user?.id && envList.length === 0 && graphList.length === 0) {
+    if (user?.id && envList?.length === 0 && graphList?.length === 0) {
       getTemplateData();
     }
     const combined = [...graphList, ...envList];
@@ -262,9 +262,15 @@ const Header = () => {
           {visibility === 0 && (
             <div className="template-picker">
               <select onChange={(e) => setPath(e.target.value)}>
-                {allTemplates.map((env) => (
-                  <option value={env.path}>{env.name}</option>
-                ))}
+                {!allTemplates?.length ? (
+                  <option disabled>No templates available</option>
+                ) : (
+                  allTemplates.map((env) => (
+                    <option key={env.path} value={env.path}>
+                      {env.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           )}
@@ -312,12 +318,18 @@ const Header = () => {
           <span style={{ display: visibility !== 1 ? "none" : "flex" }}>
             {envName || null}
           </span>
-          {visibility === 1 && envList && (
+          {visibility === 1 && (
             <div className="template-picker">
               <select onChange={(e) => setPath(e.target.value)}>
-                {envList.map((env) => (
-                  <option value={env.path}>{env.name}</option>
-                ))}
+                {!envList?.length ? (
+                  <option disabled>No environments available</option>
+                ) : (
+                  envList.map((env) => (
+                    <option key={env.path} value={env.path}>
+                      {env.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           )}
@@ -339,9 +351,15 @@ const Header = () => {
           {visibility === 2 && (
             <div className="template-picker">
               <select onChange={(e) => setPath(e.target.value)}>
-                {graphList.map((graph) => (
-                  <option value={graph.path}>{graph.name}</option>
-                ))}
+                {!graphList?.length ?  (
+                  <option disabled>No graphs available</option>
+                ) : (
+                  graphList.map((graph) => (
+                    <option key={graph.path} value={graph.path}>
+                      {graph.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           )}
